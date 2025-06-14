@@ -1,0 +1,2 @@
+commands/tests/Model3ControllerExpertData.java,789,null#
+(i think this is a case where the 'new resource' statement is much after the variable declaration where the warning is reported)

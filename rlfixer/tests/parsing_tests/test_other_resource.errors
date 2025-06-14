@@ -1,0 +1,2 @@
+ikrs/httpd/resource/ReplacingResource.java,96,null#
+(the resource doesn't implement 'closable' or 'autocloseable'
