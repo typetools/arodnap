@@ -57,6 +57,8 @@ class RLCRunner:
             f"@{Constants.SRC_FILES} "
             f"2> {self.results_folder}{'_ReRun' if is_rerun else ''}/{source_project_name}.txt"
         )
+        #print("Command:\n", command)
+        # exit()
         os.system(command)
 
         try:

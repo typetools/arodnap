@@ -40,7 +40,7 @@ public class FinalizerMappingLoader {
         }
         ProjectInfoCollector.collectProjectInfo(WPIOutDir);
         // Reset the JavaParser configuration
-        StaticJavaParser.setConfiguration(new ParserConfiguration());
+        StaticJavaParser.setConfiguration(new ParserConfiguration().setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_21));
     }
 
     /**
@@ -144,6 +144,11 @@ class ProjectInfoCollector {
         // Map: (qualified class name) -> ClassOrInterfaceDeclaration (for later
         // inheritance checks)
         Map<String, ClassOrInterfaceDeclaration> allClassesMap = new HashMap<>();
+        ParserConfiguration config = StaticJavaParser.getConfiguration();
+        // Set language level and preview features
+        config.setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_21);
+        //.setPreviewFeatures(true);
+
 
         try {
             // Set up the type solver to resolve types from standard libraries and project

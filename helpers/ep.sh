@@ -32,10 +32,12 @@ BUILD_CMD="javac \
   @${SRC_FILES}"
 
 
-# echo $BUILD_CMD
+echo $BUILD_CMD
+
+# exit
 
 eval $BUILD_CMD
-
+exit
 echo "Running the patch: FieldCanBeFinalWithTryCatch"
 dos2unix $PROJECT_PATH/src/error-prone.patch
 cd $PROJECT_PATH/src/ && patch --forward -p0 -u --ignore-whitespace -i error-prone.patch

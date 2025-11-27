@@ -41,23 +41,23 @@ def run_arodnap():
     os.system(f"cd {Constants.SOURCE_PROJECT_FOLDER}/src" +
               " && find . -type f -name \"*.java\" -exec dos2unix {} + > /dev/null 2>&1")
 
-    FieldEnhancementRunner.run_field_enhancements(
-        source_project_name, Constants.SOURCE_PROJECT_FOLDER)
+    # FieldEnhancementRunner.run_field_enhancements(
+    #     source_project_name, Constants.SOURCE_PROJECT_FOLDER)
 
     rlc_runner.run_cf_analysis(
         source_project_name, Constants.SOURCE_PROJECT_FOLDER)
     store_inference_results(
         Constants.SOURCE_PROJECT_FOLDER, f"{Constants.PATCH_AND_LOGS_FOLDER}/{source_project_name}", stage="initial")
 
-    CloseInjector.run_close_injector(
-        source_project_name, Constants.SOURCE_PROJECT_FOLDER, results_folder)
-    if CloseInjector.check_for_close_injector_patch(Constants.SOURCE_PROJECT_FOLDER):
-        logging.info(
-            "Close Injector patch detected. Rerunning CF analysis before running RLFixer...")
-        rlc_runner.run_cf_analysis(
-            source_project_name, Constants.SOURCE_PROJECT_FOLDER, is_rerun=True)
-        store_inference_results(
-            Constants.SOURCE_PROJECT_FOLDER, f"{Constants.PATCH_AND_LOGS_FOLDER}/{source_project_name}", stage="close_injector")
+    # CloseInjector.run_close_injector(
+    #     source_project_name, Constants.SOURCE_PROJECT_FOLDER, results_folder)
+    # if CloseInjector.check_for_close_injector_patch(Constants.SOURCE_PROJECT_FOLDER):
+    #     logging.info(
+    #         "Close Injector patch detected. Rerunning CF analysis before running RLFixer...")
+    #     rlc_runner.run_cf_analysis(
+    #         source_project_name, Constants.SOURCE_PROJECT_FOLDER, is_rerun=True)
+    #     store_inference_results(
+    #         Constants.SOURCE_PROJECT_FOLDER, f"{Constants.PATCH_AND_LOGS_FOLDER}/{source_project_name}", stage="close_injector")
 
     if os.path.exists(results_folder + "_ReRun/" + source_project_name + ".txt"):
         results_folder = results_folder + "_ReRun"
@@ -84,11 +84,11 @@ def run_arodnap():
         f"Time taken for {source_project_name}: {elapsed_time:.2f} seconds")
     store_patch_and_log_files(
         f"{Constants.PATCH_AND_LOGS_FOLDER}/{source_project_name}")
-    logging.info(
-        f"Invoking LLM for patch generation for {source_project_name}...")
-    generate_patches(source_project_name, Constants.SOURCE_PROJECT_FOLDER)
-    apply_llm_generated_patches(
-        Constants.SOURCE_PROJECT_FOLDER, Constants.PATCH_AND_LOGS_FOLDER)
+    # logging.info(
+    #     f"Invoking LLM for patch generation for {source_project_name}...")
+    # generate_patches(source_project_name, Constants.SOURCE_PROJECT_FOLDER)
+    # apply_llm_generated_patches(
+    #     Constants.SOURCE_PROJECT_FOLDER, Constants.PATCH_AND_LOGS_FOLDER)
     clean_up_current()
     print()
 

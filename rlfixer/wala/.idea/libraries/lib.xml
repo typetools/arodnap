@@ -4,10 +4,10 @@
       <root url="jar://$PROJECT_DIR$/../lib/com.ibm.wala.core-1.5.7.jar!/" />
       <root url="jar://$PROJECT_DIR$/../lib/com.ibm.wala.shrike-1.5.7.jar!/" />
       <root url="jar://$PROJECT_DIR$/../lib/com.ibm.wala.util-1.5.7.jar!/" />
-      <root url="jar://$PROJECT_DIR$/../lib/javaparser-core-3.24.7.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../lib/javaparser-core-3.27.1.jar!/" />
       <root url="file://$PROJECT_DIR$/../lib" />
       <root url="jar://$PROJECT_DIR$/../lib/guava-31.1-jre.jar!/" />
-      <root url="jar://$PROJECT_DIR$/../lib/javaparser-symbol-solver-core-3.24.7.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../lib/javaparser-symbol-solver-core-3.27.1.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />

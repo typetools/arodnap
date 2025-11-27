@@ -3,6 +3,7 @@ import shutil
 import logging
 import glob
 import Constants
+import subprocess
 from SourceProjectCompiler import SourceProjectCompiler
 
 logging.basicConfig(
@@ -91,10 +92,26 @@ def run_rlfixer(source_project_name, results_folder, source_project_path):
     if not os.path.exists(wpi_out_dir) or os.path.getsize(wpi_out_dir) == 0:
         wpi_out_dir = f"{Constants.PATCH_AND_LOGS_FOLDER}/{source_project_name}/initial_inference/wpi-out"
     HERE = os.path.dirname(os.path.abspath(__file__))
-    os.system(f"python3 {HERE}/RLFixerRunner.py --tool checkerframework "
-              f"--results {results_folder}/{source_project_name}.txt --benchmark {os.path.dirname(source_project_path)} "
-              f"--output {rlfixer_output_fixes_folder} --debug {rlfixer_output_debug_folder}"
-              f" --wpioutdir {wpi_out_dir} ")
+    # os.system(f"python3 {HERE}/RLFixerRunner.py --tool checkerframework "
+    #           f"--results {results_folder}/{source_project_name}.txt --benchmark {os.path.dirname(source_project_path)} "
+    #           f"--output {rlfixer_output_fixes_folder} --debug {rlfixer_output_debug_folder}"
+    #           f" --wpioutdir {wpi_out_dir} ")
+    result = subprocess.run(
+    ["python3", f"{HERE}/RLFixerRunner.py",
+     "--tool", "checkerframework",
+     "--results", f"{results_folder}/{source_project_name}.txt",
+     "--benchmark", os.path.dirname(source_project_path),
+     "--output", rlfixer_output_fixes_folder,
+     "--debug", rlfixer_output_debug_folder,
+     "--wpioutdir", wpi_out_dir],
+    stdout=subprocess.PIPE,
+    stderr=subprocess.PIPE,
+    text=True,
+    check=False  # <--- important!
+    )
+    # Always log what happened, even if it failed.
+    logging.info(f"[RLFixer STDOUT for {source_project_name}]\n{result.stdout}")
+    logging.warning(f"[RLFixer STDERR for {source_project_name}]\n{result.stderr}")
     
     
 def compute_p_flag(patch_file_path):

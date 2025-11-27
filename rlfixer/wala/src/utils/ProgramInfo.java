@@ -6,7 +6,13 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
-
+import java.nio.file.*;
+import java.util.Enumeration;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
@@ -17,6 +23,7 @@ import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 import com.github.javaparser.utils.Log;
+import com.ibm.wala.classLoader.BinaryDirectoryTreeModule;
 import com.ibm.wala.classLoader.CallSiteReference;
 import com.ibm.wala.classLoader.IClass;
 import com.ibm.wala.classLoader.IMethod;
@@ -38,7 +45,15 @@ import com.ibm.wala.ipa.cha.ClassHierarchyFactory;
 import com.ibm.wala.ssa.SSAInvokeInstruction;
 import com.ibm.wala.ssa.SSAPutInstruction;
 import com.ibm.wala.util.CancelException;
-import com.ibm.wala.util.config.AnalysisScopeReader;
+//import com.ibm.wala.util.config.AnalysisScopeReader;
+import com.ibm.wala.ipa.callgraph.AnalysisScope;
+import com.ibm.wala.types.ClassLoaderReference;
+import com.ibm.wala.core.java11.JrtModule;
+import com.ibm.wala.core.util.io.FileProvider;
+import com.ibm.wala.classLoader.SourceDirectoryTreeModule;
+import com.ibm.wala.util.config.StringFilter;
+import com.ibm.wala.classLoader.JarFileModule;
+
 import com.ibm.wala.ssa.IR;
 import com.ibm.wala.ssa.SSAInstruction;
 
@@ -92,7 +107,52 @@ public class ProgramInfo {
 	// Boilerplate code for making callgraph and class-hierarchy
 	public static void initializeProgramInfo(String classpath, String exclusionsFileName, String appClassesFile, String srcFilesList, String projectDir, File exclusionsFile)
 			throws ClassHierarchyException, IOException, IllegalArgumentException, CancelException {
-		analysisScope = AnalysisScopeReader.makeJavaBinaryAnalysisScope(classpath, exclusionsFile);
+		//WALA expects a Primordial class loader pointing to the JDK runtime classes but in java >=9 JDK uses jmods/
+
+		// String tempJdkClasses = "tmp_jdk_classes";
+        // extractJmods(tempJdkClasses);
+
+		// String combinedClasspath = tempJdkClasses + File.pathSeparator + classpath;
+
+		analysisScope = AnalysisScope.createJavaAnalysisScope();
+		analysisScope.addToScope(
+                ClassLoaderReference.Primordial,
+                new JrtModule(System.getProperty("java.home"))
+        );
+
+		Set<String> excludedClasses = new HashSet<>();
+		if (exclusionsFile != null && exclusionsFile.exists()) {
+			try (BufferedReader br = new BufferedReader(new FileReader(exclusionsFile))) {
+				String line;
+				while ((line = br.readLine()) != null) {
+					excludedClasses.add(line.trim());
+				}
+			}
+		}
+
+		File appDir = new File(classpath);
+		List<Path> includedFiles = new ArrayList<>();
+		Files.walk(appDir.toPath())
+				.filter(Files::isRegularFile)
+				.filter(p -> p.toString().endsWith(".class"))
+				.filter(p -> {
+					// Convert path to class name format
+					String className = appDir.toPath().relativize(p).toString().replace(File.separatorChar, '/');
+					return !excludedClasses.contains(className);
+				})
+				.forEach(includedFiles::add);
+		JarFileModule appModule = new JarFileModule(new JarFile(appDir)) {
+			public Iterable<String> getFileNames() {
+				List<String> names = new ArrayList<>();
+				for (Path p : includedFiles) {
+					names.add(p.toString());
+				}
+				return names;
+			}
+		};
+		analysisScope.addToScope(ClassLoaderReference.Application, appModule);
+		
+
 		cha = ClassHierarchyFactory.make(analysisScope);
 		readApplicationClasses(appClassesFile);
 		populateClassesMap();
@@ -108,7 +168,18 @@ public class ProgramInfo {
 	// simplified version of the method with the same name
 	public static void simplifiedInitializeProgramInfo(String classpath, String appClassesFile)
 			throws ClassHierarchyException, IOException, IllegalArgumentException, CancelException {
-		analysisScope = AnalysisScopeReader.makeJavaBinaryAnalysisScope(classpath, null);
+		//analysisScope = AnalysisScope.makeJavaBinaryAnalysisScope(classpath, null);
+
+		analysisScope = AnalysisScope.createJavaAnalysisScope();
+		// Add JDK classes (Primordial)
+		analysisScope.addToScope(
+				ClassLoaderReference.Primordial,
+				new JrtModule(System.getProperty("java.home"))
+		);
+		// Add your application classes
+		File appClasses = new File(classpath);
+		SourceDirectoryTreeModule appModule = new SourceDirectoryTreeModule(appClasses);
+		analysisScope.addToScope(ClassLoaderReference.Application, appModule);
 		cha = ClassHierarchyFactory.make(analysisScope);
 		readApplicationClasses(appClassesFile);
 		populateClassesMap();

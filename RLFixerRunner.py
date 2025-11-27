@@ -4,6 +4,9 @@ Front-end for the Resource-Leak fixing post-processor
 '''
 import os
 import argparse
+import subprocess
+import logging
+
 
 
 class Warning:
@@ -77,7 +80,7 @@ DRIVER_CLASS = "main.Main"
 WALA_CORE_JAR = f"{RLFIXER_ROOT}/lib/com.ibm.wala.core-1.5.7.jar"
 WALA_SHRIKE_JAR = f"{RLFIXER_ROOT}/lib/com.ibm.wala.shrike-1.5.7.jar"
 WALA_UTIL_JAR = f"{RLFIXER_ROOT}/lib/com.ibm.wala.util-1.5.7.jar"
-JAVAPARSER_JAR = f"{RLFIXER_ROOT}/lib/javaparser-core-3.24.7.jar"
+JAVAPARSER_JAR = f"{RLFIXER_ROOT}/lib/javaparser-core-3.27.1.jar"
 RLFIXER_JARS_ROOT = f"{RLFIXER_ROOT}/lib"
 FILE_WITH_APP_CLASSES = "info/classes"
 FILE_WITH_SRCS= "info/sources"
@@ -142,6 +145,8 @@ wala_command = ("java"
     + " " + WPI_OUT_DIR
     + " > " +  OUTPUT_FOLDER + "/" + benchmark_name + ".txt"
 )
+#print(wala_command)
+
 empty_file_command = ("touch "
     +  OUTPUT_FOLDER
     + "/" + benchmark_name + ".txt"
@@ -149,7 +154,31 @@ empty_file_command = ("touch "
 
 # execute the right command based on whether there are any errors.
 if len(warnings_list) > 0:
-    os.system(wala_command)
+    try:
+        # Run the Java RLFixer process and capture output
+        result = subprocess.run(
+            wala_command, 
+            shell=True,
+            stdout=subprocess.PIPE, 
+            stderr=subprocess.PIPE, 
+            text=True,
+            check=False #ignores non-zero exit codes
+        )
+        print(f"Exit code: {result.returncode}")
+
+        # Write logs for later inspection
+        log_path = f"{args.debug_output}/{benchmark_name}_java_output.txt"
+        with open(log_path, "w") as log_file:
+            log_file.write(result.stdout)
+            log_file.write(result.stderr)
+
+        # Detect parsing errors but continue anyway
+        if "Error parsing file:" in result.stdout or "Error parsing file:" in result.stderr:
+            logging.warning(f"[{benchmark_name}] Some .ajava parse errors occurred — continuing to next step.")
+
+    except Exception as e:
+        logging.error(f"[{benchmark_name}] RLFixer execution failed: {e}")
+    #os.system(wala_command)
 else:
     os.system(empty_file_command)
 
