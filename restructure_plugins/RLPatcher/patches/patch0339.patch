@@ -1,0 +1,43 @@
+--- /tmp/orig-11459783129376947810.java	2025-09-24 22:05:05.953330380 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url5a01f2c1d9_core9_core_tgz-pJ8-io_core9_core_boot_BootstrapFrameworkJ8/src/net/xeoh/plugins/base/impl/classpath/loader/HTTPLoader.java	2025-09-24 22:05:04.121202308 +0000
+@@ -64,14 +64,16 @@
+     public void loadFrom(URI url) {
+         // Handle http files
+         if (url.getScheme().equals("http")) {
++        java.io.InputStream openStream = null;
++        java.io.FileOutputStream fos = null;
+ 
+             try {
+                 // download the file (TODO: download could be improved a bit ...)
+                 java.io.File tmpFile = java.io.File.createTempFile("jspfplugindownload", ".jar");
+-                final FileOutputStream fos = new FileOutputStream(tmpFile);
++                fos = new FileOutputStream(tmpFile);
+ 
+                 final URL url2 = url.toURL();
+-                final InputStream openStream = url2.openStream();
++                openStream = url2.openStream();
+ 
+                 int read = 0;
+                 byte buf[] = new byte[1024];
+@@ -89,6 +91,21 @@
+             } catch (Exception e) {
+                 e.printStackTrace();
+                 this.logger.warning("Error downloading plugins from " + url);
++            } finally {
++                if (openStream != null) {
++                    try {
++                        openStream.close();
++                    } catch (Exception e) {
++                        e.printStackTrace();
++                    }
++                }
++                if (fos != null) {
++                    try {
++                        fos.close();
++                    } catch (Exception e) {
++                        e.printStackTrace();
++                    }
++                }
+             }
+         }
+     }

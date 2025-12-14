@@ -1,0 +1,29 @@
+--- /tmp/orig-101142592109025526.java	2025-09-24 21:59:29.329798954 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url4c41254592_topskychen_AuthTopk_tgz-pJ8-quickhull3d_QuickHull3DTestJ8/src/utility/security/SeedsGenerater.java	2025-09-24 21:59:26.585607123 +0000
+@@ -71,8 +71,10 @@
+ 			//SeedsGenerater
+ 			return;
+ 		}
++		java.io.FileInputStream __arodnap_temp0 = null;
+ 		try {
+-			DataInputStream seedsdis = new DataInputStream(new FileInputStream(filename + ".dat"));
++		__arodnap_temp0 = new FileInputStream(filename + ".dat");
++		DataInputStream seedsdis = new DataInputStream(__arodnap_temp0);
+ 			DataInputStream gseedsdis = new DataInputStream(new FileInputStream(filename + ".gdat"));
+ 			try {
+ 				int len = seedsdis.readInt();
+@@ -98,6 +100,14 @@
+ 		} catch (FileNotFoundException e) {
+ 			// TODO Auto-generated catch block
+ 			e.printStackTrace();
++		} finally {
++		    if (__arodnap_temp0 != null) {
++		        try {
++		            __arodnap_temp0.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
+ 		}
+ 		
+ 	}

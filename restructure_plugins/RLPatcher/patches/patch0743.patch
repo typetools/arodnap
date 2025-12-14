@@ -1,0 +1,20 @@
+--- /tmp/orig-63525231615114663.java	2025-09-24 22:50:01.593769129 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urld0f681c558_farom57_AstroidDriver_tgz-pJ8-laazotea_indi_server_examples_MinimumINDIServerJ8/src/laazotea/indi/driver/INDIProperty.java	2025-09-24 22:49:59.729638811 +0000
+@@ -519,13 +519,13 @@
+     if (propertiesDir.exists()) {
+       if (propertiesDir.isDirectory()) {
+         File file = new File(propertiesDir, getPropertyNameForFile());
+-        FileOutputStream fos = new FileOutputStream(file);
++        try (FileOutputStream fos = new FileOutputStream(file)) {
++            ObjectOutputStream oos = new ObjectOutputStream(fos);
++            oos.writeObject(this);
++        }
+ 
+-        ObjectOutputStream oos = new ObjectOutputStream(fos);
+ 
+-        oos.writeObject(this);
+ 
+-        oos.close();
+       }
+     }
+   }

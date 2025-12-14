@@ -1,0 +1,22 @@
+--- /tmp/orig-7428081920633646745.java	2025-09-24 21:46:17.794467365 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url28dfd00382_byang223_TurnBAPI_tgz-pJ8-units_upgrades_UpgradeTestJ8/src/serialization/SBufferedImage.java	2025-09-24 21:46:15.846331185 +0000
+@@ -36,8 +36,10 @@
+   private void writeObject(java.io.ObjectOutputStream out) throws IOException {
+ 		out.writeObject(name);
+ 		ImageWriter writer = (ImageWriter) ImageIO.getImageWritersBySuffix("jpg").next();
+-	        writer.setOutput(ImageIO.createImageOutputStream(out));
+-	        ImageWriteParam param = writer.getDefaultWriteParam();
++	 try (javax.imageio.stream.ImageOutputStream __arodnap_temp0 = ImageIO.createImageOutputStream(out)) {
++	     writer.setOutput(__arodnap_temp0);
++	 }
++       ImageWriteParam param = writer.getDefaultWriteParam();
+ 	        param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+ 	        param.setCompressionQuality(0.85f);
+ 	        writer.write(null, new IIOImage(image, null, null), param);
+@@ -47,4 +49,4 @@
+     name=(String)in.readObject();
+     image=ImageIO.read(ImageIO.createImageInputStream(in));
+   }
+-}
++}
+\ No newline at end of file

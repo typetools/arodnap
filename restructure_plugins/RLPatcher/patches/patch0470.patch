@@ -1,0 +1,44 @@
+--- /tmp/orig-10725998482353758430.java	2025-09-24 22:18:32.697724593 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url7f43a4752f_shalynnho_pokemonfactory_tgz-pJ8-Networking_ServerJ8/src/Utils/ConsoleWriter.java	2025-09-24 22:18:29.865526613 +0000
+@@ -187,21 +187,38 @@
+ 	 * @return response from the sever
+ 	 */
+ 	public String sendData(String data) {
+-		
++	java.io.InputStream response = null;
++	java.io.OutputStream output = null;
++
+ 		try {
+ 			URLConnection connection = new URL("http://ptz-debug.appspot.com/listen/").openConnection();
+ 			connection.setDoOutput(true);
+ 			connection.setRequestProperty("Accept-Charset", "UTF-8");
+ 			connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
+ 
+-			OutputStream output = connection.getOutputStream();
++			output = connection.getOutputStream();
+ 			output.write(new String(data).getBytes("UTF-8"));
+ 
+-			InputStream response = connection.getInputStream();
++			response = connection.getInputStream();
+ 			return read(response);
+ 		} catch (Exception e) {
+ 			e.printStackTrace();
+ 			return "";
++		} finally {
++		    if (response != null) {
++		        try {
++		            response.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
++		    if (output != null) {
++		        try {
++		            output.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
+ 		}
+ 
+ 	}

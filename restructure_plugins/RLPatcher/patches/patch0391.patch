@@ -1,0 +1,16 @@
+--- /tmp/orig-9100648260905327855.java	2025-09-24 22:10:43.912954923 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url75694980d5_fabioalmeid_tp01ftc_tgz-pJ8-agentes_jade_Centralizador_ExemploParserGramaticaCentralizadorJ8/src/monitor/Test.java	2025-09-24 22:10:40.908744919 +0000
+@@ -10,10 +10,10 @@
+   {
+     Yylex l = null;
+     parser p;
+-    try
+-    {
++    try(
++java.io.FileReader __arodnap_temp0 = new FileReader(args[0]))     {
+       if (args.length == 0) l = new Yylex(System.in);
+-      else l = new Yylex(new FileReader(args[0]));
++      else l = new Yylex(__arodnap_temp0);
+     }
+     catch(FileNotFoundException e)
+     {

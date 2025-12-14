@@ -1,0 +1,201 @@
+--- /tmp/orig-15866612343711765372.java	2025-09-24 22:06:01.681225953 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url696d9a93c9_liaosiwei_bayesnetwork_tgz-pJ8-tutorial_TutorialJ8/src/com/alibaba/TrainV2.java	2025-09-24 22:06:00.041111303 +0000
+@@ -78,22 +78,21 @@
+     }
+ 
+     public static void main(String[] args) {
+-        DataRead reader = new DataRead();
++    com.alibaba.DataRead reader = null;
++    try {
++        reader = new DataRead();
+         createNetwork();
+         if (!reader.read()) {
+             System.out.println("read file error");
+             return;
+         }
+         Map<String, Map<String, Map<Integer, HashSet<Integer>>>> table = reader.getData();
+-
+         long totalSum = 0;
+-
+         Set<String> allSet = new HashSet<String>();
+         Set<String> clickSet = new HashSet<String>();
+         Set<String> carSet = new HashSet<String>();
+         Set<String> saveSet = new HashSet<String>();
+         Set<String> buySet = new HashSet<String>();
+-
+         for (String key1: table.keySet()) {
+             for (String key2: table.get(key1).keySet()) {
+                 Map<Integer, HashSet<Integer>> one = table.get(key1).get(key2);
+@@ -110,27 +109,16 @@
+                 }
+             }
+         }
+-
+         double beforeProbability = 0;
+         double unionProb = 0;
+-        // calculate probability of click
+-        // BayesNode a = net.createNode("a");点
+-        // a.addOutcomes("true", "false");
+         clickProb[0] = clickSet.size() / (double)allSet.size();
+         clickProb[1] = 1 - clickProb[0];
+-
+-        // calculate condition probability of save
+-        // BayesNode b = net.createNode("b");收
+-        // b.addOutcomes("true", "false");
+-        // b.setParents(Arrays.asList(a));
+         Set<String> intersection = new HashSet<String>(clickSet);
+         beforeProbability = intersection.size();
+-
+         intersection.retainAll(saveSet);
+         unionProb = intersection.size();
+         saveProb[0] = unionProb / beforeProbability;
+         saveProb[1] = 1 - saveProb[0];
+-
+         Set<String> notClickSet = new HashSet<String>(allSet);
+         notClickSet.removeAll(clickSet);
+         intersection = new HashSet<String>(notClickSet);
+@@ -145,18 +133,12 @@
+             saveProb[2] = (unionProb) / beforeProbability;
+             saveProb[3] = 1 - saveProb[2];
+         }
+-
+-        // calculate condition probability of car
+-        // BayesNode c = net.createNode("c");车
+-        // c.addOutcomes("true", "false");
+-        // c.setParents(Arrays.asList(a);
+         intersection = new HashSet<String>(clickSet);
+         beforeProbability = intersection.size();
+         intersection.retainAll(carSet);
+         unionProb = intersection.size();
+         carProb[0] = unionProb / beforeProbability;
+         carProb[1] = 1 - carProb[0];
+-
+         intersection = new HashSet<String>(notClickSet);
+         beforeProbability = intersection.size();
+         if (beforeProbability == 0) {
+@@ -169,11 +151,6 @@
+             carProb[2] = unionProb / beforeProbability;
+             carProb[3] = 1 - carProb[2];
+         }
+-
+-        // calculate condition probability of buy
+-        // BayesNode d = net.createNode("d");买
+-        // d.addOutcomes("true", "false");
+-        // c.setParents(Arrays.asList(a, b, c);
+         intersection = new HashSet<String>(clickSet);
+         intersection.retainAll(saveSet);
+         intersection.retainAll(carSet);
+@@ -188,7 +165,6 @@
+             buyProb[0] = unionProb / beforeProbability;
+             buyProb[1] = 1 - buyProb[0];
+         }
+-
+         intersection = new HashSet<String>(clickSet);
+         intersection.retainAll(saveSet);
+         Set<String> notCarSet = new HashSet<String>(allSet);
+@@ -205,7 +181,6 @@
+             buyProb[2] = unionProb / beforeProbability;
+             buyProb[3] = 1 - buyProb[2];
+         }
+-
+         intersection = new HashSet<String>(clickSet);
+         Set<String> notSaveSet = new HashSet<String>(allSet);
+         notSaveSet.removeAll(saveSet);
+@@ -222,7 +197,6 @@
+             buyProb[4] = unionProb / beforeProbability;
+             buyProb[5] = 1 - buyProb[4];
+         }
+-
+         intersection = new HashSet<String>(clickSet);
+         intersection.retainAll(notSaveSet);
+         intersection.retainAll(notCarSet);
+@@ -237,7 +211,6 @@
+             buyProb[6] = unionProb / beforeProbability;
+             buyProb[7] = 1 - buyProb[6];
+         }
+-
+         intersection = new HashSet<String>(notClickSet);
+         intersection.retainAll(saveSet);
+         intersection.retainAll(carSet);
+@@ -252,7 +225,6 @@
+             buyProb[8] = unionProb / beforeProbability;
+             buyProb[9] = 1 - buyProb[8];
+         }
+-
+         intersection = new HashSet<String>(notClickSet);
+         intersection.retainAll(saveSet);
+         intersection.retainAll(notCarSet);
+@@ -267,7 +239,6 @@
+             buyProb[10] = unionProb / beforeProbability;
+             buyProb[11] = 1 - buyProb[10];
+         }
+-
+         intersection = new HashSet<String>(notClickSet);
+         intersection.retainAll(notSaveSet);
+         intersection.retainAll(carSet);
+@@ -282,7 +253,6 @@
+             buyProb[12] = unionProb / beforeProbability;
+             buyProb[13] = 1 - buyProb[12];
+         }
+-
+         intersection = new HashSet<String>(notClickSet);
+         intersection.retainAll(notSaveSet);
+         intersection.retainAll(notCarSet);
+@@ -297,7 +267,6 @@
+             buyProb[14] = unionProb / beforeProbability;
+             buyProb[15] = 1 - buyProb[14];
+         }
+-
+         initNetwork();
+         try {
+             PrintWriter writer = new PrintWriter("E:\\workspace\\alibaba\\result.txt");
+@@ -333,6 +302,48 @@
+             System.out.println(e.getMessage());
+         }
+         System.out.println("total brand numbers is " + totalSum);
+-        reader.close();
++    } finally {
++        if (reader != null) {
++            try {
++                reader.close();
++            } catch (Exception e) {
++                e.printStackTrace();
++            }
++        }
++    }
++
++
++
++
++
++        // calculate probability of click
++        // BayesNode a = net.createNode("a");点
++
++
++        // calculate condition probability of save
++        // BayesNode b = net.createNode("b");收
++        // b.addOutcomes("true", "false");
++
++
++
++
++        // calculate condition probability of car
++        // BayesNode c = net.createNode("c");车
++        // c.addOutcomes("true", "false");
++
++
++
++        // calculate condition probability of buy
++        // BayesNode d = net.createNode("d");买
++        // d.addOutcomes("true", "false");
++
++
++
++
++
++
++
++
++
+     }
+ }

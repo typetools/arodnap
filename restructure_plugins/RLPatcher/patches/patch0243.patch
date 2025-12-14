@@ -1,0 +1,24 @@
+--- /tmp/orig-13158943394459607260.java	2025-09-24 21:55:42.113915582 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url47af6b1535_rolandotr_db_comparison_tgz-pJ8-methodology_HistoryJ8/src/protocols/specifications/TMAProtocol.java	2025-09-24 21:55:40.393795338 +0000
+@@ -311,8 +311,8 @@
+ 		String newLine = System.getProperty("line.separator");
+ 		TMAProtocol p = new TMAProtocol();
+ 		FileWriter writerMafia = new FileWriter(new File(p.getMafiaFileNameOfValues()));
+-		FileWriter writerDistance = new FileWriter(new File(p.getDistanceFileNameOfValues()));		
+-		for (int i = 0; i <= 257; i++){
++		try (FileWriter writerDistance = new FileWriter(new File(p.getDistanceFileNameOfValues()))) {
++		    for (int i = 0; i <= 257; i++){
+ 			p.setNumberOfRounds(i);
+ 			BigDecimal mafia = p.getMafiaFraudProbability();
+ 			BigDecimal distance = p.getDistanceFraudProbability();
+@@ -323,8 +323,8 @@
+ 			writerMafia.flush();
+ 			writerDistance.flush();
+ 		}
+-		writerMafia.close();
+-		writerDistance.close();
++		    writerMafia.close();
++		}
+ 	}
+ 
+ 	@Override

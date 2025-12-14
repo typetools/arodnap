@@ -1,0 +1,29 @@
+--- /tmp/orig-502115807528791708.java	2025-09-24 22:08:32.943799727 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url70ed135da7_ralfbiedert_jcores_tgz-pJ8-sandbox_SimpleFilterTestJ8/src/net/jcores/jre/utils/internal/Streams.java	2025-09-24 22:08:29.607566513 +0000
+@@ -100,17 +100,17 @@
+                     int currentByte;
+                     // establish buffer for writing file
+                     byte data[] = new byte[BUFFER];
+-
+-                    // write the current file to disk
+-                    final FileOutputStream fos = new FileOutputStream(destFile);
+-                    final BufferedOutputStream dest = new BufferedOutputStream(fos, BUFFER);
+-
+-                    // read and write until last byte is encountered
+-                    while ((currentByte = is.read(data, 0, BUFFER)) != -1) {
++                    try (final FileOutputStream fos = new FileOutputStream(destFile)) {
++                        final BufferedOutputStream dest = new BufferedOutputStream(fos, BUFFER);
++                        while ((currentByte = is.read(data, 0, BUFFER)) != -1) {
+                         dest.write(data, 0, currentByte);
+                     }
+-                    dest.flush();
+-                    dest.close();
++                        dest.flush();
++                    }
++
++
++
++
+                 }
+             } catch (IOException ioe) {
+                 ioe.printStackTrace();

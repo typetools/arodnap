@@ -1,0 +1,19 @@
+--- /tmp/orig-12047354516049275611.java	2025-09-24 22:40:13.596663103 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url9d1719148e_mrqsdavi_pegmachine_tgz-pJ8-peg_RegexJ8/src/peg/parser.java	2025-09-24 22:40:12.276570818 +0000
+@@ -213,7 +213,15 @@
+                     }
+                 catch (java.io.FileNotFoundException e) {System.out.println("File not found : \""+argv[i]+"\"");}
+                 catch (java.io.IOException e) {System.out.println("IO error scanning file \""+argv[i]+"\""); System.out.println(e);}
+-                catch (Exception e) {System.out.println("Unexpected exception:");e.printStackTrace();}
++                catch (Exception e) {System.out.println("Unexpected exception:");e.printStackTrace();} finally {
++                    if (scanner != null) {
++                        try {
++                            scanner.yyclose();
++                        } catch (Exception e) {
++                            e.printStackTrace();
++                        }
++                    }
++                }
+             }
+         }
+     }

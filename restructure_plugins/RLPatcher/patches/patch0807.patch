@@ -1,0 +1,37 @@
+--- /tmp/orig-15588061731161914030.java	2025-09-24 22:55:48.886047829 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urle381b6cba7_IkarosKappler_ikrs_http_tgz-pJ8-ikrs_json_rpc_JSONRPCHandlerJ8/src/ikrs/io/ReplacingInputStream.java	2025-09-24 22:55:46.217861300 +0000
+@@ -180,7 +180,8 @@
+ 
+     /* Just for testing */
+     public static void main( String[] argv ) {
+-	
++	   ikrs.io.ReplacingInputStream in = null;
++
+ 	try {
+ 	    String[] stopMarks = new String[] {
+ 		"%MARK_0%",
+@@ -223,8 +224,7 @@
+ 	    System.out.println( " }" );
+ 
+ 	    
+-	    ReplacingInputStream in = 
+-		new ReplacingInputStream( new java.io.ByteArrayInputStream(data.getBytes(java.nio.charset.StandardCharsets.UTF_8.name())),
++	    in = new ReplacingInputStream( new java.io.ByteArrayInputStream(data.getBytes(java.nio.charset.StandardCharsets.UTF_8.name())),
+ 					  replacementMap );
+ 
+ 	    int b;
+@@ -238,6 +238,14 @@
+ 
+ 	} catch( IOException e ) {
+ 	    e.printStackTrace();
++	} finally {
++	    if (in != null) {
++	        try {
++	            in.close();
++	        } catch (Exception e) {
++	            e.printStackTrace();
++	        }
++	    }
+ 	}
+ 	
+ 

@@ -1,0 +1,30 @@
+--- /tmp/orig-6325093778535226984.java	2025-09-24 22:02:42.923331978 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url4e79c36700_JacenLakiir_Tivoo_tgz-pJ8-MainJ8/src/tivoo/output/HTMLBuilder.java	2025-09-24 22:02:41.675244731 +0000
+@@ -270,17 +270,17 @@
+     
+     private void writeDetailsPageHTML (Event currentEvent, File detailPage) throws IOException
+     {
+-        FileOutputStream fos = new FileOutputStream(detailPage);
+-        OutputStreamWriter out = new OutputStreamWriter(fos, "UTF-8");
++        try (FileOutputStream fos = new FileOutputStream(detailPage)) {
++            OutputStreamWriter out = new OutputStreamWriter(fos, "UTF-8");
++            Document doc = initializeHTMLDocument("Details", "../");
++            writeHeader(doc);
++            writeDetailsPageContent(currentEvent, doc);
++            writeFooter(doc);
++            out.write(doc.write());
++        }
++    
+ 
+-        Document doc = initializeHTMLDocument("Details", "../");
+-        writeHeader(doc);
+-        writeDetailsPageContent(currentEvent, doc);
+-        writeFooter(doc);
+-        
+-        out.write(doc.write());
+-        out.close();
+-    }
++}
+     
+     private void writeDetailsPageContent (Event currentEvent, Document doc)
+     {

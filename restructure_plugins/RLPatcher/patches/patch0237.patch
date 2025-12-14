@@ -1,0 +1,20 @@
+--- /tmp/orig-2021421641040521275.java	2025-09-24 21:55:16.384116958 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url47af6b1535_rolandotr_db_comparison_tgz-pJ8-methodology_HistoryJ8/src/protocols/specifications/PoulidorProtocol.java	2025-09-24 21:55:14.772004265 +0000
+@@ -276,13 +276,14 @@
+ 		distances2 = new double[n+1];
+ 		for (int i = 1; i <= n; i++){
+ 			File f = new File(this.getDistanceFileNameOfValues());
+-			BufferedReader reader = new BufferedReader(new FileReader(f));
+-			while (reader.ready()){
++			try (java.io.FileReader __arodnap_temp0 = new FileReader(f)) {
++			    BufferedReader reader = new BufferedReader(__arodnap_temp0);
++			    while (reader.ready()){
+ 				tmp = reader.readLine();
+ 				split = tmp.split(" ");
+ 				distances2[Integer.parseInt(split[0])] = Double.parseDouble(split[1]);
+ 			}
+-			reader.close();
++			}
+ 		}
+ 	}	
+ 

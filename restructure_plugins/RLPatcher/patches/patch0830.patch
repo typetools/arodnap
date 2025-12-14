@@ -1,0 +1,16 @@
+--- /tmp/orig-6269290039050060128.java	2025-09-24 22:57:40.873877968 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlfcc351a1ba_kuntapavankumar_Z_tgz-pJ8-edu_concordia_dpis_ReplicaTestJ8/src/edu/concordia/dpis/stationserver/FaultyStationServerImpl.java	2025-09-24 22:57:39.541784817 +0000
+@@ -118,11 +118,11 @@
+ 		// initialize the logger
+ 		this.log = Logger.getLogger(this.stationType.getStationCode());
+ 		log.info(stationType.getStationName() + " initialized!");
+-		try {
++		try (java.io.FileInputStream __arodnap_temp0 = new FileInputStream("./udp.properties")) {
+ 			// load the udp.properties and tcp.properties file, if not found
+ 			// write a new file
+ 			// with the default values
+-			udpProperties.load(new FileInputStream("./udp.properties"));
++			udpProperties.load(__arodnap_temp0);
+ 
+ 		} catch (FileNotFoundException e) {
+ 			log.error("config properties not found");

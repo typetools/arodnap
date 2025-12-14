@@ -1,0 +1,26 @@
+--- /tmp/orig-3086039645920672733.java	2025-09-24 22:20:41.670740251 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url80e39b1957_tobikster_IJN_headers_recognition_tgz-pJ8-org_maltparser_examples_CreatePhraseStructureGraphJ8/src/org/maltparser/core/config/ConfigurationDir.java	2025-09-24 22:20:38.038486344 +0000
+@@ -834,7 +834,7 @@
+      */
+     public void unpackConfigFile() throws MaltChainedException {
+     	checkConfigDirectory();
+-    	JarInputStream jis;
++    	JarInputStream jis = null;
+     	try {
+ 	    	if (url == null) {
+ 	    		jis = new JarInputStream(new FileInputStream(workingDirectory.getPath()+File.separator+getName()+".mco"));
+@@ -850,6 +850,14 @@
+     			deleteConfigDirectory();
+     		}
+ 			throw new ConfigurationException("Could not unpack configuration. ", e);
++		} finally {
++		    if (jis != null) {
++		        try {
++		            jis.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
+ 		}
+     	initCreatedByMaltParserVersionFromInfoFile();
+     }

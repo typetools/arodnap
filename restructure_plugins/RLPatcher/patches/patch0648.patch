@@ -1,0 +1,18 @@
+--- /tmp/orig-15329068248726675400.java	2025-09-24 22:41:21.241392049 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlaa914a1de2_xu_hao_erilex_tgz-pJ8-erilex_esl_ESLJ8/src/erilex/codegen/Class.java	2025-09-24 22:41:19.349259773 +0000
+@@ -106,10 +106,11 @@
+             dir.mkdirs();
+         }
+         File file = new File(dir, name+".java");
+-        Writer w = new BufferedWriter(new FileWriter(file));
+-        codeGen(w);
+-        w.flush();
+-        w.close();
++        try (java.io.FileWriter __arodnap_temp0 = new FileWriter(file)) {
++            Writer w = new BufferedWriter(__arodnap_temp0);
++            codeGen(w);
++            w.flush();
++        }
+     }
+     public void codeGen(Writer w, String indent) throws IOException {
+         // package

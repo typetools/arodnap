@@ -1,0 +1,29 @@
+--- /tmp/orig-14985480150714372493.java	2025-09-24 21:54:10.739528118 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url47af6b1535_rolandotr_db_comparison_tgz-pJ8-methodology_HistoryJ8/src/utils/Report.java	2025-09-24 21:54:09.079412069 +0000
+@@ -255,11 +255,12 @@
+ 
+ 	private static List<DBProtocol> getMunillaAndPeinadoProtocol(File f) throws NumberFormatException, IOException {
+ 		List<DBProtocol> protocols = new LinkedList<>();
+-		BufferedReader reader = new BufferedReader(new FileReader(f));
+-		String regex = "MP-\\{(\\d+), (\\d\\.\\d+)\\}";
+-		Pattern pattern = Pattern.compile(regex);
+-		String retrievedText = null;
+-		for (String line = reader.readLine(); line  != null; line = reader.readLine()){
++		try (java.io.FileReader __arodnap_temp0 = new FileReader(f)) {
++		    BufferedReader reader = new BufferedReader(__arodnap_temp0);
++		    String regex = "MP-\\{(\\d+), (\\d\\.\\d+)\\}";
++		    Pattern pattern = Pattern.compile(regex);
++		    String retrievedText = null;
++		    for (String line = reader.readLine(); line  != null; line = reader.readLine()){
+ 			Matcher m = pattern.matcher(line);
+ 			while (m.find()) {
+ 				MunillaAndPeinadoProtocol p = new MunillaAndPeinadoProtocol(Double.parseDouble(m.group(2)));
+@@ -268,7 +269,7 @@
+ 				protocols.add(p);
+ 			}
+ 		}
+-		reader.close();
++		}
+ 		return protocols;
+ 	}
+ 

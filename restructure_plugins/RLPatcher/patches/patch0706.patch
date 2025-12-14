@@ -1,0 +1,16 @@
+--- /tmp/orig-18443694972942689218.java	2025-09-24 22:46:30.190990267 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlbf4fd38f68_rduerig_StrategyBDD_tgz-pJ8-com_strategy_util_TestMainJ8/src/com/strategy/util/TestMain.java	2025-09-24 22:46:28.270856033 +0000
+@@ -182,9 +182,10 @@
+ 
+ 	private static void printDot(BDD bdd, String filename)
+ 			throws FileNotFoundException {
+-		PrintStream out = new PrintStream(filename);
+-		System.setOut(out);
+-		bdd.printDot();
++			try (PrintStream out = new PrintStream(filename)) {
++			    System.setOut(out);
++			}
++			bdd.printDot();
+ 	}
+ 
+ 	// ************************************************************************

@@ -1,0 +1,25 @@
+--- /tmp/orig-407308193639465622.java	2025-09-24 22:03:51.428120757 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url5997ccb760_JANNLab_JANNLab_tgz-pJ8-de_jannlab_examples_recurrent_SequentialXorExampleJ8/src/de/jannlab/data/SampleTools.java	2025-09-24 22:03:49.531988209 +0000
+@@ -240,9 +240,9 @@
+     public static void readCSV(final String filename, final SampleSet set) throws IOException {
+         //
+         File file             = new File(filename);
+-        BufferedReader reader = new BufferedReader(new FileReader(file));
+-        //
+-        while (reader.ready()) {
++        try (java.io.FileReader __arodnap_temp0 = new FileReader(file)) {
++            BufferedReader reader = new BufferedReader(__arodnap_temp0);
++            while (reader.ready()) {
+             //
+             String line1 = null;
+             String line2 = null;
+@@ -290,7 +290,8 @@
+             );
+             set.add(sample);
+         }
+-        reader.close();
++        }
++
+         //
+     }
+ 

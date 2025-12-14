@@ -1,0 +1,22 @@
+--- /tmp/orig-9539504598810056177.java	2025-09-24 22:53:26.276078174 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urldeb33fd2fa_friedemann_distripedia_tgz-pJ8-org_json_TestJ8/src/wikipedia/utils/URLUtils.java	2025-09-24 22:53:24.135928559 +0000
+@@ -56,14 +56,16 @@
+     public static String getSource (URLConnection conn) throws IOException
+     {
+         StringBuffer sb = new StringBuffer ("");
+-   
+-            BufferedReader in = new BufferedReader(new InputStreamReader (conn.getInputStream (), "UTF-8"));
++        try (java.io.InputStream __arodnap_temp0 = conn.getInputStream()) {
++            BufferedReader in = new BufferedReader(new InputStreamReader (__arodnap_temp0, "UTF-8"));
+             String line;
+-            
+             while ((line = in.readLine ()) != null)
+             {
+                 sb.append (line);
+             }
++        }
++
++            
+ 
+ 
+         return sb.toString ();

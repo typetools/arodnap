@@ -1,0 +1,21 @@
+--- /tmp/orig-8505772910486564012.java	2025-09-24 21:55:07.895523569 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url47af6b1535_rolandotr_db_comparison_tgz-pJ8-methodology_HistoryJ8/src/protocols/specifications/TMAProtocol.java	2025-09-24 21:55:06.211405842 +0000
+@@ -281,14 +281,15 @@
+ 		int r;
+ 		mafia2 = new double[n];
+ 		File f = new File(getMafiaFileNameOfValues());
+-		BufferedReader reader = new BufferedReader(new FileReader(f));
+-		while (reader.ready()){
++		try (java.io.FileReader __arodnap_temp0 = new FileReader(f)) {
++		    BufferedReader reader = new BufferedReader(__arodnap_temp0);
++		    while (reader.ready()){
+ 			tmp = reader.readLine();
+ 			split = tmp.split(" ");
+ 			if (Integer.parseInt(split[0]) == n) break;
+ 			mafia2[Integer.parseInt(split[0])] = Double.parseDouble(split[1]);
+ 		}
+-		reader.close();
++		}
+ 	}
+ 	public static void main(String[] args) {
+ 		TMAProtocol p = new TMAProtocol();

@@ -1,0 +1,17 @@
+--- /tmp/orig-16843136352225911218.java	2025-09-24 21:57:47.158656749 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url49584c1d41_Arrem_GGS_tgz-pJ8-com_gamezgalaxy_test_console_MainJ8/src/com/gamezgalaxy/GGS/world/convert/DatToGGS.java	2025-09-24 21:57:45.230521964 +0000
+@@ -58,6 +58,14 @@
+ 			ex.printStackTrace();
+ 		} catch(ClassNotFoundException ex) {
+ 			ex.printStackTrace();
++		} finally {
++		    if (fis != null) {
++		        try {
++		            fis.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
+ 		}
+ 		level.initTransient();
+ 		width = level.width;

@@ -1,0 +1,37 @@
+--- /tmp/orig-9386510138826124588.java	2025-09-24 22:57:32.497292201 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlfc1c29991b_nil_mish_InJava_tgz-pJ8-edu_usc_cs_nsl_indexing_test_TestTrieProtoJ8/src/edu/usc/cs/nsl/counting/CountingUtil.java	2025-09-24 22:57:31.161198769 +0000
+@@ -449,9 +449,10 @@
+ 			br_collision.close();
+ 			
+ 			BufferedReader br;
+-			br = new BufferedReader(new FileReader(getTmpFileName(max_string_size)));
+-			the_line = br.readLine();
+-			while(the_line != null){
++			try (java.io.FileReader __arodnap_temp1 = new FileReader(getTmpFileName(max_string_size))) {
++			    br = new BufferedReader(__arodnap_temp1);
++			    the_line = br.readLine();
++			    while(the_line != null){
+ 				String the_word = the_line.replace("\n","").replace("\r", "");
+ 				long the_hash = getHash(the_word);
+ 				int big_index = (int)Math.abs(the_hash%big_array_size);
+@@ -466,14 +467,15 @@
+ 				}
+ 				the_line = br.readLine();
+ 			}
+-			br.close();
+-			BufferedWriter bw_output = new BufferedWriter(new FileWriter(output_file,true));
+-			Iterator<String> it = string_map.keySet().iterator();
+-			while(it.hasNext()){
++			}
++			try (java.io.FileWriter __arodnap_temp2 = new FileWriter(output_file, true)) {
++			    BufferedWriter bw_output = new BufferedWriter(__arodnap_temp2);
++			    Iterator<String> it = string_map.keySet().iterator();
++			    while(it.hasNext()){
+ 				String the_string = it.next();
+ 				bw_output.write(""+the_string+"\t"+string_map.get(the_string)+"\n");
+ 			}
+-			bw_output.close();						
++			}
+ 		} else{
+ 			int rounds = num_collisions/COLLISION_PROCESS_SIZE.get(new Integer(max_string_size)).intValue() + 1;
+ 			int new_num_collisions = COLLISION_PROCESS_SIZE.get(new Integer(max_string_size)).intValue();

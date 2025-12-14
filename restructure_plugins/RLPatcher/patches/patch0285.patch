@@ -1,0 +1,31 @@
+--- /tmp/orig-4140773864010566265.java	2025-09-24 21:59:35.698244135 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url4c41254592_topskychen_AuthTopk_tgz-pJ8-quickhull3d_QuickHull3DTestJ8/src/utility/geo/genDataOfLineForHadoop.java	2025-09-24 21:59:32.730036645 +0000
+@@ -39,11 +39,12 @@
+ 	public void loadData(int k) throws IOException{
+ 		RecordManager recmanOfPoints = RecordManagerFactory.createRecordManager(DataOfPointParser.filename);
+ 		PrimaryTreeMap<Long, byte[]> btOfPoints = recmanOfPoints.treeMap("treemap");
+-		PrintWriter pw = new PrintWriter(new BufferedOutputStream(new FileOutputStream(new File(filename))));
+-		Set<Long> keys = btOfPoints.keySet();
+-		Queue<Long> qLongs = new LinkedList<Long>();
+-		int timeToCommit = 0, constk = k;
+-		for(Long key : keys){
++		try (java.io.FileOutputStream __arodnap_temp0 = new FileOutputStream(new File(filename))) {
++		    PrintWriter pw = new PrintWriter(new BufferedOutputStream(__arodnap_temp0));
++		    Set<Long> keys = btOfPoints.keySet();
++		    Queue<Long> qLongs = new LinkedList<Long>();
++		    int timeToCommit = 0, constk = k;
++		    for(Long key : keys){
+ 		//for(Long key = (long) 4000; key <= 5000; key ++){
+ 			pw.print(key);
+ 			k = constk;
+@@ -78,8 +79,8 @@
+ 			timeToCommit ++;
+ 			qLongs.clear();
+ 		}
+-		recmanOfPoints.close();
+-		pw.close();
++		    recmanOfPoints.close();
++		}
+ 	}
+ 	
+ 	public void loadDataByhop(int k) throws IOException{

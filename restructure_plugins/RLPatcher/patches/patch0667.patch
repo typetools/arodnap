@@ -1,0 +1,38 @@
+--- /tmp/orig-6338729465216698640.java	2025-09-24 22:42:50.267615742 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlb5d5be4365_abmargb_oursim_ext_tgz-pJ8-br_edu_ufcg_lsd_oursim_experiments_RemoteNoFScenarioGeneratorJ8/src/br/edu/ufcg/lsd/oursim/experiments/LocalScenarioGenerator.java	2025-09-24 22:42:48.027459136 +0000
+@@ -127,18 +127,30 @@
+ 		parentFile.mkdirs();
+ 		
+ 		new FailureDetectorOptInjector().inject(grid, properties);
+-		
+-		OurSim ourSim = new OurSim(
++		java.io.FileOutputStream __arodnap_temp0 = null;
++		try {
++		    __arodnap_temp0 = new FileOutputStream(parentFile.getAbsolutePath() + "/trace-r" + replica + ".out");
++		    OurSim ourSim = new OurSim(
+ 				evProxy, 
+ 				grid,
+ 				properties,
+ 				new DefaultWANNetwork(1/LOCALHOST_DELAY),
+ 				new DefaultTraceCollector(
+-						new FileOutputStream(parentFile.getAbsolutePath() +"/trace-r" + replica + ".out")));
++						__arodnap_temp0));
++		    ourSim.addEventListener(new JobFinishedCondition(ourSim, broker, 1));
++		    ourSim.run();
++		} finally {
++		    if (__arodnap_temp0 != null) {
++		        try {
++		            __arodnap_temp0.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
++		}
++
+ 		
+-		ourSim.addEventListener(new JobFinishedCondition(ourSim, broker, 1));
+ 		
+-		ourSim.run();
+ 	}
+ 	 
+ 	private static class JobFinishedCondition extends HaltCondition {

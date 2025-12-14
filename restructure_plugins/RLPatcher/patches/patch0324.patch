@@ -1,0 +1,77 @@
+--- /tmp/orig-8577243511241106438.java	2025-09-24 22:03:46.759794421 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url594c007908_hugobraga_College_tgz-pJ8-main_GraphJ8/src/main/Graph.java	2025-09-24 22:03:45.495706056 +0000
+@@ -93,14 +93,24 @@
+     	
+     	double degreeSPT[][] = new double[netSizes.length][terminalSizes.length];
+     	double costsSPT[][] = new double[netSizes.length][terminalSizes.length];    	
+-		
++		  	java.io.FileWriter __arodnap_temp4 = null;
++		  	java.io.FileWriter __arodnap_temp3 = null;
++		  	java.io.FileWriter __arodnap_temp2 = null;
++		  	java.io.FileWriter __arodnap_temp1 = null;
++		  	java.io.FileWriter __arodnap_temp0 = null;
++
+ 		try {
+-			
+-			PrintWriter degreeOut = new PrintWriter(new BufferedWriter(new FileWriter(dir+algoName+outDegreeFile)));
+-			PrintWriter violatedTerminalsCVRFileOut = new PrintWriter(new BufferedWriter(new FileWriter(dir+algoName+violatedTerminalsCVRFile)));
+-			PrintWriter violatedNodesRatioOut = new PrintWriter(new BufferedWriter(new FileWriter(dir+algoName+violatedNodesRatioFile)));
+-			PrintWriter violatedRunsRatioOut = new PrintWriter(new BufferedWriter(new FileWriter(dir+algoName+violatedRunsRatioFile)));
+-			PrintWriter percCovTerOut = new PrintWriter(new BufferedWriter(new FileWriter(dir+algoName+percCovTerFile)));			
++		__arodnap_temp0 = new FileWriter(dir + algoName + outDegreeFile);
++		
++			PrintWriter degreeOut = new PrintWriter(new BufferedWriter(__arodnap_temp0));
++			__arodnap_temp1 = new FileWriter(dir + algoName + violatedTerminalsCVRFile);
++			PrintWriter violatedTerminalsCVRFileOut = new PrintWriter(new BufferedWriter(__arodnap_temp1));
++			__arodnap_temp2 = new FileWriter(dir + algoName + violatedNodesRatioFile);
++			PrintWriter violatedNodesRatioOut = new PrintWriter(new BufferedWriter(__arodnap_temp2));
++			__arodnap_temp3 = new FileWriter(dir + algoName + violatedRunsRatioFile);
++			PrintWriter violatedRunsRatioOut = new PrintWriter(new BufferedWriter(__arodnap_temp3));
++			__arodnap_temp4 = new FileWriter(dir + algoName + percCovTerFile);
++			PrintWriter percCovTerOut = new PrintWriter(new BufferedWriter(__arodnap_temp4));			
+ 			
+ 			for (int i = 0; i < netSizes.length; i++) {
+ 				for (int t = 0; t < terminalSizes.length; t++) {
+@@ -265,6 +275,42 @@
+ 			} catch (IOException e) {
+ 				// TODO Auto-generated catch block
+ 				e.printStackTrace();
++			} finally {
++			    if (__arodnap_temp4 != null) {
++			        try {
++			            __arodnap_temp4.close();
++			        } catch (Exception e) {
++			            e.printStackTrace();
++			        }
++			    }
++			    if (__arodnap_temp3 != null) {
++			        try {
++			            __arodnap_temp3.close();
++			        } catch (Exception e) {
++			            e.printStackTrace();
++			        }
++			    }
++			    if (__arodnap_temp2 != null) {
++			        try {
++			            __arodnap_temp2.close();
++			        } catch (Exception e) {
++			            e.printStackTrace();
++			        }
++			    }
++			    if (__arodnap_temp1 != null) {
++			        try {
++			            __arodnap_temp1.close();
++			        } catch (Exception e) {
++			            e.printStackTrace();
++			        }
++			    }
++			    if (__arodnap_temp0 != null) {
++			        try {
++			            __arodnap_temp0.close();
++			        } catch (Exception e) {
++			            e.printStackTrace();
++			        }
++			    }
+ 			}
+ 			
+ 			for (int p = 0; p < Graph.SPANNER_FACTORS.length; p++) {

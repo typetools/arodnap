@@ -1,0 +1,30 @@
+--- /tmp/orig-15749665828781605232.java	2025-09-24 22:44:05.004840514 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlb5d5be4365_abmargb_oursim_ext_tgz-pJ8-br_edu_ufcg_lsd_oursim_experiments_RemoteNoFScenarioGeneratorJ8/src/br/edu/ufcg/lsd/oursim/factories/JsonGridFactoryTest.java	2025-09-24 22:44:02.704679712 +0000
+@@ -96,11 +96,23 @@
+ 		Properties properties = Configuration.createDefaults();
+ 		properties.setProperty(Configuration.PROP_FAILURE_DETECTOR_NAME, "chen");
+ 		properties.setProperty("FD_chen_alpha", "15000");
+-		
+-		JsonGridFactory factory = new JsonGridFactory(
++		java.io.InputStream __arodnap_temp0 = null;
++		try {
++    __arodnap_temp0 = getClass().getResourceAsStream("grid-example.conf");
++    JsonGridFactory factory = new JsonGridFactory(
+ 				properties, 
+-				getClass().getResourceAsStream("grid-example.conf"));
++				__arodnap_temp0);
++    factory.createGrid();
++} finally {
++    if (__arodnap_temp0 != null) {
++        try {
++            __arodnap_temp0.close();
++        } catch (Exception e) {
++            e.printStackTrace();
++        }
++    }
++}
++
+ 		
+-		factory.createGrid();
+ 	}
+ }

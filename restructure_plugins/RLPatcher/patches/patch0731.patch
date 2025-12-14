@@ -1,0 +1,15 @@
+--- /tmp/orig-1700418979399637788.java	2025-09-24 22:49:08.174034633 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlcdd0c1ab49_emiln_JHouseFireExplorer_tgz-pJ8-dk_brics_automaton_DatatypesJ8/src/dk/brics/automaton/Automaton.java	2025-09-24 22:49:06.433912984 +0000
+@@ -676,8 +676,10 @@
+ 	 */
+ 	public static Automaton load(URL url) throws IOException, OptionalDataException, ClassCastException, 
+ 	                                             ClassNotFoundException, InvalidClassException {
+-		return load(url.openStream());
+-	}
++	                                                 try (java.io.InputStream __arodnap_temp0 = url.openStream()) {
++	                                                     return load(__arodnap_temp0);
++	                                                 }
++	                                             }
+ 	
+ 	/**
+ 	 * Retrieves a serialized <code>Automaton</code> from a stream.

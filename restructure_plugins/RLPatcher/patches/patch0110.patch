@@ -1,0 +1,16 @@
+--- /tmp/orig-3071279057293544472.java	2025-09-24 21:43:11.257430387 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url20b0f880a5_jgraph_legacy_jgraph5_tgz-pJ8-org_jgraph_example_HelloWorldJ8/src/com/jgraph/example/GraphEdX.java	2025-09-24 21:43:06.565102508 +0000
+@@ -381,11 +381,11 @@
+ 		if (returnValue == JFileChooser.APPROVE_OPTION) {
+ 			XMLEncoder encoder;
+ 			Container parent = graph.getParent();
+-			try {
++			try (java.io.FileOutputStream __arodnap_temp0 = new FileOutputStream(fileChooser.getSelectedFile())) {
+ 				uninstallListeners(graph);
+ 				parent.remove(graph);
+ 				encoder = new XMLEncoder(new BufferedOutputStream(
+-						new FileOutputStream(fileChooser.getSelectedFile())));
++						__arodnap_temp0));
+ 				configureEncoder(encoder);
+ 				encoder.writeObject(graph);
+ 				encoder.close();

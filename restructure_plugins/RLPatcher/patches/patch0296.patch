@@ -1,0 +1,27 @@
+--- /tmp/orig-8305597077010043461.java	2025-09-24 22:01:00.748189494 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url4c41254592_topskychen_AuthTopk_tgz-pJ8-quickhull3d_QuickHull3DTestJ8/src/utility/Compare/DataOfPointParser.java	2025-09-24 22:00:57.651973055 +0000
+@@ -34,8 +34,9 @@
+ 				File[] file = files.listFiles();
+ 				for(int i = 0 ; i < file.length; i++){
+ 					System.out.println(file[i].toString());
+-					DataInputStream dis = new DataInputStream(new FileInputStream(file[i]));
+-					try {
++					try (java.io.FileInputStream __arodnap_temp0 = new FileInputStream(file[i])) {
++    DataInputStream dis = new DataInputStream(__arodnap_temp0);
++    try {
+ 						int lines = 0;
+ 						while(dis.available() != 0){
+ 							lines ++;
+@@ -48,11 +49,11 @@
+ 							if(lines % 100 == 0)recmanOfPoint.commit();
+ 						}
+ 						recmanOfPoint.commit();
+-						dis.close();
+ 					} catch (IOException e) {
+ 						// TODO Auto-generated catch block
+ 						e.printStackTrace();
+ 					}
++}
+ 				}
+ 			}
+ 			

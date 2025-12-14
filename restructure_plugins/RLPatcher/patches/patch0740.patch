@@ -1,0 +1,22 @@
+--- /tmp/orig-12221403854873046351.java	2025-09-24 22:49:49.576929050 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlce7759b8da_Palachsuper_EBA4_tgz-pJ8-json_TestJ8/src/terminal/service/Service.java	2025-09-24 22:49:48.016819985 +0000
+@@ -141,8 +141,8 @@
+         StringBuilder sb = new StringBuilder();
+         try
+         {
+-            try
+-            {
++            try(
++java.io.FileReader __arodnap_temp0 = new FileReader(new File(dat_time_path).getAbsoluteFile()))             {
+                 Calendar cal = new GregorianCalendar();
+                 String name_cal=new SimpleDateFormat("yyyyMMdd").format(cal.getTime());
+                 dat_time_path= "/home/terminal/Log/LogSystem/log"+name_cal+".txt";
+@@ -157,7 +157,7 @@
+                         e.printStackTrace();
+                     }
+                 }
+-                BufferedReader in = new BufferedReader(new FileReader( new File(dat_time_path).getAbsoluteFile()));
++                BufferedReader in = new BufferedReader(__arodnap_temp0);
+                 String read_log;
+                 if (sb.length()>0)
+                 {

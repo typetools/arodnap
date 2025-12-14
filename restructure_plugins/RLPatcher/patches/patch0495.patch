@@ -1,0 +1,13 @@
+--- /tmp/orig-14581466502909518798.java	2025-09-24 22:22:06.000635201 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url80e39b1957_tobikster_IJN_headers_recognition_tgz-pJ8-org_maltparser_examples_CreatePhraseStructureGraphJ8/src/org/maltparser/core/plugin/JarLoader.java	2025-09-24 22:22:02.408384090 +0000
+@@ -123,8 +123,8 @@
+ 			throw new PluginException("", e);
+ 		}
+ 		
+-        try {
+-			jis = new JarInputStream(jarUrl.openConnection().getInputStream());
++        try (java.io.InputStream __arodnap_temp0 = jarUrl.openConnection().getInputStream()) {
++			jis = new JarInputStream(__arodnap_temp0);
+ 
+ 			while ((je = jis.getNextJarEntry()) != null) {
+ 				String jarName = je.getName();

@@ -1,0 +1,38 @@
+--- /tmp/orig-3929003350556154938.java	2025-09-24 21:57:09.564028721 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url49584c1d41_Arrem_GGS_tgz-pJ8-com_gamezgalaxy_test_console_MainJ8/src/com/gamezgalaxy/GGS/world/Level.java	2025-09-24 21:57:07.431879675 +0000
+@@ -327,24 +327,21 @@
+ 		if (filename.endsWith(".dat"))
+ 			l = Convert(filename);
+ 		else {
+-			FileInputStream fis = new FileInputStream(filename);
+-			GZIPInputStream gis = new GZIPInputStream(fis);
+-			ObjectInputStream obj = new ObjectInputStream(gis);
+-			long version = obj.readLong();
+-			if (version == serialVersionUID){
++		    try (FileInputStream fis = new FileInputStream(filename)) {
++		        GZIPInputStream gis = new GZIPInputStream(fis);
++		        ObjectInputStream obj = new ObjectInputStream(gis);
++		        long version = obj.readLong();
++		        if (version == serialVersionUID){
+ 				l = (Level)obj.readObject();
+ 			}else{
+-				obj.close();
+ 				throw new IOException("The level version does not match the current");
+ 			}
+-			l.ticks = new ArrayList<Tick>();
+-			l.physics = l.new Ticker();
+-			l.name = new File(filename).getName().split("\\.")[0];
+-			l.run = true;
+-			l.physics.start();
+-			obj.close();
+-			gis.close();
+-			fis.close();
++		        l.ticks = new ArrayList<Tick>();
++		        l.physics = l.new Ticker();
++		        l.name = new File(filename).getName().split("\\.")[0];
++		        l.run = true;
++		        l.physics.start();
++		    }
+ 		}
+ 		return l;
+ 	}

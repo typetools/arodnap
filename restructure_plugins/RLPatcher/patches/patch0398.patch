@@ -1,0 +1,17 @@
+--- /tmp/orig-3285826226167621625.java	2025-09-24 22:11:26.055900860 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url78eec0e0b6_Orikuro_vic_tgz-pJ8-net_nexon_vindictus_itemcomparer_inport_StaticImportJ8/src/net/nexon/vindictus/itemcomparer/inport/StaticImport.java	2025-09-24 22:11:24.235773627 +0000
+@@ -2019,12 +2019,11 @@
+ 			sb.append("\n");
+ 		}
+ 
+-		try {
++		try (java.io.FileOutputStream __arodnap_temp0 = new FileOutputStream("data" + File.separator + "prices.csv")) {
+ 			File outd = new File("data" + File.separator);
+ 			outd.mkdirs();
+ 			BufferedWriter out = new BufferedWriter(
+-					new OutputStreamWriter(new FileOutputStream("data"
+-							+ File.separator + "prices.csv"), "UTF-8"));
++					new OutputStreamWriter(__arodnap_temp0, "UTF-8"));
+ 
+ 			out.write(sb.toString());
+ 			out.close();

@@ -1,0 +1,14 @@
+--- /tmp/orig-10201250963955046817.java	2025-09-24 21:33:52.042354854 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url0307c0e995_js_labs_js_collider_tgz-pJ8-org_jsl_tests_shmem_throughput_MainJ8/src/org/jsl/tests/queue_socket_send/Receiver.java	2025-09-24 21:33:49.814199160 +0000
+@@ -22,9 +22,8 @@
+ 
+     public void run()
+     {
+-        try
+-        {
+-            SocketChannel socketChannel = SocketChannel.open();
++        try(
++SocketChannel socketChannel = SocketChannel.open())         {
+             socketChannel.socket().setReceiveBufferSize( m_socketBufferSize );
+ 
+             StreamDefragger streamDefragger = new StreamDefragger(4)

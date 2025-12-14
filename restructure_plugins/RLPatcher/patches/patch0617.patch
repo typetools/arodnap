@@ -1,0 +1,50 @@
+--- /tmp/orig-1370492674358298510.java	2025-09-24 22:38:44.938465307 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url8d3c4d17f5_catseye_JaC64_tgz-pJ8-JaC64J8/src/C64Applet.java	2025-09-24 22:38:42.658305913 +0000
+@@ -550,6 +550,8 @@
+     }
+ 
+     System.out.println("Saving file: " + data);
++    java.io.InputStream is = null;
++    java.io.OutputStream __arodnap_temp0 = null;
+ 
+     // Make a post!
+     try {
+@@ -562,13 +564,14 @@
+       httpConnection.setRequestMethod("POST");
+       httpConnection
+ 	.setRequestProperty("Content-Type","application/x-www-form-urlencoded");
++      __arodnap_temp0 = httpConnection.getOutputStream();
+       DataOutputStream out =
+-	new DataOutputStream(httpConnection.getOutputStream());
++	new DataOutputStream(__arodnap_temp0);
+       out.writeBytes(data);
+       out.flush();
+       out.close();
+ 
+-      InputStream is = httpConnection.getInputStream();
++      is = httpConnection.getInputStream();
+ 
+       System.out.println("Read back:");
+       int c;
+@@ -578,6 +581,21 @@
+ 
+     } catch (IOException ioe) {
+       ioe.printStackTrace();
++    } finally {
++        if (is != null) {
++            try {
++                is.close();
++            } catch (Exception e) {
++                e.printStackTrace();
++            }
++        }
++        if (__arodnap_temp0 != null) {
++            try {
++                __arodnap_temp0.close();
++            } catch (Exception e) {
++                e.printStackTrace();
++            }
++        }
+     }
+   }
+ 

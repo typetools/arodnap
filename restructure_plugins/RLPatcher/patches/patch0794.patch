@@ -1,0 +1,22 @@
+--- /tmp/orig-2645387492275329085.java	2025-09-24 22:54:21.175916141 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urle381b6cba7_IkarosKappler_ikrs_http_tgz-pJ8-ikrs_json_rpc_JSONRPCHandlerJ8/src/ikrs/httpd/HTTPHandler.java	2025-09-24 22:54:18.627738002 +0000
+@@ -389,10 +389,10 @@
+ 
+ 	//String fileHandlersFileName = "filehandlers.ini";
+ 	String handlerClassName = null; // "ikrs.http.filehandler.PHPHandler";
+-	try {   
++	try (java.io.FileInputStream __arodnap_temp0 = new FileInputStream(fileHandlersFile)) {   
+ 
+ 	    //BufferedReader reader = new BufferedReader( new InputStreamReader( new FileInputStream(new File(fileHandlersFileName)) ) );
+-	    BufferedReader reader = new BufferedReader( new InputStreamReader( new FileInputStream(fileHandlersFile) ) );
++	    BufferedReader reader = new BufferedReader( new InputStreamReader( __arodnap_temp0 ) );
+ 	    String line;
+ 	    int lineNumber = 0;
+ 	    while( (line = reader.readLine()) != null ) {
+@@ -1128,4 +1128,4 @@
+     }
+     
+ 
+-}
++}
+\ No newline at end of file

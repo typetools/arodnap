@@ -1,0 +1,12 @@
+--- /tmp/orig-3446052186005611539.java	2025-09-24 21:34:09.827597610 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url04f7fcf4e1_peteratt_HDFS_Replication_Simulator_tgz-pJ8-hdfs_replicationsimulator_MainJ8/src/hdfs/replicationsimulator/Simulator.java	2025-09-24 21:34:08.719520183 +0000
+@@ -42,8 +42,7 @@
+ 
+ 	public static void init(String configFile) {
+ 		// Read the test.txt file: CHANGE THE NAME!
+-		try {
+-			FileReader fr = new FileReader(configFile);
++		try (FileReader fr = new FileReader(configFile)) {
+ 			BufferedReader in = new BufferedReader(fr);
+ 			String data;
+ 

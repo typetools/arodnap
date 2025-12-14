@@ -1,0 +1,12 @@
+--- /tmp/orig-11950700049010976003.java	2025-09-24 22:34:10.835304302 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url85460dd114_a2800276_event_java_tgz-pJ8-event_CloseSemanticsTestJ8/src/event/Speed.java	2025-09-24 22:34:09.635220411 +0000
+@@ -23,8 +23,7 @@
+   }
+   
+   static void classicClient() {
+-    try {
+-      Socket s = new Socket("localhost", 4321);
++    try (Socket s = new Socket("localhost", 4321)) {
+ 
+       OutputStream os = s.getOutputStream();
+       InputStream is  = s.getInputStream();

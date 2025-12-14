@@ -1,0 +1,25 @@
+--- /tmp/orig-18259160079483711494.java	2025-09-24 21:57:20.212773116 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url49584c1d41_Arrem_GGS_tgz-pJ8-com_gamezgalaxy_test_console_MainJ8/src/com/gamezgalaxy/GGS/util/properties/Properties.java	2025-09-24 21:57:17.660594706 +0000
+@@ -108,16 +108,16 @@
+ 	public void load(String filename) throws IOException {
+ 		if (settings.size() > 0)
+ 			settings.clear();
+-		FileInputStream fstream = new FileInputStream("properties/" + filename);
+-		DataInputStream in = new DataInputStream(fstream);
+-		BufferedReader br = new BufferedReader(new InputStreamReader(in));
+-		String strLine;
+-		while ((strLine = br.readLine()) != null)   {
++		try (FileInputStream fstream = new FileInputStream("properties/" + filename)) {
++		    DataInputStream in = new DataInputStream(fstream);
++		    BufferedReader br = new BufferedReader(new InputStreamReader(in));
++		    String strLine;
++		    while ((strLine = br.readLine()) != null)   {
+ 			if (strLine.startsWith("#"))
+ 				continue;
+ 			settings.add(strLine);
+ 		}
+-		in.close();
++		}
+ 	}
+ 	
+ 	/**

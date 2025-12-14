@@ -1,0 +1,36 @@
+--- /tmp/orig-6499205676319108807.java	2025-09-24 21:51:29.184234706 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url416ee5b4ee_martinmarinov_HonProj_tgz-pJ8-martin_gui_MainJ8/src/martin/experiments/ExperimTest.java	2025-09-24 21:51:27.284101878 +0000
+@@ -87,15 +87,26 @@
+ 	}
+ 
+ 	public static ExperimentalResult perform(final String input_file, final String lab_cluster, final HashMap<String, Complex> rule, final ProgressListener listener) throws Exception {
+-		
+-		final Worksheet ws = new Worksheet(input_file);
+-		
+-		final MathsItem[] items = MathsParser.items(lab_cluster, ",");
+-		final double init_norm = new LabCluster(items).getQuickProbability(rule);
+-		if ( Math.abs(1.0d - init_norm) > 0.1d)
++	martin.experiments.Worksheet ws = null;
++	try {
++	    ws = new Worksheet(input_file);
++	    final MathsItem[] items = MathsParser.items(lab_cluster, ",");
++	    final double init_norm = new LabCluster(items).getQuickProbability(rule);
++	    if ( Math.abs(1.0d - init_norm) > 0.1d)
+ 			throw new Exception("Lab cluster input is not normalized to 1! (The norm is "+init_norm+")");
++	    return perform(items, ws, rule, listener);
++	} finally {
++	    if (ws != null) {
++	        try {
++	            ws.finalize();
++	        } catch (Throwable e) {
++	            e.printStackTrace();
++	        }
++	    }
++	}
++
++			
+ 		
+-		return perform(items, ws, rule, listener);
+ 	}
+ 	
+ 	private static ExperimentalResult perform(final MathsItem[] items, final Worksheet ws, final HashMap<String, Complex> rule, final ProgressListener listener1) throws Exception {

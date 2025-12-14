@@ -1,0 +1,21 @@
+--- /tmp/orig-4596658405828578047.java	2025-09-24 22:50:46.192886988 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urld0f681c558_farom57_AstroidDriver_tgz-pJ8-laazotea_indi_server_examples_MinimumINDIServerJ8/src/laazotea/indi/server/examples/MinimumINDIServer.java	2025-09-24 22:50:44.272752756 +0000
+@@ -70,6 +70,17 @@
+    * @param args 
+    */
+   public static void main(String[] args) {
+-    MinimumINDIServer s = new MinimumINDIServer();  
++  laazotea.indi.server.examples.MinimumINDIServer s = null;
++  try {
++      s = new MinimumINDIServer();
++  } finally {
++      if (s != null) {
++          try {
++              s.stopServer();
++          } catch (Exception e) {
++              e.printStackTrace();
++          }
++      }
+   }
++    }
+ }

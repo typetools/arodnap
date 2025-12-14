@@ -1,0 +1,35 @@
+--- /tmp/orig-2846503492564391843.java	2025-09-24 21:48:06.922095710 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url294e6c45f3_Ecdosis_NMergeNew_tgz-pJ8-TestJ8/src/MvdTool.java	2025-09-24 21:48:04.369917302 +0000
+@@ -417,14 +417,15 @@
+ 	 */
+ 	private static void doUpdateMVD() throws MVDToolException
+ 	{
+-		try
++	java.io.FileInputStream fis = null;
++	try
+ 		{
+ 			File t = new File( textFile );
+ 			if ( t.exists() )
+ 			{
+ 				MVD mvd = loadMVD();
+ 				mvd.removeVersion( version );
+-				FileInputStream fis = new FileInputStream( t );
++				fis = new FileInputStream( t );
+ 				byte[] data = new byte[(int)t.length()];
+ 				fis.read( data );
+                 char[] chars = Utilities.bytesToChars(data, mvd.getEncoding());
+@@ -438,6 +439,14 @@
+ 		catch ( Exception e )
+ 		{
+ 			throw new MVDToolException( e );
++		} finally {
++		    if (fis != null) {
++		        try {
++		            fis.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
+ 		}
+ 	}
+ 	/**

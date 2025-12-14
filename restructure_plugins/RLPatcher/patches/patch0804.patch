@@ -1,0 +1,17 @@
+--- /tmp/orig-12504854235460575731.java	2025-09-24 22:55:25.432408219 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urle381b6cba7_IkarosKappler_ikrs_http_tgz-pJ8-ikrs_json_rpc_JSONRPCHandlerJ8/src/ikrs/yuccasrv/Yucca.java	2025-09-24 22:55:22.868228961 +0000
+@@ -252,6 +252,14 @@
+ 				  "[IOException] Failed to print license: " + e.getMessage()
+ 			      );
+ 	    
++	} finally {
++	    if (reader != null) {
++	        try {
++	            reader.close();
++	        } catch (Exception e) {
++	            e.printStackTrace();
++	        }
++	    }
+ 	} 
+     }
+ 

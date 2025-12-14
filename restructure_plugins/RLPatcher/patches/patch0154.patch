@@ -1,0 +1,22 @@
+--- /tmp/orig-7737846904520184122.java	2025-09-24 21:47:58.253489737 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url294e6c45f3_Ecdosis_NMergeNew_tgz-pJ8-TestJ8/src/edu/luc/nmerge/mvd/MVDFile.java	2025-09-24 21:47:55.829320277 +0000
+@@ -266,16 +266,16 @@
+ 	private static char[] readFromFile( File src ) throws Exception
+ 	{
+ 		char[] data = null;
+-		FileReader fr = new FileReader( src );
+-		if ( src.length() <= Integer.MAX_VALUE )
++		try (FileReader fr = new FileReader( src )) {
++		    if ( src.length() <= Integer.MAX_VALUE )
+ 		{
+ 			int len = (int) src.length();
+ 			data = new char[len];
+ 			fr.read( data, 0, data.length );
+-			fr.close();
+ 		}
+ 		else
+ 			throw new MVDException( "file "+src.toString()+" too big" );
++		}
+ 		return data;
+ 	}
+ 	/**

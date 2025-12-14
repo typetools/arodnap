@@ -1,0 +1,33 @@
+--- /tmp/orig-8978083427895789698.java	2025-09-24 22:41:09.804592519 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urla958522fc1_spirosikmd_inmdsy_08_tgz-pJ8-TesterAppJ8/src/nl/rug/peerbox/logic/filesystem/FileRequestTask.java	2025-09-24 22:41:08.280485971 +0000
+@@ -59,6 +59,7 @@
+ 		} catch (IOException e1) {
+ 			tempFile = new File(ctx.getPathToPeerbox(), tempFilename);
+ 		}
++		java.io.FileOutputStream fos = null;
+ 
+ 		try (Socket s = new Socket()) {
+ 			s.connect(new InetSocketAddress(h.getAddress(), h.getPort()),
+@@ -70,7 +71,7 @@
+ 			byte[] mybytearray = new byte[1024];
+ 			InputStream is = s.getInputStream();
+ 
+-			FileOutputStream fos = new FileOutputStream(tempFile);
++			fos = new FileOutputStream(tempFile);
+ 			BufferedOutputStream bos = new BufferedOutputStream(fos);
+ 
+ 			int bytesRead;
+@@ -104,6 +105,13 @@
+ 			}
+ 			tempFile.delete();
+ 			tempFile = null;
++			if (fos != null) {
++			    try {
++			        fos.close();
++			    } catch (Exception e) {
++			        e.printStackTrace();
++			    }
++			}
+ 		}
+ 
+ 		// if successful

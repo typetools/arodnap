@@ -1,0 +1,27 @@
+--- /tmp/orig-13519353878704816089.java	2025-09-24 21:50:54.421804662 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url3aa01d34ec_katsuster_ememu_tgz-pJ8-net_katsuster_ememu_ui_MainJ8/src/net/katsuster/ememu/ui/Main.java	2025-09-24 21:50:52.145645548 +0000
+@@ -46,15 +46,23 @@
+         if (args.length >= 3) {
+             opts.setCommandLine(args[2]);
+         }
++        net.katsuster.ememu.ui.MainWindow w = null;
+ 
+         try {
+-            MainWindow w;
+ 
+             w = new MainWindow(opts);
+             w.setVisible(true);
+         } catch (HeadlessException ex) {
+             //GUI を表示できない環境のため、コマンドラインで継続する
+             mainConsole(opts);
++        } finally {
++            if (w != null) {
++                try {
++                    w.stop();
++                } catch (Exception e) {
++                    e.printStackTrace();
++                }
++            }
+         }
+     }
+ 

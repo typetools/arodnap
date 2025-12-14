@@ -1,0 +1,42 @@
+--- /tmp/orig-7387421813374534174.java	2025-09-24 22:01:52.835830645 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url4c41254592_topskychen_AuthTopk_tgz-pJ8-quickhull3d_QuickHull3DTestJ8/src/utility/DataFormater.java	2025-09-24 22:01:49.923627069 +0000
+@@ -64,10 +64,14 @@
+ 	}
+ 	
+ 	public static void genNE(){
+-		try{
++	java.io.FileWriter __arodnap_temp1 = null;
++	java.io.FileReader __arodnap_temp0 = null;
++	try{
+ 			String line = null;
+-			LineNumberReader lr = new LineNumberReader(new FileReader(input_file_name));
+-			PrintWriter pw = new PrintWriter(new FileWriter(output_file_name));
++			__arodnap_temp0 = new FileReader(input_file_name);
++			LineNumberReader lr = new LineNumberReader(__arodnap_temp0);
++			__arodnap_temp1 = new FileWriter(output_file_name);
++			PrintWriter pw = new PrintWriter(__arodnap_temp1);
+ 			HashSet<String> cnt = new HashSet<String>();
+ 			try {
+ 				int line_num = 0;
+@@ -106,6 +110,21 @@
+ 		} catch (IOException e) {
+ 			// TODO Auto-generated catch block
+ 			e.printStackTrace();
++		} finally {
++		    if (__arodnap_temp1 != null) {
++		        try {
++		            __arodnap_temp1.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
++		    if (__arodnap_temp0 != null) {
++		        try {
++		            __arodnap_temp0.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
+ 		}
+ 		System.out.println("data format fin!");
+ 	}

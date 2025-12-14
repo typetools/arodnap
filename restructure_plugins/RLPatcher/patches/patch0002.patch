@@ -1,0 +1,32 @@
+--- /tmp/orig-8976776003014828091.java	2025-09-24 21:32:19.995923047 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url00509339cf_tedwon_scribe_log4j_appender_tgz-pJ8-com_realtimecep_scribe_ScribeJavaServerJ8/src/com/realtimecep/scribe/ScribeClientQuickStartMainClass.java	2025-09-24 21:32:17.471746669 +0000
+@@ -27,17 +27,18 @@
+ 
+         // Thrift boilerplate code
+         List<LogEntry> logEntries = new ArrayList<LogEntry>(1);
+-        TSocket sock = new TSocket(new Socket(scribeHost, scribePort));
+-        TFramedTransport transport = new TFramedTransport(sock);
+-        TBinaryProtocol protocol = new TBinaryProtocol(transport, false, false);
++        try (java.net.Socket __arodnap_temp0 = new Socket(scribeHost, scribePort)) {
++            TSocket sock = new TSocket(__arodnap_temp0);
++            TFramedTransport transport = new TFramedTransport(sock);
++            TBinaryProtocol protocol = new TBinaryProtocol(transport, false, false);
++            scribe.Client client = new scribe.Client(protocol, protocol);
++            String message = String.format("%s", "Message from My Test Client Application");
++            LogEntry entry = new LogEntry(scribeCategory, message);
++            logEntries.add(entry);
++            client.Log(logEntries);
++        }
+ 
+-        scribe.Client client = new scribe.Client(protocol, protocol);
+ 
+-        String message = String.format("%s", "Message from My Test Client Application");
+-        LogEntry entry = new LogEntry(scribeCategory, message);
+-        logEntries.add(entry);
+-        client.Log(logEntries);
+ 
+-        transport.close();
+     }
+-}
++}
+\ No newline at end of file

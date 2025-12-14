@@ -1,0 +1,14 @@
+--- /tmp/orig-15043094886083954531.java	2025-09-24 21:56:28.553161885 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url47ebb27197_asirbu_CorrectiveEvolution_tgz-pJ8-eu_fbk_soa_evolution_engine_impl_test_ProblemToSMVFuncTestJ8/src/eu/fbk/soa/util/ConfigUtils.java	2025-09-24 21:56:26.645028499 +0000
+@@ -14,8 +14,9 @@
+ 
+ 	public ConfigUtils() throws IOException {
+ 		properties = new Properties();
+-		InputStream inStream = new FileInputStream(new File("config.properties"));
+-		properties.load(inStream);
++		try (InputStream inStream = new FileInputStream(new File("config.properties"))) {
++		    properties.load(inStream);
++		}
+ 	}
+ 	
+ 	private String getValue(String key) {

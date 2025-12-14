@@ -1,0 +1,41 @@
+--- /tmp/orig-5923411461296635817.java	2025-09-24 21:34:15.720009347 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url04f7fcf4e1_peteratt_HDFS_Replication_Simulator_tgz-pJ8-hdfs_replicationsimulator_MainJ8/src/hdfs/replicationsimulator/SimFileGenerator.java	2025-09-24 21:34:14.587930242 +0000
+@@ -48,9 +48,8 @@
+ 		}
+ 
+ 		File f = new File(filename);
+-		FileWriter fw = new FileWriter(f);
+-
+-		for (String s : args) {
++		try (FileWriter fw = new FileWriter(f)) {
++		    for (String s : args) {
+ 			if (s.startsWith("replica=")) {
+ 				fw.write(s + "\n");
+ 				System.out.println(s + "\n");
+@@ -78,18 +77,19 @@
+ 			}
+ 
+ 		}
+-
+-		int failed = 0; // Milliseconds
+-
+-		failedNodes = new ArrayList<Integer>();
+-
+-		while (failed <= failingNodes) {
++		    int failed = 0;
++		    failedNodes = new ArrayList<Integer>();
++		    while (failed <= failingNodes) {
+ 			fw.write("failure_time=" + nextFailure() + "\n");
+ 			fw.write("failing_node_id=" + nextFailingNode() + "\n");
+ 			failed++;
+ 		}
++		}
++
++
++
++
+ 
+-		fw.close();
+ 	}
+ 
+ 	private static String nextFailingNode() {

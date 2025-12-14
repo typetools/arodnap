@@ -1,0 +1,17 @@
+--- /tmp/orig-3355629447925700169.java	2025-09-24 21:48:21.347104081 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url294e6c45f3_Ecdosis_NMergeNew_tgz-pJ8-TestJ8/src/MvdTool.java	2025-09-24 21:48:18.870930985 +0000
+@@ -618,10 +618,10 @@
+ 				// use the short name as the file name
+ 				String vName = mvd.getVersionShortName( i );
+ 				File versionFile = new File( archiveDir, vName );
+-                FileOutputStream fos = new FileOutputStream( versionFile );
+-				OutputStreamWriter osw = new OutputStreamWriter( fos, mvd.getEncoding() );
+-				osw.write( data );
+-				osw.close();
++				try (FileOutputStream fos = new FileOutputStream( versionFile )) {
++				    OutputStreamWriter osw = new OutputStreamWriter( fos, mvd.getEncoding() );
++				    osw.write( data );
++				}
+ 				guideFile.setVersionFile( i, vName );
+ 			}
+ 			guideFile.externalise( new File(archiveDir,XMLGuideFile.GUIDE_FILE) );

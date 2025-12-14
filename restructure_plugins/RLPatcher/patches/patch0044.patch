@@ -1,0 +1,13 @@
+--- /tmp/orig-3552490553754216418.java	2025-09-24 21:36:14.132283481 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url0e7d57473a_kyorohiro_HetimaUtil_tgz-pJ8-net_hetimatan_net_http_HttpServer3xxJ8/src/net/hetimatan/util/event/net/io/KyoroDatagramImpl.java	2025-09-24 21:36:12.052138129 +0000
+@@ -37,7 +37,9 @@
+ 
+ 	@Override
+ 	public void bind(int port) throws IOException {
+-		mChannel.socket().bind(new InetSocketAddress(port));
++	    try (java.net.DatagramSocket __arodnap_temp0 = mChannel.socket()) {
++	        __arodnap_temp0.bind(new InetSocketAddress(port));
++	    }
+ 	}
+ 
+ 	@Override

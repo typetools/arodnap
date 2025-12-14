@@ -1,0 +1,23 @@
+--- /tmp/orig-4609100722240917201.java	2025-09-24 21:50:30.712147255 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url3472127e1f_SergeyKrivohatskiy_tiny_database_tgz-pJ8-ru_spbau_tinydb_bufferManager_IndexTestJ8/src/ru/spbau/tinydb/grammar/GrammarTester.java	2025-09-24 21:50:28.688005758 +0000
+@@ -44,13 +44,15 @@
+             System.out.println(testName);
+ 
+             try {
+-                SQLGrammarParser parser = new SQLGrammarParser(new CommonTokenStream(
+-                        new SQLGrammarLexer(new ANTLRInputStream(new FileInputStream(testName)))));
+-
+-                for (IQuery query : parser.script().result) {
++                try (java.io.FileInputStream __arodnap_temp0 = new FileInputStream(testName)) {
++                    SQLGrammarParser parser = new SQLGrammarParser(new CommonTokenStream(
++                        new SQLGrammarLexer(new ANTLRInputStream(__arodnap_temp0))));
++                    for (IQuery query : parser.script().result) {
+                     System.out.println(query);
+                 }
+-            } catch (IOException e) {
++                }
++            
++} catch (IOException e) {
+                 handleException(e);
+             }
+ 

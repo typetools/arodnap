@@ -1,0 +1,13 @@
+--- /tmp/orig-6679080657248212887.java	2025-09-24 22:57:48.098383173 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlfcc351a1ba_kuntapavankumar_Z_tgz-pJ8-edu_concordia_dpis_ReplicaTestJ8/src/edu/concordia/dpis/stationserver/FaultyStationServerImpl.java	2025-09-24 22:57:46.762289740 +0000
+@@ -149,8 +149,8 @@
+ 		udpProperties.setProperty("SPB", "localhost 9092");
+ 		udpProperties.setProperty("SPL", "localhost 9093");
+ 
+-		try {
+-			udpProperties.store(new FileOutputStream("./udp.properties"), null);
++		try (java.io.FileOutputStream __arodnap_temp0 = new FileOutputStream("./udp.properties")) {
++			udpProperties.store(__arodnap_temp0, null);
+ 			log.debug(this.stationType.getStationCode()
+ 					+ ":Default config properites initialized");
+ 		} catch (IOException e) {

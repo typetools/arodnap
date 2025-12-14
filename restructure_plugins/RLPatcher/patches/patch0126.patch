@@ -1,0 +1,41 @@
+--- /tmp/orig-18444711258292200882.java	2025-09-24 21:45:29.803112649 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url270fc4f5ee_ykcilborw_Joust_tgz-pJ8-fri_patterns_interpreter_parsergenerator_examples_HowToOverrideLexerImplJ8/src/fri/patterns/interpreter/parsergenerator/examples/DtdLexer.java	2025-09-24 21:45:27.202930890 +0000
+@@ -30,22 +30,26 @@
+ 		LexerImpl lexer;
+ 		
+ 		if ((lexer = (LexerImpl) builder.readLexer(null, "Dtd")) == null)	{	// try to get serialized lexer
+-			// read the DTD syntax (fragment) from EBNF file
+-			Syntax dtdSyntax = new SyntaxBuilder(new InputStreamReader(DtdLexer.class.getResourceAsStream("Dtd.syntax"))).getSyntax();
+-			// read the XML syntax from EBNF file
+-			Syntax xmlSyntax = new SyntaxBuilder(new InputStreamReader(DtdLexer.class.getResourceAsStream("Xml.syntax"))).getSyntax();
+-			
+-			// resolve DTD syntax from XML syntax (which contains most of DTD rules for processing embedded DTDs)
+-			dtdSyntax.resolveFrom(xmlSyntax);
+-			//System.err.println("DTD Syntax is:\n"+dtdSyntax);
+-			
+-			// put the lexer to file cache for next call
+-			SyntaxSeparation separation = new SyntaxSeparation(dtdSyntax);
+-			lexer = (LexerImpl) builder.buildAndStoreLexer(	// store the lexer for next call
++		    try (java.io.InputStream __arodnap_temp0 = DtdLexer.class.getResourceAsStream("Dtd.syntax")) {
++		        Syntax dtdSyntax = new SyntaxBuilder(new InputStreamReader(__arodnap_temp0)).getSyntax();
++		        try (java.io.InputStream __arodnap_temp1 = DtdLexer.class.getResourceAsStream("Xml.syntax")) {
++		            Syntax xmlSyntax = new SyntaxBuilder(new InputStreamReader(__arodnap_temp1)).getSyntax();
++		            dtdSyntax.resolveFrom(xmlSyntax);
++		        }
++		        SyntaxSeparation separation = new SyntaxSeparation(dtdSyntax);
++		        lexer = (LexerImpl) builder.buildAndStoreLexer(	// store the lexer for next call
+ 					separation.getLexerSyntax(),
+ 					"Dtd",
+ 					separation.getTokenSymbols(),
+ 					separation.getIgnoredSymbols());
++		    }
++		
++
++
++
++//System.err.println("DTD Syntax is:\n"+dtdSyntax);
++			
++
+ 		}
+ 
+ 		System.err.println("time to build DTD file parser was "+timer.getInterval());

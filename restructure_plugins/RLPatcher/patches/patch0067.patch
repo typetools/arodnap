@@ -1,0 +1,36 @@
+--- /tmp/orig-11045107187384710352.java	2025-09-24 21:38:28.517673751 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url0e7d57473a_kyorohiro_HetimaUtil_tgz-pJ8-net_hetimatan_net_http_HttpServer3xxJ8/src/net/hetimatan/util/http/TestForHttpRequestUri.java	2025-09-24 21:38:26.421527281 +0000
+@@ -146,19 +146,20 @@
+ 	}
+ 
+ 	public void testDecode002() throws IOException {
+-		CashKyoroFile base = new CashKyoroFile(512);
+-		base.addChunk("/announce?01=value01".getBytes());
+-		MarkableFileReader reader = new MarkableFileReader(base, 512);
+-
+-		HttpGetRequestUri value = HttpGetRequestUri.decode(reader);
+-		assertEquals("/announce", value.getPath());
+-		Iterator<String> keys = value.keySet().iterator();
+-		assertEquals("/announce", value.getPath());
+-		String key = keys.next();
+-		assertEquals("01", key);
+-		assertEquals("value01", value.getValue(key));
+-		assertEquals(1, value.keySet().size());
+-	}
++	    try (CashKyoroFile base = new CashKyoroFile(512)) {
++	        base.addChunk("/announce?01=value01".getBytes());
++	        MarkableFileReader reader = new MarkableFileReader(base, 512);
++	        HttpGetRequestUri value = HttpGetRequestUri.decode(reader);
++	        assertEquals("/announce", value.getPath());
++	        Iterator<String> keys = value.keySet().iterator();
++	        assertEquals("/announce", value.getPath());
++	        String key = keys.next();
++	        assertEquals("01", key);
++	        assertEquals("value01", value.getValue(key));
++	        assertEquals(1, value.keySet().size());
++	    }
++	
++}
+ 
+ 	public void testDecode003() throws IOException {
+ 		CashKyoroFile base = new CashKyoroFile(512);

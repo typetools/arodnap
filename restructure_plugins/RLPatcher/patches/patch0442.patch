@@ -1,0 +1,31 @@
+--- /tmp/orig-6775732253112657589.java	2025-09-24 22:15:39.053586269 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url7a45f192ca_mfullen_ping_pong_net_tgz-pJ8-ping_pong_net_client_io_TestClientNonPPNServerJ8/src/ping/pong/net/server/io/IoServerTest.java	2025-09-24 22:15:37.129451765 +0000
+@@ -357,14 +357,26 @@
+     @Test
+     public void testGetNextAvailableId()
+     {
+-        IoServer instance = new IoServer();
+-
++    ping.pong.net.server.io.IoServer instance = null;
++    try {
++        instance = new IoServer();
+         int result = instance.getNextAvailableId();
+         assertEquals(1, result);
+         instance.addConnection(connection1);
+         result = instance.getNextAvailableId();
+         result = instance.getNextAvailableId();
+         assertEquals(2, result);
++    } finally {
++        if (instance != null) {
++            try {
++                instance.shutdown();
++            } catch (Exception e) {
++                e.printStackTrace();
++            }
++        }
++    }
++
++
+     }
+ 
+     @Test

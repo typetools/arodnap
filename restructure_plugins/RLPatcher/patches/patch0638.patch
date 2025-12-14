@@ -1,0 +1,32 @@
+--- /tmp/orig-11045637802346441507.java	2025-09-24 22:40:39.934504344 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url9ecf1e8297_nhamidi_ninja_tgz-pJ8-net_fec_openrq_test_TestRunnerJ8/src/Receiver_multicast.java	2025-09-24 22:40:37.938364797 +0000
+@@ -165,6 +165,14 @@
+ 	    e1.printStackTrace();
+ 	    System.err.println("Error opening socket.");
+ 	    System.exit(1);
++	} finally {
++	    if (serverSocketForTheSize != null) {
++	        try {
++	            serverSocketForTheSize.close();
++	        } catch (Exception e) {
++	            e.printStackTrace();
++	        }
++	    }
+ 	}
+ 	byte[] dataReceiverSize = new byte[500];
+ 	
+@@ -241,6 +249,14 @@
+ 	    e1.printStackTrace();
+ 	    System.err.println("Error opening socket.");
+ 	    System.exit(1);
++	} finally {
++	    if (serverSocket != null) {
++	        try {
++	            serverSocket.close();
++	        } catch (Exception e) {
++	            e.printStackTrace();
++	        }
++	    }
+ 	}
+ 	try {
+ 	    System.out.println("\nWaiting for packets...");

@@ -1,0 +1,20 @@
+--- /tmp/orig-18369924061351464383.java	2025-09-24 21:56:13.944140652 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url47ebb27197_asirbu_CorrectiveEvolution_tgz-pJ8-eu_fbk_soa_evolution_engine_impl_test_ProblemToSMVFuncTestJ8/src/eu/fbk/soa/util/test/IOUtilsTest.java	2025-09-24 21:56:11.891997198 +0000
+@@ -60,7 +60,7 @@
+ 	@Test
+ 	public void testCreateImage() {
+ 
+-		try {
++		try (java.io.FileInputStream __arodnap_temp0 = new FileInputStream(outFile)) {
+ 			File dotFile = File.createTempFile("mySTS", "dot");
+ 			PrintWriter out = new PrintWriter(new FileWriter(dotFile));
+ 			out.println(mySTS.toDot());
+@@ -70,7 +70,7 @@
+ 			File outFile = File.createTempFile("mySTS", "png");
+ 			IOUtils.createImage(dotFile.getPath(), outFile.getPath());
+ 			
+-			BufferedInputStream stream = new BufferedInputStream(new FileInputStream(outFile));
++			BufferedInputStream stream = new BufferedInputStream(__arodnap_temp0);
+ 			assertTrue("Image file should not be empty", stream.available() > 0);
+ 		
+ 			stream.close();

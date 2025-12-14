@@ -1,0 +1,34 @@
+--- /tmp/orig-10990614511172544122.java	2025-09-24 22:47:34.951517582 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlc58f2e0b85_xoriole_CEAC_tgz-pJ8-com_sdm_phr_cpabe_CpabeTestJ8/src/com/sdm/phr/cpabe/Common.java	2025-09-24 22:47:33.267399847 +0000
+@@ -32,21 +32,21 @@
+     public static void writeCpabeFile(String encfile,
+             byte[] cphBuf, byte[] aesBuf) throws IOException {
+         int i;
+-        OutputStream os = new FileOutputStream(encfile);
+-
+-        /* write aes_buf */
+-        for (i = 3; i >= 0; i--) {
++        try (OutputStream os = new FileOutputStream(encfile)) {
++            for (i = 3; i >= 0; i--) {
+             os.write(((aesBuf.length & (0xff << 8 * i)) >> 8 * i));
+         }
+-        os.write(aesBuf);
+-
+-        /* write cph_buf */
+-        for (i = 3; i >= 0; i--) {
++            os.write(aesBuf);
++            for (i = 3; i >= 0; i--) {
+             os.write(((cphBuf.length & (0xff << 8 * i)) >> 8 * i));
+         }
+-        os.write(cphBuf);
++            os.write(cphBuf);
++        }
++
++
++
++
+ 
+-        os.close();
+ 
+     }
+ 

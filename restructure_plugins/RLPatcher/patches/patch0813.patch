@@ -1,0 +1,12 @@
+--- /tmp/orig-169235458522177469.java	2025-09-24 22:56:31.076997337 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urle514e161fe_pericodiaz89_NextGen_tgz-pJ8-lib_json_TestJ8/src/lib/GUIHelper.java	2025-09-24 22:56:29.288872332 +0000
+@@ -22,8 +22,7 @@
+     }
+ 
+     public static void setIconOnFrame(JFrame frame, String dir) {
+-        try {
+-            InputStream imgStream = frame.getClass().getResourceAsStream(dir);
++        try (InputStream imgStream = frame.getClass().getResourceAsStream(dir)) {
+             BufferedImage bi = ImageIO.read(imgStream);
+             ImageIcon myImg = new ImageIcon(bi);
+             frame.setIconImage(myImg.getImage());

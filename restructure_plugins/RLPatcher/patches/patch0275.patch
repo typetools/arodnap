@@ -1,0 +1,13 @@
+--- /tmp/orig-13773033806470605514.java	2025-09-24 21:58:25.957368947 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url4aac7e6f55_simon0191_tetris3d_tgz-pJ8-Tetris3dJ8/src/vsdk/toolkit/io/image/ImagePersistence.java	2025-09-24 21:58:23.989231365 +0000
+@@ -457,9 +457,8 @@
+     */
+     public static boolean exportPPM(File fd, Image img)
+     {
+-        try {
++        try (FileOutputStream fos = new FileOutputStream(fd)) {
+             BufferedOutputStream writer;
+-            FileOutputStream fos = new FileOutputStream(fd);
+             writer = new BufferedOutputStream(fos);
+ 
+             String line1 = "P6\n";

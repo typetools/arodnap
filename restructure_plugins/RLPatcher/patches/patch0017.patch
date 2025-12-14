@@ -1,0 +1,14 @@
+--- /tmp/orig-11832759292826292124.java	2025-09-24 21:33:34.509129709 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url0307c0e995_js_labs_js_collider_tgz-pJ8-org_jsl_tests_shmem_throughput_MainJ8/src/org/jsl/tests/session_latency/Client.java	2025-09-24 21:33:32.368980164 +0000
+@@ -38,9 +38,8 @@
+     {
+         public void run()
+         {
+-            try
+-            {
+-                final SocketChannel socketChannel = SocketChannel.open( m_addr );
++            try(
++final SocketChannel socketChannel = SocketChannel.open( m_addr ))             {
+                 final Socket socket = socketChannel.socket();
+                 socket.setTcpNoDelay( true );
+                 System.out.println(

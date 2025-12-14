@@ -1,0 +1,32 @@
+--- /tmp/orig-17443513496054503296.java	2025-09-24 22:39:35.089971156 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url9a01f43c15_poragchowdhury_securitygame_tgz-pJ8-securitygame_GameMasterJ8/src/securitygame/AttackerMonitor.java	2025-09-24 22:39:33.841883905 +0000
+@@ -83,11 +83,12 @@
+      * Parses attacker's move from .attack file
+      */
+     public void readMove(){
+-		try{
++		  org.apache.commons.csv.CSVParser parser = null;
++		  try{
+ 			visibleNet = Parser.parseAttackerHistory(attackerName, defenderName, graphName);
+ 			history = new PrintWriter(new FileWriter(attackerName + "-" + defenderName + "-" + graphName + ".history", true));
+ 			File csv = new File(attackerName + "-" + defenderName + "-" + graphName + ".attack");
+-			CSVParser parser = CSVParser.parse(csv, StandardCharsets.US_ASCII, CSVFormat.DEFAULT);
++			parser = CSVParser.parse(csv, StandardCharsets.US_ASCII, CSVFormat.DEFAULT);
+ 			
+ 			for(CSVRecord csvRecord : parser){
+ 				Iterator<String> itr = csvRecord.iterator();
+@@ -244,6 +245,14 @@
+             availableNodes = visibleNet.getAvailableNodes();
+         }catch (Exception e){
+             e.printStackTrace();
++        } finally {
++            if (parser != null) {
++                try {
++                    parser.close();
++                } catch (Exception e) {
++                    e.printStackTrace();
++                }
++            }
+         }
+     }
+ 

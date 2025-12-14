@@ -1,0 +1,13 @@
+--- /tmp/orig-11531268419893744812.java	2025-09-24 22:34:28.264522680 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url85940d3d8e_ccp999_Expr4j_tgz-pJ8-org_boris_expr_util_ExprEvaluatorJ8/src/org/boris/expr/util/IO.java	2025-09-24 22:34:25.744346508 +0000
+@@ -38,7 +38,9 @@
+     }
+ 
+     public static String toString(File f) throws IOException {
+-        return toString(new FileReader(f));
++        try (java.io.FileReader __arodnap_temp0 = new FileReader(f)) {
++            return toString(__arodnap_temp0);
++        }
+     }
+ 
+     public static void copy(Reader r, Writer w, boolean close)

@@ -1,0 +1,13 @@
+--- /tmp/orig-5821907326629857470.java	2025-09-24 22:42:42.699086637 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlb5d5be4365_abmargb_oursim_ext_tgz-pJ8-br_edu_ufcg_lsd_oursim_experiments_RemoteNoFScenarioGeneratorJ8/src/br/edu/ufcg/lsd/oursim/experiments/JDependRunner.java	2025-09-24 22:42:40.374924158 +0000
+@@ -15,7 +15,9 @@
+ 		jdepend.setFilter(filter);
+ 		
+ 		jdepend.addDirectory("bin");
+-		jdepend.setWriter(new PrintWriter(new File("report.txt")));
++		try (java.io.PrintWriter __arodnap_temp0 = new PrintWriter(new File("report.txt"))) {
++		    jdepend.setWriter(__arodnap_temp0);
++		}
+ 		jdepend.analyze();
+ 	}
+ 	

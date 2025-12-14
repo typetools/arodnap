@@ -1,0 +1,19 @@
+--- /tmp/orig-15442556067972279334.java	2025-09-24 21:34:18.824226256 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url063b9533f6_karlney_tetris_ai_tgz-pJ8-karlney_tetris_cmd_TetrisGameRunnerJ8/src/karlney/tetris/swing/Highscore.java	2025-09-24 21:34:17.600140723 +0000
+@@ -34,8 +34,7 @@
+ 
+ 
+     public static void readFile(){
+-        try{
+-            FileInputStream reader = new FileInputStream(outputfile);
++        try(FileInputStream reader = new FileInputStream(outputfile)) {
+             ObjectInputStream r = new ObjectInputStream(reader);
+             String line = null;
+ 
+@@ -110,4 +109,4 @@
+         //JOptionPane.showOptionDialog(null,s,"Highscore",JOptionPane.YES_NO_OPTION,JOptionPane.PLAIN_MESSAGE,null,button,0);
+     }
+ }
+-        
++        
+\ No newline at end of file

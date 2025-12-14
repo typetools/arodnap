@@ -1,0 +1,19 @@
+--- /tmp/orig-14896527927567127510.java	2025-09-24 22:47:02.073219108 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlc175f05cb8_mchllbrt_PermCode_tgz-pJ8-permlib_examples_UniversalSeparableJ8/src/permlab/utilities/ExportType.java	2025-09-24 22:46:58.680981962 +0000
+@@ -337,8 +337,7 @@
+                 if (returnVal == JFileChooser.APPROVE_OPTION) {
+                     savingFile = fileChooser.getSelectedFile();
+                     if (FileUtilities.canSaveFileHere(parent, savingFile)) {
+-                        try {
+-                            FileWriter fileWriter = new FileWriter(savingFile);
++                        try (FileWriter fileWriter = new FileWriter(savingFile)) {
+                             fileWriter.write(result.toString());
+                             fileWriter.close();
+                         } catch (Exception excp) {
+@@ -821,4 +820,4 @@
+             return "\\draw[thick]" + "(" + x1 + "," + y1 + ")--" + "(" + x2 + "," + y2 + ");" + "\n";
+         }
+     },;
+-}
++}
+\ No newline at end of file

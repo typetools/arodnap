@@ -1,0 +1,14 @@
+--- /tmp/orig-9820693778303887724.java	2025-09-24 21:50:47.865346337 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url3aa01d34ec_katsuster_ememu_tgz-pJ8-net_katsuster_ememu_ui_MainJ8/src/net/katsuster/ememu/ui/ARMLinuxLoader.java	2025-09-24 21:50:45.449177436 +0000
+@@ -28,9 +28,9 @@
+ 
+         System.out.println("loadURL: " + uri.toString());
+ 
+-        try {
++        try (java.io.InputStream __arodnap_temp0 = uri.toURL().openStream()) {
+             DataInputStream s = new DataInputStream(
+-                    new BufferedInputStream(uri.toURL().openStream()));
++                    new BufferedInputStream(__arodnap_temp0));
+ 
+             i = 0;
+             try {

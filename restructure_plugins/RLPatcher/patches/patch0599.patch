@@ -1,0 +1,15 @@
+--- /tmp/orig-176749094038996342.java	2025-09-24 22:37:03.311361129 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url8c14fd53ee_luca89_itaco_tgz-pJ8-main_RunnerJ8/src/compilatore/RubyTarget.java	2025-09-24 22:37:01.595241165 +0000
+@@ -506,8 +506,9 @@
+ 		} else {
+ 			sorgenteC = new File(nomeClasse + ".rb");
+ 		}
+-		FileOutputStream sorgenteCStream = new FileOutputStream(sorgenteC);
+-		RubyTarget ct = new RubyTarget(sorgenteCStream);
+-		result.scriviCodice(ct);
++		try (FileOutputStream sorgenteCStream = new FileOutputStream(sorgenteC)) {
++		    RubyTarget ct = new RubyTarget(sorgenteCStream);
++		    result.scriviCodice(ct);
++		}
+ 	}
+ }

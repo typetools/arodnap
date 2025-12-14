@@ -1,0 +1,39 @@
+--- /tmp/orig-18338364727151702819.java	2025-09-24 22:02:21.605841793 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url4c41254592_topskychen_AuthTopk_tgz-pJ8-quickhull3d_QuickHull3DTestJ8/src/utility/VerifyIndex.java	2025-09-24 22:02:18.885651640 +0000
+@@ -29,22 +29,24 @@
+ 	public static HashMap<Long, long[]> tOfLine = null;
+ 	
+ 	public static void loadIndex() throws IOException{
+-		DataInputStream dis = new DataInputStream(new BufferedInputStream(new FileInputStream(new File(idx + ".dp.idx"))));
+-		rafPoint = new RandomAccessFile(idx + ".dp.dat", "r");
+-		tOfPoint = new HashMap<Long, long[]>();
+-		while(dis.available() > 0){
++	try (java.io.FileInputStream __arodnap_temp0 = new FileInputStream(new File(idx + ".dp.idx"))) {
++	    DataInputStream dis = new DataInputStream(new BufferedInputStream(__arodnap_temp0));
++	    rafPoint = new RandomAccessFile(idx + ".dp.dat", "r");
++	    tOfPoint = new HashMap<Long, long[]>();
++	    while(dis.available() > 0){
+ 			tOfPoint.put(dis.readLong(), new long[]{dis.readLong(), dis.readLong()});
+ 		}
+-		dis.close();
+-		dis = new DataInputStream(new BufferedInputStream(new FileInputStream(new File(idx + ".dl.idx"))));
+-		rafLine = new RandomAccessFile(idx + ".dl.dat", "r");
+-		tOfLine = new HashMap<Long, long[]>();
+-		while(dis.available() > 0){
++	    try (java.io.FileInputStream __arodnap_temp1 = new FileInputStream(new File(idx + ".dl.idx"))) {
++	        dis = new DataInputStream(new BufferedInputStream(__arodnap_temp1));
++	        rafLine = new RandomAccessFile(idx + ".dl.dat", "r");
++	        tOfLine = new HashMap<Long, long[]>();
++	        while(dis.available() > 0){
+ 			tOfLine.put(dis.readLong(), new long[]{dis.readLong(), dis.readLong()});
+ 		}
+-		dis.close();
+-		System.out.println("Index laoded!");
+-		System.out.println("Points:\t" + tOfPoint.size());
++	    }
++	    System.out.println("Index laoded!");
++	}
++	System.out.println("Points:\t" + tOfPoint.size());
+ 		System.out.println("Lines:\t" + tOfLine.size());
+ 	}
+ 	

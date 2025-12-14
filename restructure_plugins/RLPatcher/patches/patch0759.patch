@@ -1,0 +1,25 @@
+--- /tmp/orig-12530933708052505560.java	2025-09-24 22:51:20.715300400 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urld558a3d988_gao715108023_resourceMonitor_tgz-pJ8-com_sinopec_agent_AgentJ8/src/com/sinopec/cache/HistroyMsgCache.java	2025-09-24 22:51:19.399208395 +0000
+@@ -64,8 +64,20 @@
+ 	private void init() {
+ 		cache = new ConcurrentHashMap<String, ConcurrentHashMap<String, DynamicInfoSerializable>>();
+ 		 ScheduledExecutorService scheduleService = Executors.newScheduledThreadPool(1);
+-		scheduleService.scheduleAtFixedRate(new StoreHisMsgDataSchedule(cache, jdbcCommon, dbType), 0, storeInterval, TimeUnit.SECONDS);
+-		if (LOG.isInfoEnabled()) {
++		 com.sinopec.cache.HistroyMsgCache.StoreHisMsgDataSchedule __arodnap_temp0 = null;
++		 try {
++    __arodnap_temp0 = new StoreHisMsgDataSchedule(cache, jdbcCommon, dbType);
++    scheduleService.scheduleAtFixedRate(__arodnap_temp0, 0, storeInterval, TimeUnit.SECONDS);
++} finally {
++    if (__arodnap_temp0 != null) {
++        try {
++            __arodnap_temp0.closeConn();
++        } catch (Exception e) {
++            e.printStackTrace();
++        }
++    }
++}
++		 if (LOG.isInfoEnabled()) {
+ 			LOG.info("The service of storing history data has started!");
+ 		}
+ 	}

@@ -1,0 +1,50 @@
+--- /tmp/orig-5795327052584984474.java	2025-09-24 22:57:28.853037360 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlfc1c29991b_nil_mish_InJava_tgz-pJ8-edu_usc_cs_nsl_indexing_test_TestTrieProtoJ8/src/edu/usc/cs/nsl/counting/CountingUtil.java	2025-09-24 22:57:27.388934978 +0000
+@@ -370,19 +370,20 @@
+ 	private void processCollisionSimple(int max_string_size,String output_file,int num_collisions) throws IOException{
+ 		BufferedWriter bw_output = new BufferedWriter(new FileWriter(output_file,true));
+ 		HashSet<Integer> index_set = new HashSet<Integer>(num_collisions+10,1);
+-		BufferedReader br_collision = new BufferedReader(new FileReader(getCollisionTmpFileName(max_string_size)));
+-		String the_line = br_collision.readLine();
+-		while(the_line != null){			
++		try (java.io.FileReader __arodnap_temp1 = new FileReader(getCollisionTmpFileName(max_string_size))) {
++		    BufferedReader br_collision = new BufferedReader(__arodnap_temp1);
++		    String the_line = br_collision.readLine();
++		    while(the_line != null){			
+ 			index_set.add(Integer.parseInt(the_line.replace("\n", "").replace("\r","")));			
+ 			the_line = br_collision.readLine();
+ 		}
+-		br_collision.close();
+-		BufferedReader br;
+-		HashMap<String,Long> string_map = new HashMap<String,Long>(num_collisions/10);
+-		br = new BufferedReader(new FileReader(getTmpFileName(max_string_size)));
+-		the_line = br.readLine();
+-		int the_count = 0;
+-		while(the_line != null){
++		    BufferedReader br;
++		    HashMap<String,Long> string_map = new HashMap<String,Long>(num_collisions/10);
++		    try (java.io.FileReader __arodnap_temp2 = new FileReader(getTmpFileName(max_string_size))) {
++		        br = new BufferedReader(__arodnap_temp2);
++		        the_line = br.readLine();
++		        int the_count = 0;
++		        while(the_line != null){
+ 			String the_word = the_line.replace("\n","").replace("\r", "");
+ 			if(the_word.equals("0017d7d14cbaf2c1c94de80ef039")){
+ 				System.out.println("is read");
+@@ -402,11 +403,13 @@
+ 			}
+ 			the_line = br.readLine();
+ 		}
+-		for(String a_word: string_map.keySet()){
++		        for(String a_word: string_map.keySet()){
+ 			bw_output.write(a_word+"\t"+string_map.get(a_word)+"\n");
+ 		}
+-		System.out.println("The count: "+the_count);
+-		bw_output.close();		
++		        System.out.println("The count: "+the_count);
++		    }
++		    bw_output.close();
++		}
+ 	}
+ 	
+ 	

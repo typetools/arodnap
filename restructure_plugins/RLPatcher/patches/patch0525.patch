@@ -1,0 +1,13 @@
+--- /tmp/orig-12443922154355973138.java	2025-09-24 22:27:21.870715895 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url80e39b1957_tobikster_IJN_headers_recognition_tgz-pJ8-org_maltparser_examples_CreatePhraseStructureGraphJ8/src/org/maltparser/ml/libsvm/Libsvm.java	2025-09-24 22:27:18.186458349 +0000
+@@ -383,8 +383,8 @@
+ 	 */
+ 	public boolean predict(FeatureVector featureVector, SingleDecision decision) throws MaltChainedException {
+ 		if (model == null) {
+-			try {
+-				model = svm.svm_load_model(new BufferedReader(getInstanceInputStreamReaderFromConfigFile(".mod")));
++			try (java.io.InputStreamReader __arodnap_temp0 = getInstanceInputStreamReaderFromConfigFile(".mod")) {
++				model = svm.svm_load_model(new BufferedReader(__arodnap_temp0));
+ 			} catch (IOException e) {
+ 				throw new LibsvmException("The model cannot be loaded. ", e);
+ 			}

@@ -1,0 +1,15 @@
+--- /tmp/orig-13716353943690059914.java	2025-09-24 22:04:29.606789611 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url5a01f2c1d9_core9_core_tgz-pJ8-io_core9_core_boot_BootstrapFrameworkJ8/src/net/xeoh/plugins/base/impl/classpath/cache/JARCache.java	2025-09-24 22:04:27.790662656 +0000
+@@ -218,11 +218,10 @@
+ 
+ 		boolean created = false;
+ 
+-		try {
++		try (final FileInputStream fis = new FileInputStream(element)) {
+ 			this.logger.fine("Processing JAR " + element);
+ 
+ 			final MessageDigest digest = java.security.MessageDigest.getInstance("MD5");
+-			final FileInputStream fis = new FileInputStream(element);
+ 
+ 			// Read Data
+ 			final byte[] data = new byte[1024 * 1024];

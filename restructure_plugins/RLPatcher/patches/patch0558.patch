@@ -1,0 +1,13 @@
+--- /tmp/orig-7539598582423328847.java	2025-09-24 22:33:40.113156689 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url80e7c3d65d_sblit_dcl_tgz-pJ8-org_dclayer_DCLJ8/src/org/dclayer/application/ApplicationInstance.java	2025-09-24 22:33:37.444970172 +0000
+@@ -77,9 +77,8 @@
+ 		this.defaultNetworkEndpointActionListener = defaultNetworkEndpointsActionListener;
+ 		
+ 		org.dclayer.net.buf.StreamByteBuf tempStreamByteBuf = null;
+-try {
++try (Socket socket = new Socket(inetAddress, port)) {
+ 			
+-			Socket socket = new Socket(inetAddress, port);
+ 			
+ 			InputStream inputStream = socket.getInputStream();
+ 			OutputStream outputStream = new BufferedOutputStream(socket.getOutputStream());

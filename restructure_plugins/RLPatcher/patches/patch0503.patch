@@ -1,0 +1,28 @@
+--- /tmp/orig-13235096472549630932.java	2025-09-24 22:23:29.034439625 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url80e39b1957_tobikster_IJN_headers_recognition_tgz-pJ8-org_maltparser_examples_CreatePhraseStructureGraphJ8/src/org/maltparser/core/symbol/trie/TrieSymbolTableHandler.java	2025-09-24 22:23:25.146167819 +0000
+@@ -164,13 +164,23 @@
+ 	}
+ 	
+ 	public void load(String fileName, String charSet) throws MaltChainedException  {
+-		try {
+-			load(new InputStreamReader(new FileInputStream(fileName), charSet));
++	java.io.FileInputStream __arodnap_temp0 = null;
++	try {
++	__arodnap_temp0 = new FileInputStream(fileName);
++		load(new InputStreamReader(__arodnap_temp0, charSet));
+ 
+ 		} catch (FileNotFoundException e) {
+ 			throw new SymbolException("The symbol table file '"+fileName+"' cannot be found. ", e);
+ 		} catch (UnsupportedEncodingException e) {
+ 			throw new SymbolException("The char set '"+charSet+"' is not supported. ", e);
++		} finally {
++		    if (__arodnap_temp0 != null) {
++		        try {
++		            __arodnap_temp0.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
+ 		}		
+ 	}
+ 	

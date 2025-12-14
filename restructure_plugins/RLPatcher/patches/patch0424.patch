@@ -1,0 +1,35 @@
+--- /tmp/orig-16299385044781521460.java	2025-09-24 22:13:47.241770238 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url7a45f192ca_mfullen_ping_pong_net_tgz-pJ8-ping_pong_net_client_io_TestClientNonPPNServerJ8/src/ping/pong/net/server/ClientExample.java	2025-09-24 22:13:45.473646640 +0000
+@@ -87,20 +87,21 @@
+ 
+             // SSLSocketFactory factory = (SSLSocketFactory) ctx.getSocketFactory();
+             SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+-            // SSLSocket client = (SSLSocket) factory.createSocket("localhost", 5011);
+-            Socket client = (SSLSocket) factory.createSocket("localhost", 5011);
+-            //  client.startHandshake();
+-            // java.security.cert.Certificate[] serverCerts = client.getSession().getPeerCertificates();
+-            ObjectInputStream inputStream = new ObjectInputStream(client.getInputStream());
+-            int readInt = inputStream.readInt();
+-            System.out.println("SSL- I was assigned Client id: " + readInt);
+-            ObjectOutputStream outputStream = new ObjectOutputStream(client.getOutputStream());
+-            outputStream.writeObject(new byte[]
++            try (Socket client = (SSLSocket) factory.createSocket("localhost", 5011)) {
++                ObjectInputStream inputStream = new ObjectInputStream(client.getInputStream());
++                int readInt = inputStream.readInt();
++                System.out.println("SSL- I was assigned Client id: " + readInt);
++                ObjectOutputStream outputStream = new ObjectOutputStream(client.getOutputStream());
++                outputStream.writeObject(new byte[]
+                     {
+                         1, 3, 2, 3
+                     });
+-            outputStream.flush();
+-            outputStream.close();
++                outputStream.flush();
++                outputStream.close();
++            }
++
++            //  client.startHandshake();
++
+         }
+     }
+ 

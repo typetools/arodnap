@@ -1,0 +1,15 @@
+--- /tmp/orig-13564223182972810532.java	2025-09-24 22:57:07.535546645 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlfc1c29991b_nil_mish_InJava_tgz-pJ8-edu_usc_cs_nsl_indexing_test_TestTrieProtoJ8/src/edu/usc/cs/nsl/indexing/QueryServer.java	2025-09-24 22:57:06.163450696 +0000
+@@ -28,8 +28,10 @@
+ 	 * @throws IOException
+ 	 */
+ 	public QueryServer(String inputFile) throws FileNotFoundException, IOException{
+-		TriePB tp = TriePB.parseFrom(new FileInputStream(inputFile));
+-		the_trie = new Trie(tp);
++	    try (java.io.FileInputStream __arodnap_temp0 = new FileInputStream(inputFile)) {
++	        TriePB tp = TriePB.parseFrom(__arodnap_temp0);
++	        the_trie = new Trie(tp);
++	    }
+ 	}
+ 	
+ 	

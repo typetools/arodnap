@@ -1,0 +1,19 @@
+--- /tmp/orig-5368891501904499489.java	2025-09-24 21:52:43.101401834 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url43a0865bb0_kevinjdolan_darwin_tgz-pJ8-tui_DriverJ8/src/darwInvest/data/utility/DefaultSerializer.java	2025-09-24 21:52:40.673232095 +0000
+@@ -21,7 +21,15 @@
+ 			in.close();
+ 		}
+ 		catch(IOException e) {} 
+-		catch (ClassNotFoundException e) {}
++		catch (ClassNotFoundException e) {} finally {
++		    if (fis != null) {
++		        try {
++		            fis.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
++		}
+ 		return result;
+ 	}
+ 

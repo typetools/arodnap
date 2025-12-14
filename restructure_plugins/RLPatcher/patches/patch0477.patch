@@ -1,0 +1,13 @@
+--- /tmp/orig-480159211980823596.java	2025-09-24 22:19:22.661217214 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url80587fc7d5_dennervidal_CloudSim_DVFS_tgz-pJ8-Examples_Dvfs_example_simpleJ8/src/org/cloudbus/cloudsim/workflow/Configuration.java	2025-09-24 22:19:19.705010564 +0000
+@@ -30,8 +30,8 @@
+     
+     private static void loadPropertiesFromFile(String file) {
+         File propertiesFile = new File(file);
+-        try {
+-            properties.load(new FileInputStream(propertiesFile));
++        try (java.io.FileInputStream __arodnap_temp0 = new FileInputStream(propertiesFile)) {
++            properties.load(__arodnap_temp0);
+         } catch (IOException e) {
+         	e.printStackTrace();
+         }

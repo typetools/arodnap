@@ -1,0 +1,13 @@
+--- /tmp/orig-8468476290876543541.java	2025-09-24 22:17:36.241778127 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url7f43a4752f_shalynnho_pokemonfactory_tgz-pJ8-Networking_ServerJ8/src/Utils/StringUtil.java	2025-09-24 22:17:33.373577630 +0000
+@@ -378,7 +378,9 @@
+ 
+ 	/** Reads in the entire contents of a file into a string */
+ 	public static String fromFile(String path) throws IOException {
+-		return fromReader(new FileReader(path));
++	    try (java.io.FileReader __arodnap_temp0 = new FileReader(path)) {
++	        return fromReader(__arodnap_temp0);
++	    }
+ 	}
+ 
+ 	/**

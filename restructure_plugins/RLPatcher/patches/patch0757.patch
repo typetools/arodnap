@@ -1,0 +1,18 @@
+--- /tmp/orig-12451205011148092400.java	2025-09-24 22:51:10.978619723 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urld3c7d5e997_dku_rajkumar_java_api_for_amon_tgz-pJ8-org_json_TestJ8/src/org/amon/AmonLogger.java	2025-09-24 22:51:09.730532471 +0000
+@@ -56,10 +56,11 @@
+ 	}
+ 
+ 	private void send(final String yaml, final HttpURLConnection connection) throws IOException {
+-		final OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream());
+-		writer.write(yaml);
+-		writer.close();
+-		responseCode = connection.getResponseCode();
++	try (java.io.OutputStream __arodnap_temp0 = connection.getOutputStream()) {
++	    final OutputStreamWriter writer = new OutputStreamWriter(__arodnap_temp0);
++	    writer.write(yaml);
++	}
++	responseCode = connection.getResponseCode();
+ 	}
+ 
+ 	public int getResponseCode() {

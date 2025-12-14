@@ -1,0 +1,14 @@
+--- /tmp/orig-2403619202544341796.java	2025-09-24 22:42:17.729341038 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlb57eb64056_jacadenac_ISI_Othello_UN_tgz-pJ8-othello_OthelloJ8/src/logica/JuegoTorneo.java	2025-09-24 22:42:16.341243998 +0000
+@@ -153,9 +153,9 @@
+ 		EstadoCasilla colorJugador = EstadoCasilla.BLACK;
+ 		boolean esTamańo=true;
+ 		
+-		try {
++		try (java.io.FileReader __arodnap_temp0 = new FileReader(fichero)) {
+ 		    int casillasJugablesIniciales=0;
+-			reader = new BufferedReader(new FileReader(fichero));
++			reader = new BufferedReader(__arodnap_temp0);
+ 			String linea = reader.readLine();
+ 			while (linea != null)
+ 			{

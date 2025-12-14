@@ -1,0 +1,17 @@
+--- /tmp/orig-11220105602589695924.java	2025-09-24 22:21:49.735498212 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url80e39b1957_tobikster_IJN_headers_recognition_tgz-pJ8-org_maltparser_examples_CreatePhraseStructureGraphJ8/src/org/maltparser/core/flow/FlowChartManager.java	2025-09-24 22:21:46.003237314 +0000
+@@ -67,12 +67,12 @@
+ 	}
+ 	
+ 	public void load(URL url) throws MaltChainedException {
+-        try {
++        try (java.io.InputStream __arodnap_temp0 = url.openStream()) {
+             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+             DocumentBuilder db = dbf.newDocumentBuilder();
+             Element root = null;
+ 
+-            root = db.parse(url.openStream()).getDocumentElement();
++            root = db.parse(__arodnap_temp0).getDocumentElement();
+             if (root == null) {
+             	throw new FlowException("The flow chart specification file '"+url.getFile()+"' cannot be found. ");
+             }

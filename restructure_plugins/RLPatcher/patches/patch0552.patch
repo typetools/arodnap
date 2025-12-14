@@ -1,0 +1,48 @@
+--- /tmp/orig-10469402817576430390.java	2025-09-24 22:32:31.960392515 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url80e39b1957_tobikster_IJN_headers_recognition_tgz-pJ8-org_maltparser_examples_CreatePhraseStructureGraphJ8/src/org/maltparser/ml/lib/LibSvm.java	2025-09-24 22:32:28.240132452 +0000
+@@ -45,8 +45,11 @@
+ 	}
+ 	
+ 	protected void trainInternal(FeatureVector featureVector) throws MaltChainedException {
+-		try {
+-			final svm_problem prob = readProblem(getInstanceInputStreamReader(".ins"));
++	java.io.FileOutputStream __arodnap_temp1 = null;
++	java.io.InputStreamReader __arodnap_temp0 = null;
++	try {
++	__arodnap_temp0 = getInstanceInputStreamReader(".ins");
++		final svm_problem prob = readProblem(__arodnap_temp0);
+ 			final svm_parameter param = getLibSvmParameters();
+ 			if(svm.svm_check_parameter(prob, param) != null) {
+ 				throw new LibException(svm.svm_check_parameter(prob, param));
+@@ -59,7 +62,8 @@
+ 			svm_model model = svm.svm_train(prob, param);
+ 			System.setOut(err);
+ 			System.setOut(out);
+-		    ObjectOutputStream output = new ObjectOutputStream (new BufferedOutputStream(new FileOutputStream(getFile(".moo").getAbsolutePath())));
++		 __arodnap_temp1 = new FileOutputStream(getFile(".moo").getAbsolutePath());
++   ObjectOutputStream output = new ObjectOutputStream (new BufferedOutputStream(__arodnap_temp1));
+ 	        try{
+ 	          output.writeObject(new MaltLibsvmModel(model, prob));
+ 	        } finally {
+@@ -76,6 +80,21 @@
+ 			throw new LibException("The LIBSVM learner cannot remove the instance file. ", e);
+ 		} catch (IOException e) {
+ 			throw new LibException("The LIBSVM learner cannot save the model file '"+getFile(".mod").getAbsolutePath()+"'. ", e);
++		} finally {
++		    if (__arodnap_temp1 != null) {
++		        try {
++		            __arodnap_temp1.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
++		    if (__arodnap_temp0 != null) {
++		        try {
++		            __arodnap_temp0.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
+ 		}
+ 	}
+ 	

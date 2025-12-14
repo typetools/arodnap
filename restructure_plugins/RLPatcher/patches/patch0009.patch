@@ -1,0 +1,13 @@
+--- /tmp/orig-16529439711523502729.java	2025-09-24 21:32:57.454540493 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url026791d51b_dhleong_SeriesTracker_v6_tgz-pJ8-stv6_SeriesTrackerJ8/src/stv6/Profile.java	2025-09-24 21:32:55.574409118 +0000
+@@ -348,8 +348,8 @@
+ 	
+ 	public void loadFromFile(File file) {
+ 		StringBuffer b = new StringBuffer();
+-		try {
+-			BufferedReader in = new BufferedReader(new FileReader(file));
++		try (java.io.FileReader __arodnap_temp0 = new FileReader(file)) {
++			BufferedReader in = new BufferedReader(__arodnap_temp0);
+ 			String line = null;
+ 			while ((line = in.readLine()) != null) {
+ 				b.append(line);

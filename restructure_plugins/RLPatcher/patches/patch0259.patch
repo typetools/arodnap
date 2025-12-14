@@ -1,0 +1,27 @@
+--- /tmp/orig-2686286611088442756.java	2025-09-24 21:56:59.183303064 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url49584c1d41_Arrem_GGS_tgz-pJ8-com_gamezgalaxy_test_console_MainJ8/src/com/gamezgalaxy/GGS/groups/Group.java	2025-09-24 21:56:56.767134163 +0000
+@@ -151,17 +151,17 @@
+ 			new File("ranks").mkdir();
+ 		if (!new File("ranks/" + name).exists())
+ 			return;
+-		FileInputStream fstream = new FileInputStream("ranks/" + name);
+-		DataInputStream in = new DataInputStream(fstream);
+-		BufferedReader br = new BufferedReader(new InputStreamReader(in));
+-		String strLine;
+-		while ((strLine = br.readLine()) != null)   {
++		try (FileInputStream fstream = new FileInputStream("ranks/" + name)) {
++		    DataInputStream in = new DataInputStream(fstream);
++		    BufferedReader br = new BufferedReader(new InputStreamReader(in));
++		    String strLine;
++		    while ((strLine = br.readLine()) != null)   {
+ 			if (strLine.startsWith("#"))
+ 				continue;
+ 			members.add(strLine);
+ 		}
+-		in.close();
+-		
++		}
++
+ 	}
+ 	/**
+ 	 * Save the members in this group

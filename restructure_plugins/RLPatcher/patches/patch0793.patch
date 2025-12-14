@@ -1,0 +1,34 @@
+--- /tmp/orig-3177273777649667826.java	2025-09-24 22:54:14.811471212 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urle381b6cba7_IkarosKappler_ikrs_http_tgz-pJ8-ikrs_json_rpc_JSONRPCHandlerJ8/src/ikrs/io/fileio/htaccess/HypertextAccessFile.java	2025-09-24 22:54:12.151285242 +0000
+@@ -153,16 +153,16 @@
+ 					    boolean strictMode )
+ 	throws IOException,
+ 	       ParseException {
+-
+-	
+-	FileInputStream in = new FileInputStream(file);
+-	HypertextAccessFile htaccess = read( in,
++	           try (FileInputStream in = new FileInputStream(file)) {
++	               HypertextAccessFile htaccess = read( in,
+ 					     strictMode 
+ 					     );
+-	htaccess.sourceFile = file;
+-	in.close();
+-	return htaccess;
+-    }    
++	               htaccess.sourceFile = file;
++	               return htaccess;
++	           }
++	       
++
++}    
+ 
+ 
+     /**
+@@ -1049,4 +1049,4 @@
+     }
+ 
+ 
+-}
++}
+\ No newline at end of file

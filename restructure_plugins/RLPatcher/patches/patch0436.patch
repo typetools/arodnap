@@ -1,0 +1,26 @@
+--- /tmp/orig-6245275789921964170.java	2025-09-24 22:14:59.214801400 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url7a45f192ca_mfullen_ping_pong_net_tgz-pJ8-ping_pong_net_client_io_TestClientNonPPNServerJ8/src/ping/pong/net/server/io/IoServerTest.java	2025-09-24 22:14:57.314668574 +0000
+@@ -191,10 +191,22 @@
+     @Test
+     public void testGetConnections()
+     {
+-        IoServer instance = new IoServer();
++    ping.pong.net.server.io.IoServer instance = null;
++    try {
++        instance = new IoServer();
+         assertTrue(instance.getConnections().isEmpty());
+         instance.addConnection(connection1);
+         assertEquals(instance.getConnections().size(), 1);
++    } finally {
++        if (instance != null) {
++            try {
++                instance.shutdown();
++            } catch (Exception e) {
++                e.printStackTrace();
++            }
++        }
++    }
++
+     }
+ 
+     /**

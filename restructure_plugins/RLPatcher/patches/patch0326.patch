@@ -1,0 +1,35 @@
+--- /tmp/orig-10524581358852580757.java	2025-09-24 22:03:55.940436188 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url5997ccb760_JANNLab_JANNLab_tgz-pJ8-de_jannlab_examples_recurrent_SequentialXorExampleJ8/src/de/jannlab/data/SampleTools.java	2025-09-24 22:03:54.144310631 +0000
+@@ -320,13 +320,11 @@
+     public static void writeCSV(final SampleSet set, final String filename) throws IOException {
+         //
+         File file          = new File(filename);
+-        BufferedWriter out = new BufferedWriter(new FileWriter(file));
+-        //
+-        final int size = set.size();
+-        //
+-        out.write("# " + size + " samples\n");
+-        //
+-        for (int i = 0; i < size; i++) {
++        try (java.io.FileWriter __arodnap_temp0 = new FileWriter(file)) {
++            BufferedWriter out = new BufferedWriter(__arodnap_temp0);
++            final int size = set.size();
++            out.write("# " + size + " samples\n");
++            for (int i = 0; i < size; i++) {
+             if (i > 0) {
+                 out.append("\n");
+             }
+@@ -342,8 +340,11 @@
+             out.append("\n");
+             out.append(target);
+         }
+-        out.flush();
+-        out.close();
++            out.flush();
++        }
++
++
++
+     }
+     
+     

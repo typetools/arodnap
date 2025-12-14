@@ -1,0 +1,15 @@
+--- /tmp/orig-4964501607329720138.java	2025-09-24 22:49:53.701217373 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlce7759b8da_Palachsuper_EBA4_tgz-pJ8-json_TestJ8/src/terminal/devices/Device.java	2025-09-24 22:49:52.129107468 +0000
+@@ -191,9 +191,9 @@
+         try
+         {
+ 
+-            try
+-            {    dat_time_path= "/home/terminal/lib/prop_port.txt";
+-                BufferedReader in = new BufferedReader(new FileReader( new File(dat_time_path).getAbsoluteFile()));
++            try(
++java.io.FileReader __arodnap_temp0 = new FileReader(new File(dat_time_path).getAbsoluteFile()))             {    dat_time_path= "/home/terminal/lib/prop_port.txt";
++                BufferedReader in = new BufferedReader(__arodnap_temp0);
+                 String read_log;
+                 while ((read_log = in.readLine()) != null)
+                 {

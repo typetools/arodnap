@@ -1,0 +1,16 @@
+--- /tmp/orig-10067670806768447898.java	2025-09-24 21:47:16.618579317 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url294e6c45f3_Ecdosis_NMergeNew_tgz-pJ8-TestJ8/src/edu/luc/nmerge/Utilities.java	2025-09-24 21:47:13.998396159 +0000
+@@ -19,10 +19,9 @@
+ 			String wd = System.getProperty("user.dir");
+ 			File wdDir = new File( wd );
+ 			Properties props = new Properties();
+-	        try
+-	        {
+-	        	FileInputStream fis = new FileInputStream(wdDir
+-	        		+File.separator+dbConn+".properties");
++	        try(
++FileInputStream fis = new FileInputStream(wdDir
++	        		+File.separator+dbConn+".properties")) 	        {
+ 		        props.load(fis);    
+ 		        fis.close();
+ 		        return props;

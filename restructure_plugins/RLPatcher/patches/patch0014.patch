@@ -1,0 +1,16 @@
+--- /tmp/orig-14334477837424269230.java	2025-09-24 21:33:19.256063890 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url0307c0e995_js_labs_js_collider_tgz-pJ8-org_jsl_tests_shmem_throughput_MainJ8/src/org/jsl/tests/echo_latency/Client.java	2025-09-24 21:33:16.943902326 +0000
+@@ -39,11 +39,10 @@
+     {
+         public void run()
+         {
+-            try
+-            {
++            try(
++final SocketChannel socketChannel = SocketChannel.open( m_addr ))             {
+                 final ByteBuffer msg = m_msg.duplicate();
+                 final ByteBuffer buf = ByteBuffer.allocateDirect( m_msg.capacity() );
+-                final SocketChannel socketChannel = SocketChannel.open( m_addr );
+                 final Socket socket = socketChannel.socket();
+                 socket.setTcpNoDelay( true );
+                 System.out.println( 

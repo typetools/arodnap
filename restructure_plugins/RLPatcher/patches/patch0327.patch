@@ -1,0 +1,23 @@
+--- /tmp/orig-15391699741405931526.java	2025-09-24 22:04:00.572760007 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url5997ccb760_JANNLab_JANNLab_tgz-pJ8-de_jannlab_examples_recurrent_SequentialXorExampleJ8/src/de/jannlab/io/Serializer.java	2025-09-24 22:03:58.480613757 +0000
+@@ -46,13 +46,14 @@
+     public static <T> void write(final T obj, final String filename) throws IOException {
+         //
+         File file = new File(filename);
+-        //
+-        ObjectOutputStream out = new ObjectOutputStream(
+-            new GZIPOutputStream(new FileOutputStream(file))
++        try (java.io.FileOutputStream __arodnap_temp0 = new FileOutputStream(file)) {
++            ObjectOutputStream out = new ObjectOutputStream(
++            new GZIPOutputStream(__arodnap_temp0)
+         );
+-        out.writeObject(obj);
+-        out.flush();
+-        out.close();
++            out.writeObject(obj);
++            out.flush();
++        }
++
+     }
+     /**
+      * Reads an object from a file. The instance if casted automatically.

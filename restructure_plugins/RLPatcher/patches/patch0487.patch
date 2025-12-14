@@ -1,0 +1,13 @@
+--- /tmp/orig-6413475837801834194.java	2025-09-24 22:20:50.247339785 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url80e39b1957_tobikster_IJN_headers_recognition_tgz-pJ8-org_maltparser_examples_CreatePhraseStructureGraphJ8/src/org/maltparser/core/config/ConfigurationDir.java	2025-09-24 22:20:46.471075811 +0000
+@@ -1027,8 +1027,8 @@
+ 	}
+ 	
+ 	public void initCreatedByMaltParserVersionFromInfoFile() throws MaltChainedException {
+-		try {
+-			BufferedReader br = new BufferedReader(getInputStreamReaderFromConfigFileEntry(getName()+"_"+getType()+".info", "UTF-8"));
++		try (java.io.InputStreamReader __arodnap_temp0 = getInputStreamReaderFromConfigFileEntry(getName() + "_" + getType() + ".info", "UTF-8")) {
++			BufferedReader br = new BufferedReader(__arodnap_temp0);
+ 			String line = null;
+ 			while ((line = br.readLine()) != null) {
+ 				if (line.startsWith("Version:                       ")) {

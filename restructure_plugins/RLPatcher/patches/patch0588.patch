@@ -1,0 +1,13 @@
+--- /tmp/orig-18312080688393764269.java	2025-09-24 22:36:14.111921874 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url888b6fd9b4_jmacglashan_commandsToTasks_tgz-pJ8-commands_tests_Model3TestsJ8/src/commands/auxiliarytools/TrajectoryRecorder.java	2025-09-24 22:36:11.615747380 +0000
+@@ -562,8 +562,8 @@
+ 					//System.out.println("Loading File...");
+        				String fpath = dataFiles.get(ind);
+        				String fcont = null;
+-       				try{
+-       					fcont = new Scanner(new File(fpath)).useDelimiter("\\Z").next();
++       				try(java.util.Scanner __arodnap_temp0 = new Scanner(new File(fpath))) {
++       					fcont = __arodnap_temp0.useDelimiter("\\Z").next();
+        				}catch(Exception E){
+        					System.out.println(E);
+        				}

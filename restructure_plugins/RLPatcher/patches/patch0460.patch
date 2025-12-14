@@ -1,0 +1,17 @@
+--- /tmp/orig-8786200424222115190.java	2025-09-24 22:17:16.056367097 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url7f15a160d2_timofei7_old_ai_assignments_tgz-pJ8-org_json_TestJ8/src/hw2_P1/Parser.java	2025-09-24 22:17:14.024225044 +0000
+@@ -73,6 +73,14 @@
+ 			} catch (IOException e)
+ 			{
+ 				System.out.println("	interwebs error: " + e.toString());
++			} finally {
++			    if (reader != null) {
++			        try {
++			            reader.close();
++			        } catch (Exception e) {
++			            e.printStackTrace();
++			        }
++			    }
+ 			}
+ 		
+ 		} catch (Exception e)

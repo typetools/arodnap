@@ -1,0 +1,54 @@
+--- /tmp/orig-5615742693559646215.java	2025-09-24 22:33:09.242998731 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url80e39b1957_tobikster_IJN_headers_recognition_tgz-pJ8-org_maltparser_examples_CreatePhraseStructureGraphJ8/src/org/maltparser/ml/liblinear/Liblinear.java	2025-09-24 22:33:05.438732797 +0000
+@@ -219,10 +219,12 @@
+ 		}
+ //		cardinalities = getCardinalities(featureVector);
+ 		if (pathExternalLiblinearTrain == null) {
+-			try {
++		java.io.InputStreamReader __arodnap_temp0 = null;
++		try {
+ 				Problem problem = null;
++				__arodnap_temp0 = getInstanceInputStreamReader(".ins");
+ 				if (featurePruning) {
+-					problem = readLibLinearProblemWithFeaturePruning(getInstanceInputStreamReader(".ins"));
++					problem = readLibLinearProblemWithFeaturePruning(__arodnap_temp0);
+ 				} else {
+ //					problem = readLibLinearProblem(getInstanceInputStreamReader(".ins"), cardinalities);
+ 				}
+@@ -248,16 +250,34 @@
+ 				throw new LiblinearException("The Liblinear learner cannot remove the instance file. ", e);
+ 			} catch (IOException e) {
+ 				throw new LiblinearException("The Liblinear learner cannot save the model file '"+getFile(".mod").getAbsolutePath()+"'. ", e);
++			} finally {
++			    if (__arodnap_temp0 != null) {
++			        try {
++			            __arodnap_temp0.close();
++			        } catch (Exception e) {
++			            e.printStackTrace();
++			        }
++			    }
+ 			}
+ 		} else {
+ 			trainExternal(featureVector);
+ 		}
+ 		
+ 		if (featurePruning) {
+-			try {
+-				saveFeatureMap(new FileOutputStream(getFile(".map").getAbsolutePath()), featureMap);
++		java.io.FileOutputStream __arodnap_temp1 = null;
++		try {
++		__arodnap_temp1 = new FileOutputStream(getFile(".map").getAbsolutePath());
++		saveFeatureMap(__arodnap_temp1, featureMap);
+ 			} catch (FileNotFoundException e) {
+ 				throw new LiblinearException("The Liblinear learner cannot save the feature map file '"+getFile(".map").getAbsolutePath()+"'. ", e);
++			} finally {
++			    if (__arodnap_temp1 != null) {
++			        try {
++			            __arodnap_temp1.close();
++			        } catch (Exception e) {
++			            e.printStackTrace();
++			        }
++			    }
+ 			}
+ 		} else {
+ //			saveCardinalities(getInstanceOutputStreamWriter(".car"), cardinalities);

@@ -1,0 +1,26 @@
+--- /tmp/orig-17712858705351778449.java	2025-09-24 22:44:51.320078344 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlb879d9e865_ogotalski_elevator_tgz-pJ8-ElevatorTaskJ8/src/by/epam/lab/view/LogViewFrame.java	2025-09-24 22:44:50.159997245 +0000
+@@ -25,7 +25,7 @@
+ 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+ 		setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
+ 		JTextArea logArea = new JTextArea();
+-		FileReader reader;
++		FileReader reader = null;
+ 		try {
+ 			reader = new FileReader(LOGFILE_NAME);
+ 			logArea.read(reader, LOGFILE_NAME);
+@@ -36,6 +36,14 @@
+ 		} catch (IOException e) {
+ 
+ 			e.printStackTrace();
++		} finally {
++		    if (reader != null) {
++		        try {
++		            reader.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
+ 		}
+ 
+ 	}

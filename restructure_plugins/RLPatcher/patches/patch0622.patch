@@ -1,0 +1,28 @@
+--- /tmp/orig-12907364850813019606.java	2025-09-24 22:39:06.679985134 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url913d8566d1_AnsBalin_rbn_tgz-pJ8-MainJ8/src/DataOutput.java	2025-09-24 22:39:05.475900963 +0000
+@@ -76,15 +76,16 @@
+   }
+   
+   public Network readFile() throws IOException, ClassNotFoundException{
+-    
+-    FileInputStream fis = new FileInputStream(path);
+-    ObjectInputStream ois = new ObjectInputStream(fis);
+-    
+-    Network net = (Network) ois.readObject();
+-    
+-    return net;
+-    
+-  }
++      try (FileInputStream fis = new FileInputStream(path)) {
++          ObjectInputStream ois = new ObjectInputStream(fis);
++          Network net = (Network) ois.readObject();
++          return net;
++      }
++  
++
++
++
++}
+   
+   public void clearFile() throws IOException{
+     

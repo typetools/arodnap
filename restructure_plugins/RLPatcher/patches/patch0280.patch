@@ -1,0 +1,26 @@
+--- /tmp/orig-7883175015926838316.java	2025-09-24 21:58:58.571648825 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url4c41254592_topskychen_AuthTopk_tgz-pJ8-quickhull3d_QuickHull3DTestJ8/src/utility/geo/VoronoiNeighbors.java	2025-09-24 21:58:55.763452521 +0000
+@@ -111,7 +111,7 @@
+ 	}
+ 	
+ 	public void loadVoronoiNeighbors(String destFileName, HashMap<Integer, int[]> nbHashMap){
+-		Scanner in;
++		Scanner in = null;
+ 		System.out.println("begin loading voronoi neighbors");
+ 		try {
+ 			in = new Scanner(new File(destFileName));
+@@ -132,6 +132,14 @@
+ 		} catch (IOException e) {
+ 			// TODO Auto-generated catch block
+ 			e.printStackTrace();
++		} finally {
++		    if (in != null) {
++		        try {
++		            in.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
+ 		}
+ 		System.out.println("\nload fin!");
+ 	}

@@ -1,0 +1,56 @@
+--- /tmp/orig-309518451973601884.java	2025-09-24 22:47:39.251818210 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlc58f2e0b85_xoriole_CEAC_tgz-pJ8-com_sdm_phr_cpabe_CpabeTestJ8/src/com/sdm/phr/cpabe/Common.java	2025-09-24 22:47:37.487694883 +0000
+@@ -79,33 +79,33 @@
+ 
+     public static byte[][] readCpabeFile(String encfile) throws IOException {
+         int i, len;
+-        InputStream is = new FileInputStream(encfile);
+-        byte[][] res = new byte[2][];
+-        byte[] aesBuf, cphBuf;
+-
+-        /* read aes buf */
+-        len = 0;
+-        for (i = 3; i >= 0; i--) {
++        try (InputStream is = new FileInputStream(encfile)) {
++            byte[][] res = new byte[2][];
++            byte[] aesBuf, cphBuf;
++            len = 0;
++            for (i = 3; i >= 0; i--) {
+             len |= is.read() << (i * 8);
+         }
+-        aesBuf = new byte[len];
+-
+-        is.read(aesBuf);
+-
+-        /* read cph buf */
+-        len = 0;
+-        for (i = 3; i >= 0; i--) {
++            aesBuf = new byte[len];
++            is.read(aesBuf);
++            len = 0;
++            for (i = 3; i >= 0; i--) {
+             len |= is.read() << (i * 8);
+         }
+-        cphBuf = new byte[len];
++            cphBuf = new byte[len];
++            is.read(cphBuf);
++            res[0] = aesBuf;
++            res[1] = cphBuf;
++            return res;
++        }
++
++
++
++
++
+ 
+-        is.read(cphBuf);
+ 
+-        is.close();
+ 
+-        res[0] = aesBuf;
+-        res[1] = cphBuf;
+-        return res;
+     }
+     
+     

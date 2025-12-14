@@ -1,0 +1,13 @@
+--- /tmp/orig-8908724767843102667.java	2025-09-24 22:56:54.942666035 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlead5353366_Zeldon_BigData_Class_tgz-pJ8-LocalTestsJ8/src/com/beust/jcommander/JCommander.java	2025-09-24 22:56:53.354554980 +0000
+@@ -478,8 +478,8 @@
+   private static List<String> readFile(String fileName) {
+     List<String> result = Lists.newArrayList();
+ 
+-    try {
+-      BufferedReader bufRead = new BufferedReader(new FileReader(fileName));
++    try (java.io.FileReader __arodnap_temp0 = new FileReader(fileName)) {
++      BufferedReader bufRead = new BufferedReader(__arodnap_temp0);
+ 
+       String line;
+ 

@@ -1,0 +1,31 @@
+--- /tmp/orig-9138512214034834453.java	2025-09-24 22:04:11.313510832 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url5a01f2c1d9_core9_core_tgz-pJ8-io_core9_core_boot_BootstrapFrameworkJ8/src/net/xeoh/nexus/JARLocator.java	2025-09-24 22:04:09.285369056 +0000
+@@ -110,11 +110,12 @@
+      */
+     protected Collection<String> listAll(URI uri) throws IOException {
+         final Collection<String> rval = new ArrayList<String>();
++        java.util.jar.JarFile jarFile = null;
+ 
+         // Use the native JAR access mechanism to get our classes.
+         try {
+             final JarURLConnection connection = (JarURLConnection) new URL("jar:" + uri + "!/").openConnection();
+-            final JarFile jarFile = connection.getJarFile();
++            jarFile = connection.getJarFile();
+             final Enumeration<JarEntry> entries = jarFile.entries();
+ 
+             // Get all avaliable entreis
+@@ -138,6 +139,14 @@
+             }
+         } catch (MalformedURLException e) {
+             e.printStackTrace();
++        } finally {
++            if (jarFile != null) {
++                try {
++                    jarFile.close();
++                } catch (Exception e) {
++                    e.printStackTrace();
++                }
++            }
+         }
+ 
+         return rval;

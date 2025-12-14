@@ -1,0 +1,17 @@
+--- /tmp/orig-5924410138375436583.java	2025-09-24 22:19:16.280771198 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url80587fc7d5_dennervidal_CloudSim_DVFS_tgz-pJ8-Examples_Dvfs_example_simpleJ8/src/org/cloudbus/cloudsim/UtilizationModelStochastic.java	2025-09-24 22:19:13.576582166 +0000
+@@ -103,10 +103,10 @@
+ 	 */
+ 	@SuppressWarnings("unchecked")
+ 	public void loadHistory(String filename) throws Exception {
+-		FileInputStream fis = new FileInputStream(filename);
+-		ObjectInputStream ois = new ObjectInputStream(fis);
+-		setHistory((Map<Double, Double>) ois.readObject());
+-		ois.close();
++	    try (FileInputStream fis = new FileInputStream(filename)) {
++	        ObjectInputStream ois = new ObjectInputStream(fis);
++	        setHistory((Map<Double, Double>) ois.readObject());
++	    }
+ 	}
+ 
+ 	/**

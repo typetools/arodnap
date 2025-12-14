@@ -1,0 +1,13 @@
+--- /tmp/orig-565254520755656155.java	2025-09-24 22:24:41.899533213 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url80e39b1957_tobikster_IJN_headers_recognition_tgz-pJ8-org_maltparser_examples_CreatePhraseStructureGraphJ8/src/org/maltparser/ml/cheater/Cheater.java	2025-09-24 22:24:38.179273150 +0000
+@@ -142,8 +142,8 @@
+ 			if (cheaterFileName == null || cheaterFileName.equals("")) {
+ 				throw new CheaterException("The cheater file name is assigned. ");
+ 			}
+-			try {
+-				BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(cheaterFileName)));
++			try (java.io.FileInputStream __arodnap_temp0 = new FileInputStream(cheaterFileName)) {
++				BufferedReader reader = new BufferedReader(new InputStreamReader(__arodnap_temp0));
+ 				String line = "";
+ 				cheatValues = new ArrayList<Integer>();
+ 				while ((line = reader.readLine()) != null) {

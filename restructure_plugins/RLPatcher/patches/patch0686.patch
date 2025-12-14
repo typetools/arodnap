@@ -1,0 +1,23 @@
+--- /tmp/orig-13724279530824953619.java	2025-09-24 22:44:57.112483283 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlbc3e98d97e_jmhorjus_EFCP_Implementation_tgz-pJ8-UDPConnector_UdpConnectorTestJ8/src/UDPConnector/UdpConnector.java	2025-09-24 22:44:56.100412531 +0000
+@@ -262,15 +262,16 @@
+             System.out.print("ERROR: Peer not set; cannot send.");
+             return false;
+         }
+-        
+-        DatagramSocket sendSocket = new DatagramSocket();
+-        DatagramPacket sendPacket = new DatagramPacket(
++        try (DatagramSocket sendSocket = new DatagramSocket()) {
++            DatagramPacket sendPacket = new DatagramPacket(
+                 sendBuffer, 
+                 sendBuffer.length, 
+                 this.m_peerAddress, 
+                 this.m_peerPort);
++            sendSocket.send(sendPacket);
++        }
++
+         
+-        sendSocket.send(sendPacket);
+         
+         return true;
+     }

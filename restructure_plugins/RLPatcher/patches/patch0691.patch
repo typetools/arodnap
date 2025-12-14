@@ -1,0 +1,17 @@
+--- /tmp/orig-17074927992538259733.java	2025-09-24 22:45:21.050156732 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlbd77b745af_KokaKiwi_MCLauncher_tgz-pJ8-net_contrapunctus_lzma_BenchmarkJ8/src/com/kokakiwi/mclauncher/ui/LauncherFrame.java	2025-09-24 22:45:19.186026413 +0000
+@@ -27,11 +27,9 @@
+     
+     public void init()
+     {
+-        try
+-        {
+-            setIconImage(ImageIO.read(LauncherFrame.class
+-                    .getResourceAsStream("/"
+-                            + main.getConfig().getString("window.icon"))));
++        try(
++java.io.InputStream __arodnap_temp0 = LauncherFrame.class.getResourceAsStream("/" + main.getConfig().getString("window.icon")))         {
++            setIconImage(ImageIO.read(__arodnap_temp0));
+         }
+         catch (final IOException e)
+         {

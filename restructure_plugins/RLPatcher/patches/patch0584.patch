@@ -1,0 +1,13 @@
+--- /tmp/orig-14740540641415330514.java	2025-09-24 22:35:51.970374083 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url888b6fd9b4_jmacglashan_commandsToTasks_tgz-pJ8-commands_tests_Model3TestsJ8/src/commands/data/TrainingElementParser.java	2025-09-24 22:35:49.346190641 +0000
+@@ -91,8 +91,8 @@
+ 	
+ 	public void writeTrainingElementToFile(TrainingElement te, String path){
+ 		//write this string out
+-		try{
+-			BufferedWriter out = new BufferedWriter(new FileWriter(path));
++		try(java.io.FileWriter __arodnap_temp0 = new FileWriter(path)) {
++			BufferedWriter out = new BufferedWriter(__arodnap_temp0);
+ 			out.write(this.getStringOfTrainingElement(te));
+ 			out.close();
+ 		}catch(Exception E){

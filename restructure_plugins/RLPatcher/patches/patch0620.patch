@@ -1,0 +1,40 @@
+--- /tmp/orig-14352580222734296642.java	2025-09-24 22:39:00.583558967 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url90b6689baa_adsonrocha_PD321_tgz-pJ8-MyFuzzyLiteClassJ8/src/com/fuzzylite/Console.java	2025-09-24 22:38:58.531415513 +0000
+@@ -521,12 +521,13 @@
+             try {
+                 StringBuilder text = new StringBuilder();
+                 String input = sourceBase + examples.get(i) + "." + from;
+-                BufferedReader source = new BufferedReader(new FileReader(input));
+-                String line;
+-                while ((line = source.readLine()) != null) {
++                try (java.io.FileReader __arodnap_temp0 = new FileReader(input)) {
++                    BufferedReader source = new BufferedReader(__arodnap_temp0);
++                    String line;
++                    while ((line = source.readLine()) != null) {
+                     text.append(line).append("\n");
+                 }
+-                source.close();
++                }
+ 
+                 Engine engine = importer.fromString(text.toString());
+ 
+@@ -548,8 +549,8 @@
+                 if (!outputFile.exists()) {
+                     outputFile.createNewFile();
+                 }
+-                FileWriter target = new FileWriter(outputFile);
+-                if ("cpp".equals(to)) {
++                try (FileWriter target = new FileWriter(outputFile)) {
++                    if ("cpp".equals(to)) {
+                     target.write("#include <fl/Headers.h>\n\n"
+                             + "int main(int argc, char** argv){\n"
+                             + exporter.toString(engine)
+@@ -575,7 +576,7 @@
+                 } else {
+                     target.write(exporter.toString(engine));
+                 }
+-                target.close();
++                }
+             } catch (Exception ex) {
+                 errors.append("error at " + examples.get(i) + ":\n" + ex.toString() + "\n");
+                 ex.printStackTrace();

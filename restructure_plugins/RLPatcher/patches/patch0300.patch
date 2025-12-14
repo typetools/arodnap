@@ -1,0 +1,32 @@
+--- /tmp/orig-15073373827867016942.java	2025-09-24 22:01:34.314535927 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url4c41254592_topskychen_AuthTopk_tgz-pJ8-quickhull3d_QuickHull3DTestJ8/src/utility/geo/VoronoiNeighbors.java	2025-09-24 22:01:31.250321725 +0000
+@@ -46,6 +46,14 @@
+ 		} catch (FileNotFoundException e1) {
+ 			// TODO Auto-generated catch block
+ 			e1.printStackTrace();
++		} finally {
++		    if (lr != null) {
++		        try {
++		            lr.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
+ 		}
+ 		points = new ArrayList<float[]>();
+ 		idmap = new ArrayList<Integer>();
+@@ -79,6 +87,14 @@
+ 		} catch (IOException e) {
+ 			// TODO Auto-generated catch block
+ 			e.printStackTrace();
++		} finally {
++		    if (dos != null) {
++		        try {
++		            dos.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
+ 		}
+ 		for(int id = 0; id < points.size(); id++){
+ 			int[] pid = delaunay.getLinked(id + 1);

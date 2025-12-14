@@ -1,0 +1,12 @@
+--- /tmp/orig-11560920132299720361.java	2025-09-24 22:53:12.655125952 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urld8e41b4f7f_warrenfalk_jbox2dtest_tgz-pJ8-org_jbox2d_testbed_framework_TestbedMainJ8/src/org/jbox2d/testbed/framework/TestbedTest.java	2025-09-24 22:53:10.734991718 +0000
+@@ -431,8 +431,7 @@
+   protected void _load() {
+ 
+     World w;
+-    try {
+-      FileInputStream fis = new FileInputStream(getFilename());
++    try (FileInputStream fis = new FileInputStream(getFilename())) {
+       w = deserializer.deserializeWorld(fis);
+     } catch (FileNotFoundException e) {
+       log.error("File not found error while loading", e);

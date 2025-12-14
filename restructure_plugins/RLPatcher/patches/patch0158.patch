@@ -1,0 +1,27 @@
+--- /tmp/orig-16689413353644322061.java	2025-09-24 21:48:27.267517943 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url294e6c45f3_Ecdosis_NMergeNew_tgz-pJ8-TestJ8/src/MvdTool.java	2025-09-24 21:48:25.023361066 +0000
+@@ -661,16 +661,16 @@
+ 				File versionFile = new File( archiveDir, files[i] );
+ 				if ( !versionFile.exists() )
+ 					throw new MVDToolException("File "+files[i]+" not found!");
+-				FileInputStream fis = new FileInputStream( versionFile );
+-				byte[] data = new byte[(int)versionFile.length()];
+-				fis.read( data );
+-				fis.close();
+-				XMLGuideFile.VersionInfo vi = guide.getVersionInfo( vId );
+-				mvd.newVersion( vi.shortName, vi.longName, 
++				try (FileInputStream fis = new FileInputStream( versionFile )) {
++				    byte[] data = new byte[(int)versionFile.length()];
++				    fis.read( data );
++				    XMLGuideFile.VersionInfo vi = guide.getVersionInfo( vId );
++				    mvd.newVersion( vi.shortName, vi.longName, 
+ 					guide.getGroupName(vi.group), 
+ 					vi.backup, vi.backup!=Version.NO_BACKUP );
+-                char[] chars = Utilities.bytesToChars(data,mvd.getEncoding());
+-				mvd.update( vId, chars, mergeSharedVersions );
++				    char[] chars = Utilities.bytesToChars(data,mvd.getEncoding());
++				    mvd.update( vId, chars, mergeSharedVersions );
++				}
+ 			}
+ 			MVDFile.externalise( mvd, new File(mvdFile), 
+ 				folderId, Utilities.loadDBProperties(dbConn) );

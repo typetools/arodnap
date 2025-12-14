@@ -1,0 +1,46 @@
+--- /tmp/orig-13886313159338316813.java	2025-09-24 22:48:59.385420234 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlcaef331f4e_dreamable_cra_tgz-pJ8-coho_lp_project_LPProjectJ8/src/coho/interp/BasicFunctions.java	2025-09-24 22:48:56.229199587 +0000
+@@ -163,7 +163,9 @@
+ 		}
+ 	}
+ 	protected static void do_print(RCvalue args, String $) throws EvalException {
+-		try {
++	java.io.Writer logWW = null;
++	java.io.Writer ww = null;
++	try {
+ 			if(args.size() > 0) {
+ 				int lineLimit = -1, j = 0;
+ 				Value[] opt = new Value[args.size() - 1];
+@@ -195,8 +197,8 @@
+ 					opt = _opt;
+ 				}
+ 				
+-				Writer ww = w;
+-				Writer logWW = logW;
++				ww = w;
++				logWW = logW;
+ 				if(lineLimit > 0){// lineLimit version
+ 					ww = new LineBreakingWriter(w, lineLimit);
+ 					if(logW!=null)
+@@ -211,6 +213,21 @@
+ 			}
+ 		} catch (IOException e) { 
+ 			throw new EvalException(e.getMessage());
++		} finally {
++		    if (logWW != null) {
++		        try {
++		            logWW.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
++		    if (ww != null) {
++		        try {
++		            ww.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
+ 		}
+ 	}
+ }

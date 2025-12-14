@@ -1,0 +1,23 @@
+--- /tmp/orig-14609102277685964346.java	2025-09-24 21:35:19.300452074 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url0d38a10ee7_diegopliebana_GEBT_tgz-pJ8-ch_idsia_scenarios_test_EvolveWithChangingSeedsJ8/src/ch/idsia/mario/engine/mapedit/LevelEditor.java	2025-09-24 21:35:16.280241034 +0000
+@@ -30,10 +30,10 @@
+     {
+         super("Map Edit");
+         
+-        try
+-        {
++        try(
++java.io.InputStream __arodnap_temp0 = LevelScene.class.getResourceAsStream("resources/tiles.dat"))         {
+             System.out.println("System.getProperty(\"user.dir()\") = " + System.getProperty("user.dir"));
+-            Level.loadBehaviors(new DataInputStream(LevelScene.class.getResourceAsStream("resources/tiles.dat")));
++            Level.loadBehaviors(new DataInputStream(__arodnap_temp0));
+ //            Level.loadBehaviors(new DataInputStream(new FileInputStream("ch/idsia/mario/resources/tiles.dat")));
+         }
+         catch (Exception e)
+@@ -148,4 +148,4 @@
+             bitmapCheckboxes[i].setSelected((bm&(1<<i))>0);
+         }
+     }
+-}
++}
+\ No newline at end of file

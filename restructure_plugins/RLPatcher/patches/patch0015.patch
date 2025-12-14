@@ -1,0 +1,14 @@
+--- /tmp/orig-160532468710648652.java	2025-09-24 21:33:24.456427269 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url0307c0e995_js_labs_js_collider_tgz-pJ8-org_jsl_tests_shmem_throughput_MainJ8/src/org/jsl/tests/session_close/Client.java	2025-09-24 21:33:22.244272693 +0000
+@@ -63,9 +63,8 @@
+         public void run()
+         {
+             final ByteBuffer batch = createBatch( MESSAGES, MESSAGE_LENGTH, 1 );
+-            try
+-            {
+-                final SocketChannel socketChannel = SocketChannel.open( m_addr );
++            try(
++final SocketChannel socketChannel = SocketChannel.open( m_addr ))             {
+                 final Socket socket = socketChannel.socket();
+                 socket.setTcpNoDelay( true );
+                 socket.setSendBufferSize( SOCKET_BUFFER_SIZE );

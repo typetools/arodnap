@@ -1,0 +1,35 @@
+--- /tmp/orig-16325575233044309207.java	2025-09-24 22:38:13.768286375 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url8d3c4d17f5_catseye_JaC64_tgz-pJ8-JaC64J8/src/com/dreamfabric/jac64/C1541Emu.java	2025-09-24 22:38:11.516128939 +0000
+@@ -128,13 +128,14 @@
+   }
+ 
+   public void loadDebug(String resource) {
+-    try {
++  java.io.InputStream __arodnap_temp0 = null;
++  try {
+       URL url = getClass().getResource(resource);
+       monitor.info("Loading debug from URL: " + url);
+       if (url == null) url = new URL(codebase + resource);
++      __arodnap_temp0 = url.openConnection().getInputStream();
+       BufferedReader reader =
+-	new BufferedReader(new InputStreamReader(url.openConnection().
+-						 getInputStream()));
++	new BufferedReader(new InputStreamReader(__arodnap_temp0));
+       String line = "";
+       while ((line = reader.readLine()) != null) {
+ 	String[] parts = line.split("\t");
+@@ -152,6 +153,14 @@
+       }
+     } catch(Exception e) {
+       System.out.println("Failed to load debug text: " + resource);
++    } finally {
++        if (__arodnap_temp0 != null) {
++            try {
++                __arodnap_temp0.close();
++            } catch (Exception e) {
++                e.printStackTrace();
++            }
++        }
+     }
+   }
+ 

@@ -1,0 +1,13 @@
+--- /tmp/orig-971877157671432965.java	2025-09-24 21:57:40.698205135 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url49584c1d41_Arrem_GGS_tgz-pJ8-com_gamezgalaxy_test_console_MainJ8/src/com/gamezgalaxy/GGS/system/heartbeat/Beater.java	2025-09-24 21:57:38.594058047 +0000
+@@ -48,8 +48,8 @@
+ 							connection.setDoInput(true);
+ 							connection.setDoOutput(true);
+ 							connection.connect();
+-							try {
+-								reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
++							try (java.io.InputStream __arodnap_temp0 = connection.getInputStream()) {
++								reader = new BufferedReader(new InputStreamReader(__arodnap_temp0));
+ 								try {
+ 									h.onPump(reader, beat.getServer());
+ 								} catch (Exception e) {

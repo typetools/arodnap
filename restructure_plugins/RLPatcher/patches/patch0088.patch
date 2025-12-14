@@ -1,0 +1,15 @@
+--- /tmp/orig-6211730122944694745.java	2025-09-24 21:40:46.063284845 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url147ce07ebe_JoshuaKissoon_Kademlia_tgz-pJ8-kademlia_simulations_RoutingTableStateTestingJ8/src/kademlia/dht/DHT.java	2025-09-24 21:40:44.467173316 +0000
+@@ -133,8 +133,10 @@
+     public JKademliaStorageEntry retrieve(KademliaId key, int hashCode) throws FileNotFoundException, IOException, ClassNotFoundException
+     {
+         String folder = this.getContentStorageFolderName(key);
+-        DataInputStream din = new DataInputStream(new FileInputStream(folder + File.separator + hashCode + ".kct"));
+-        return this.getSerializer().read(din);
++        try (java.io.FileInputStream __arodnap_temp0 = new FileInputStream(folder + File.separator + hashCode + ".kct")) {
++            DataInputStream din = new DataInputStream(__arodnap_temp0);
++            return this.getSerializer().read(din);
++        }
+     }
+ 
+     @Override

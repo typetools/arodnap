@@ -1,0 +1,13 @@
+--- /tmp/orig-16567342001611021019.java	2025-09-24 21:50:34.472410113 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url39209c0557_au_research_ANDS_RIFCS_API_tgz-pJ8-org_ands_rifcs_example_SampleRIFCSBuildCollectionV1Dot6Number1J8/src/org/ands/rifcs/example/SampleRIFCSRead.java	2025-09-24 21:50:32.964304690 +0000
+@@ -59,7 +59,9 @@
+     FileNotFoundException, SAXException, ParserConfigurationException,
+     IOException, MalformedURLException {
+         RIFCSReader rr = new RIFCSReader();
+-        rr.mapToDOM(new FileInputStream(args[0]));
++        try (java.io.FileInputStream __arodnap_temp0 = new FileInputStream(args[0])) {
++            rr.mapToDOM(__arodnap_temp0);
++        }
+         RIFCSWrapper rw = new RIFCSWrapper(rr.getDocument());
+         rw.validate();
+          RIFCS rifcs = rw.getRIFCSObject();

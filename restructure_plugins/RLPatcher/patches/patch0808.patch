@@ -1,0 +1,35 @@
+--- /tmp/orig-8840898753189492338.java	2025-09-24 22:55:58.150695508 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urle381b6cba7_IkarosKappler_ikrs_http_tgz-pJ8-ikrs_json_rpc_JSONRPCHandlerJ8/src/ikrs/io/MultiStopMarkInputStream.java	2025-09-24 22:55:55.218490521 +0000
+@@ -357,6 +357,7 @@
+ 
+     /** Just for testing **/
+     public static void main( String[] argv ) {
++    ikrs.io.MultiStopMarkInputStream in = null;
+ 
+ 	try {
+ 	    String[] stopMarks = new String[] {
+@@ -385,8 +386,7 @@
+ 	    
+ 	     
+ 
+-	    MultiStopMarkInputStream in = 
+-		new MultiStopMarkInputStream( new java.io.ByteArrayInputStream(data.getBytes(java.nio.charset.StandardCharsets.UTF_8.name())),
++	    in = new MultiStopMarkInputStream( new java.io.ByteArrayInputStream(data.getBytes(java.nio.charset.StandardCharsets.UTF_8.name())),
+ 					      stopMarkList );
+ 	    
+ 	    int i = 0;
+@@ -406,6 +406,14 @@
+ 
+ 	} catch( IOException e ) {
+ 	    e.printStackTrace();
++	} finally {
++	    if (in != null) {
++	        try {
++	            in.close();
++	        } catch (Exception e) {
++	            e.printStackTrace();
++	        }
++	    }
+ 	}
+ 
+     }

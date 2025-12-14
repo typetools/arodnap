@@ -1,0 +1,15 @@
+--- /tmp/orig-11893104274482448081.java	2025-09-24 21:55:33.557317439 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url47af6b1535_rolandotr_db_comparison_tgz-pJ8-methodology_HistoryJ8/src/methodology/History.java	2025-09-24 21:55:31.897201390 +0000
+@@ -39,8 +39,10 @@
+ 
+ 
+ 	public static void main(String[] args) throws IOException {
+-		
+-		System.setOut(new PrintStream("history.txt"));
++	try (java.io.PrintStream __arodnap_temp0 = new PrintStream("history.txt")) {
++	    System.setOut(__arodnap_temp0);
++	}
++	
+ 		DBProtocol[][] protocols = DBProtocol.loadProtocolsFairly();
+ 		Attribute[] attributes = new Attribute[]{
+ 				new MafiaFraudProbability(new ProbabilityRelation(), new LogScale(2)),

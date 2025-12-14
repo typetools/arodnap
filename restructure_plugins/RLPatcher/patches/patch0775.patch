@@ -1,0 +1,13 @@
+--- /tmp/orig-15943312313325585508.java	2025-09-24 22:52:47.073337567 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urld856362767_hpdcj_PCJ_tgz-pJ8-org_pcj_test_StorageExampleMainJ8/src/org/pcj/internal/Networker.java	2025-09-24 22:52:44.841181520 +0000
+@@ -104,9 +104,8 @@
+     }
+ 
+     public void send(SocketChannel socket, Message message) {
+-        try {
++        try (LoopbackMessageBytesStream loopbackMessageBytesStream = new LoopbackMessageBytesStream(message)) {
+             if (socket instanceof LoopbackSocketChannel) {
+-                LoopbackMessageBytesStream loopbackMessageBytesStream = new LoopbackMessageBytesStream(message);
+                 loopbackMessageBytesStream.writeMessage();
+                 loopbackMessageBytesStream.close();
+ 

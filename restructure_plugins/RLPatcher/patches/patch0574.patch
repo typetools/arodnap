@@ -1,0 +1,12 @@
+--- /tmp/orig-7418606640660123904.java	2025-09-24 22:34:48.057906323 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url86e9087e81_JohnPease_557_HW3_tgz-pJ8-uwm_cs557_Sample4J8/src/uwm_cs557/MiniDB.java	2025-09-24 22:34:46.801818517 +0000
+@@ -67,8 +67,7 @@
+   }
+ 
+   private void restoreDBFromOSFile(){
+-    try {
+-      FileInputStream fin = new FileInputStream(osFilename());
++    try (FileInputStream fin = new FileInputStream(osFilename())) {
+       ObjectInputStream ois = new ObjectInputStream(fin);
+       this.dbBlocks = (byte[][]) ois.readObject();
+       this.dbBlockUsed = (boolean[]) ois.readObject();

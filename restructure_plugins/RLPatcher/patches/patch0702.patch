@@ -1,0 +1,34 @@
+--- /tmp/orig-17174405776423156636.java	2025-09-24 22:46:16.662044478 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlbd77b745af_KokaKiwi_MCLauncher_tgz-pJ8-net_contrapunctus_lzma_BenchmarkJ8/src/com/kokakiwi/mclauncher/core/updater/UpdaterWorker.java	2025-09-24 22:46:14.785913320 +0000
+@@ -151,13 +151,12 @@
+             long lastTime = System.currentTimeMillis();
+             
+             final InputStream in = connection.getInputStream();
+-            final OutputStream out = new FileOutputStream(new File(dest,
+-                    getFileName()));
+-            
+-            int instantDownload = 0;
+-            int bufferSize;
+-            final byte[] buffer = new byte[65536];
+-            while ((bufferSize = in.read(buffer, 0, buffer.length)) != -1)
++            try (final OutputStream out = new FileOutputStream(new File(dest,
++                    getFileName()))) {
++                        int instantDownload = 0;
++                        int bufferSize;
++                        final byte[] buffer = new byte[65536];
++                        while ((bufferSize = in.read(buffer, 0, buffer.length)) != -1)
+             {
+                 out.write(buffer, 0, bufferSize);
+                 
+@@ -180,8 +179,9 @@
+                         (int) (10 + api.getUpdater().getDownloaded() * 45
+                                 / api.getUpdater().getTotalSize()));
+             }
+-            in.close();
+-            out.close();
++                        in.close();
++                    }
++
+         }
+         
+         public void extract(LauncherAPI api, int min, int max)

@@ -1,0 +1,82 @@
+--- /tmp/orig-2372129081271401429.java	2025-09-24 22:46:04.097166085 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlbd77b745af_KokaKiwi_MCLauncher_tgz-pJ8-net_contrapunctus_lzma_BenchmarkJ8/src/com/kokakiwi/mclauncher/api/LauncherAPI.java	2025-09-24 22:46:02.233035767 +0000
+@@ -161,7 +161,10 @@
+     {
+         String result = null;
+         HttpURLConnection connection = null;
+-        
++        java.io.InputStream in = null;
++        java.io.OutputStream __arodnap_temp1 = null;
++        java.io.InputStream __arodnap_temp0 = null;
++
+         try
+         {
+             final URL url = new URL(dest);
+@@ -197,7 +200,8 @@
+             connection.setDoOutput(true);
+             
+             connection.connect();
+-            
++            __arodnap_temp0 = LauncherAPI.class.getResourceAsStream("keys/" + keyFile);
++
+             if (url.getProtocol().contains("https") && keyFile != null)
+             {
+                 final Certificate[] certs = ((HttpsURLConnection) connection)
+@@ -205,8 +209,7 @@
+                 
+                 final byte[] bytes = new byte[294];
+                 final DataInputStream dis = new DataInputStream(
+-                        LauncherAPI.class
+-                                .getResourceAsStream("keys/" + keyFile));
++                        __arodnap_temp0);
+                 dis.readFully(bytes);
+                 dis.close();
+                 
+@@ -223,14 +226,15 @@
+                     throw new RuntimeException("Public key mismatch");
+                 }
+             }
+-            
++            __arodnap_temp1 = connection.getOutputStream();
++
+             final DataOutputStream out = new DataOutputStream(
+-                    connection.getOutputStream());
++                    __arodnap_temp1);
+             out.writeBytes(sb.toString());
+             out.flush();
+             out.close();
+             
+-            final InputStream in = connection.getInputStream();
++            in = connection.getInputStream();
+             final BufferedReader reader = new BufferedReader(
+                     new InputStreamReader(in));
+             
+@@ -247,6 +251,28 @@
+         catch (final Exception e)
+         {
+             e.printStackTrace();
++        } finally {
++            if (in != null) {
++                try {
++                    in.close();
++                } catch (Exception e) {
++                    e.printStackTrace();
++                }
++            }
++            if (__arodnap_temp1 != null) {
++                try {
++                    __arodnap_temp1.close();
++                } catch (Exception e) {
++                    e.printStackTrace();
++                }
++            }
++            if (__arodnap_temp0 != null) {
++                try {
++                    __arodnap_temp0.close();
++                } catch (Exception e) {
++                    e.printStackTrace();
++                }
++            }
+         }
+         
+         if (connection != null)

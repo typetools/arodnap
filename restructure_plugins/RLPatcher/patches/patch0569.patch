@@ -1,0 +1,50 @@
+--- /tmp/orig-5993663481015077129.java	2025-09-24 22:34:22.584125596 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url8551e9ebc1_mishika05_Salesforce_DataGen_tgz-pJ8-org_json_TestJ8/src/RecordGen.java	2025-09-24 22:34:21.028016816 +0000
+@@ -41,23 +41,24 @@
+     	 }
+       	 endTime = System.nanoTime();
+     	 logger.info("Finished all Threads");
+-    	 LineNumberReader  lnr = new LineNumberReader(new FileReader(new File("bugIds.log")));
+-     	 lnr.skip(Long.MAX_VALUE);
+-     	 int numLines = lnr.getLineNumber();
+-     	 double percent = numLines/client.prop.numRecs;
+-     	 NumberFormat percentFormat = NumberFormat.getPercentInstance();
+-     	 percentFormat.setMaximumFractionDigits(1);
+-     	 String result = percentFormat.format(percent);
+-     	 String succRec = numLines + "/" + client.prop.numRecs +  " (" + result + ") " + "number of records successfully created";
+-     	 long msTime = (endTime - startTime) / 1000000;
+-     	 long minTime = TimeUnit.MILLISECONDS.toMinutes(msTime);
+-     	 long secTime = TimeUnit.MILLISECONDS.toSeconds(msTime - TimeUnit.MINUTES.toMillis(minTime));
+-     	 String elapsedTime = 
++    	 try (java.io.FileReader __arodnap_temp0 = new FileReader(new File("bugIds.log"))) {
++    	     LineNumberReader  lnr = new LineNumberReader(__arodnap_temp0);
++    	     lnr.skip(Long.MAX_VALUE);
++    	     int numLines = lnr.getLineNumber();
++    	     double percent = numLines/client.prop.numRecs;
++    	     NumberFormat percentFormat = NumberFormat.getPercentInstance();
++    	     percentFormat.setMaximumFractionDigits(1);
++    	     String result = percentFormat.format(percent);
++    	     String succRec = numLines + "/" + client.prop.numRecs +  " (" + result + ") " + "number of records successfully created";
++    	     long msTime = (endTime - startTime) / 1000000;
++    	     long minTime = TimeUnit.MILLISECONDS.toMinutes(msTime);
++    	     long secTime = TimeUnit.MILLISECONDS.toSeconds(msTime - TimeUnit.MINUTES.toMillis(minTime));
++    	     String elapsedTime = 
+      			 String.format("%d min, %d sec", minTime, secTime);
+-     	 logger.info(succRec);
+-     	 logger.info("Total Elapsed Time: " + elapsedTime);
+-     	 lnr.close();
+-    	 
++    	     logger.info(succRec);
++    	     logger.info("Total Elapsed Time: " + elapsedTime);
++    	 }
++
+    }
+     
+     
+@@ -65,4 +66,4 @@
+ 
+    
+ 
+-}
++}
+\ No newline at end of file

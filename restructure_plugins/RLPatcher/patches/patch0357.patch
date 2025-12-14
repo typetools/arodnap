@@ -1,0 +1,17 @@
+--- /tmp/orig-7810259556620026316.java	2025-09-24 22:06:44.844243196 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url70997c83aa_Xilaew_risiko_tgz-pJ8-risiko_XMI2XMLtransformerJ8/src/risiko/main/Main.java	2025-09-24 22:06:42.840103100 +0000
+@@ -10,12 +10,12 @@
+ 	static Engine engine = new Engine();
+ 	
+ 	Main () throws IOException, RuntimeException{
+-		try {
++		try (java.io.InputStream __arodnap_temp0 = getClass().getResourceAsStream("main.risiko.default.board")) {
+ 			System.out.println("default.board");
+ 			
+ 			System.out.println(getClass().getResourceAsStream("default.board"));
+ 			System.out.println("main.risiko.default.board");
+-			System.out.println(getClass().getResourceAsStream("main.risiko.default.board"));
++			System.out.println(__arodnap_temp0);
+ 			System.out.println("default.board");
+ 			System.out.println(getClass().getResourceAsStream("default.board"));
+ 			System.out.println("default.board");

@@ -1,0 +1,12 @@
+--- /tmp/orig-14174793774263451252.java	2025-09-24 22:49:27.639395428 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlcdd0c1ab49_emiln_JHouseFireExplorer_tgz-pJ8-dk_brics_automaton_DatatypesJ8/src/Util.java	2025-09-24 22:49:25.863271262 +0000
+@@ -22,8 +22,7 @@
+         return true;
+     }
+     public static void writeTextToFile(String text, String path) {
+-        try {
+-            FileWriter fw = new FileWriter(path);
++        try (FileWriter fw = new FileWriter(path)) {
+             BufferedWriter bw = new BufferedWriter(fw);
+             bw.write(text);
+             bw.close();

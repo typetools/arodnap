@@ -1,0 +1,64 @@
+--- /tmp/orig-8804801387476928477.java	2025-09-24 22:46:10.145588922 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlbd77b745af_KokaKiwi_MCLauncher_tgz-pJ8-net_contrapunctus_lzma_BenchmarkJ8/src/com/kokakiwi/mclauncher/api/LauncherAPI.java	2025-09-24 22:46:08.401466992 +0000
+@@ -266,7 +266,9 @@
+     {
+         String result = null;
+         HttpURLConnection connection = null;
+-        
++        java.io.InputStream in = null;
++        java.io.InputStream __arodnap_temp0 = null;
++
+         try
+         {
+             final URL url = new URL(dest);
+@@ -279,7 +281,8 @@
+             connection.setDoOutput(true);
+             
+             connection.connect();
+-            
++            __arodnap_temp0 = LauncherAPI.class.getResourceAsStream("keys/" + keyFile);
++
+             if (url.getProtocol().contains("https") && keyFile != null)
+             {
+                 final Certificate[] certs = ((HttpsURLConnection) connection)
+@@ -287,8 +290,7 @@
+                 
+                 final byte[] bytes = new byte[294];
+                 final DataInputStream dis = new DataInputStream(
+-                        LauncherAPI.class
+-                                .getResourceAsStream("keys/" + keyFile));
++                        __arodnap_temp0);
+                 dis.readFully(bytes);
+                 dis.close();
+                 
+@@ -306,7 +308,7 @@
+                 }
+             }
+             
+-            final InputStream in = connection.getInputStream();
++            in = connection.getInputStream();
+             final BufferedReader reader = new BufferedReader(
+                     new InputStreamReader(in));
+             
+@@ -323,6 +325,21 @@
+         catch (final Exception e)
+         {
+             e.printStackTrace();
++        } finally {
++            if (in != null) {
++                try {
++                    in.close();
++                } catch (Exception e) {
++                    e.printStackTrace();
++                }
++            }
++            if (__arodnap_temp0 != null) {
++                try {
++                    __arodnap_temp0.close();
++                } catch (Exception e) {
++                    e.printStackTrace();
++                }
++            }
+         }
+         
+         if (connection != null)

@@ -1,0 +1,16 @@
+--- /tmp/orig-15545550502862472777.java	2025-09-24 22:41:42.722893790 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlb3290c8e9e_craigonic_jasl_tgz-pJ8-DriverJ8/src/jasl/utilities/Serialization.java	2025-09-24 22:41:41.546811571 +0000
+@@ -117,10 +117,10 @@
+ 			                                                              Messages.ZERO_LENGTH_PARAMETER_MSG));
+ 		}
+ 
+-		try
+-		{
++		try(
++java.io.FileInputStream __arodnap_temp0 = new FileInputStream(filename)) 		{
+ 			ObjectInputStream objectInputStream =
+-				new ObjectInputStream(new FileInputStream(filename));
++				new ObjectInputStream(__arodnap_temp0);
+ 			object = objectInputStream.readObject();
+ 			objectInputStream.close();
+ 		}

@@ -1,0 +1,31 @@
+--- /tmp/orig-14116776998487761454.java	2025-09-24 22:50:30.595796619 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urld0f681c558_farom57_AstroidDriver_tgz-pJ8-laazotea_indi_server_examples_MinimumINDIServerJ8/src/laazotea/indi/driver/examples/INDIElTiempoDriver.java	2025-09-24 22:50:28.795670775 +0000
+@@ -328,18 +328,20 @@
+    * @throws IOException
+    */
+   private String readFile(File file) throws IOException {
+-    BufferedReader reader = new BufferedReader(new FileReader(file));
+-    String line;
+-    StringBuilder stringBuilder = new StringBuilder();
+-    String ls = System.getProperty("line.separator");
+-
+-    while ((line = reader.readLine()) != null) {
++      try (java.io.FileReader __arodnap_temp0 = new FileReader(file)) {
++          BufferedReader reader = new BufferedReader(__arodnap_temp0);
++          String line;
++          StringBuilder stringBuilder = new StringBuilder();
++          String ls = System.getProperty("line.separator");
++          while ((line = reader.readLine()) != null) {
+       stringBuilder.append(line);
+       stringBuilder.append(ls);
+     }
++          return stringBuilder.toString();
++      }
++  
+ 
+-    return stringBuilder.toString();
+-  }
++}
+ 
+   /**
+    * Reads a binary file and returns its contents as a byte[]

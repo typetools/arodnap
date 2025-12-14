@@ -1,0 +1,12 @@
+--- /tmp/orig-9316077735375270119.java	2025-09-24 21:34:12.827807253 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url04f7fcf4e1_peteratt_HDFS_Replication_Simulator_tgz-pJ8-hdfs_replicationsimulator_MainJ8/src/hdfs/replicationsimulator/Simulator.java	2025-09-24 21:34:11.735730943 +0000
+@@ -215,8 +215,7 @@
+ 	public static void printResults() {
+ 
+ 		File f = new File("results.log");
+-		try {
+-			FileWriter fw = new FileWriter(f);
++		try (FileWriter fw = new FileWriter(f)) {
+ 			int dataLosses = 0;
+ 
+ 			List<Long> ttrs = new ArrayList<Long>();

@@ -1,0 +1,26 @@
+--- /tmp/orig-8476225267923278105.java	2025-09-24 22:17:43.826308312 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url7f43a4752f_shalynnho_pokemonfactory_tgz-pJ8-Networking_ServerJ8/src/agent/test/V0_JUnit_KitRobotAgent_Test_NormativeScenario.java	2025-09-24 22:17:40.902103900 +0000
+@@ -346,7 +346,7 @@
+ 	 */
+ 	public void generateLogFile(String test, String log) {
+ 
+-		FileOutputStream fos;
++		FileOutputStream fos = null;
+ 
+ 		System.out.println("Message logs saved to " + FILEPATH + test + "("
+ 				+ date.toString() + ").txt");
+@@ -359,6 +359,14 @@
+ 			oos.close();
+ 		} catch (IOException ex) {
+ 			ex.printStackTrace(System.err);
++		} finally {
++		    if (fos != null) {
++		        try {
++		            fos.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
+ 		}
+ 	}
+ 

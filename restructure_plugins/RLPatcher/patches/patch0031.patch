@@ -1,0 +1,14 @@
+--- /tmp/orig-6414815816036007170.java	2025-09-24 21:34:41.661822048 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url0d38a10ee7_diegopliebana_GEBT_tgz-pJ8-ch_idsia_scenarios_test_EvolveWithChangingSeedsJ8/src/grammaticalbehaviors/GEBT_Mario/Map.java	2025-09-24 21:34:38.421595635 +0000
+@@ -278,9 +278,8 @@
+ 
+     public void dumpToFile(String filename)
+     {
+-        try
+-        {
+-            FileWriter fw = new FileWriter(filename);
++        try(
++FileWriter fw = new FileWriter(filename))         {
+             BufferedWriter bw = new BufferedWriter(fw);
+ 
+             for(int h = 14; h >= 0; --h)

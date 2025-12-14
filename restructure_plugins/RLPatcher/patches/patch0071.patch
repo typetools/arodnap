@@ -1,0 +1,33 @@
+--- /tmp/orig-16651352331320757062.java	2025-09-24 21:38:55.111532015 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url0e7d57473a_kyorohiro_HetimaUtil_tgz-pJ8-net_hetimatan_net_http_HttpServer3xxJ8/src/net/hetimatan/net/http/TestForHttpPost.java	2025-09-24 21:38:53.079390018 +0000
+@@ -19,6 +19,7 @@
+ 	public void testRedirect() throws InterruptedException, IOException {
+ 		HttpServer3xx _3xx = null;
+ 		HttpServerResponseCheck rc = null;
++		net.hetimatan.net.http.HttpGet httpget = null;
+ 
+ 		try {
+ 			_3xx = new HttpServer3xx();
+@@ -31,7 +32,7 @@
+ 			rc.startServer(null);
+ 			while(!rc.isBinded()){Thread.yield();}
+ 
+-			HttpGet httpget = new HttpGet();
++			httpget = new HttpGet();
+ 			{
+ 				CashKyoroFile body = new CashKyoroFile("test".getBytes());
+ 				httpget.setBody(body);
+@@ -47,6 +48,13 @@
+ 		} finally {
+ 			if(_3xx != null) { _3xx.close(); }
+ 			if(rc != null) { rc.close(); }
++			if (httpget != null) {
++			    try {
++			        httpget.dispose();
++			    } catch (Exception e) {
++			        e.printStackTrace();
++			    }
++			}
+ 		}
+ 	}
+ 

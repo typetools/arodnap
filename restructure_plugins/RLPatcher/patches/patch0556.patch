@@ -1,0 +1,41 @@
+--- /tmp/orig-5687606772411516016.java	2025-09-24 22:33:21.839879308 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url80e39b1957_tobikster_IJN_headers_recognition_tgz-pJ8-org_maltparser_examples_CreatePhraseStructureGraphJ8/src/org/maltparser/ml/liblinear/Liblinear.java	2025-09-24 22:33:17.967608619 +0000
+@@ -374,10 +374,13 @@
+ 		} else if (divideFeature == null) {
+ 			throw new LiblinearException("The divide feature cannot be found. ");
+ 		} 
+-		
++		java.io.BufferedWriter out = null;
++		java.io.InputStreamReader __arodnap_temp0 = null;
++
+ 		try {
+-			final BufferedReader in = new BufferedReader(getInstanceInputStreamReader(".ins"));
+-			final BufferedWriter out = method.getInstanceWriter();
++		__arodnap_temp0 = getInstanceInputStreamReader(".ins");
++		final BufferedReader in = new BufferedReader(__arodnap_temp0);
++			out = method.getInstanceWriter();
+ 			final StringBuilder sb = new StringBuilder(6);
+ 			int l = in.read();
+ 			char c;
+@@ -425,6 +428,21 @@
+ 			throw new LiblinearException("The instance file cannot be found. ", e);
+ 		} catch (IOException e) {
+ 			throw new LiblinearException("The Liblinear learner read from the instance file. ", e);
++		} finally {
++		    if (out != null) {
++		        try {
++		            out.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
++		    if (__arodnap_temp0 != null) {
++		        try {
++		            __arodnap_temp0.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
+ 		}
+ 
+ 	}

@@ -1,0 +1,32 @@
+--- /tmp/orig-15500676345386638564.java	2025-09-24 21:46:44.188312360 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url294e6c45f3_Ecdosis_NMergeNew_tgz-pJ8-TestJ8/src/Test.java	2025-09-24 21:46:41.592130880 +0000
+@@ -317,14 +317,13 @@
+ 		if ( vId != -1 )
+ 		{
+ 			int length = (int)src.length();
+-			FileInputStream fis = new FileInputStream( src );
+-			byte[] data = new byte[length];
+-			fis.read( data );
+-			fis.close();
+-			int offset = 0;
+-			int index = -1;
+-			byte[] bPattern = pattern.getBytes("UTF-8");
+-			do 
++			try (FileInputStream fis = new FileInputStream( src )) {
++			    byte[] data = new byte[length];
++			    fis.read( data );
++			    int offset = 0;
++			    int index = -1;
++			    byte[] bPattern = pattern.getBytes("UTF-8");
++			    do 
+ 			{
+ 				index = KMPSearch.search( data, offset, bPattern );
+ 				if ( index != -1 )
+@@ -336,6 +335,7 @@
+ 				}
+ 			}
+ 			while ( index != -1 );
++			}
+ 		}
+ 	}
+ 		

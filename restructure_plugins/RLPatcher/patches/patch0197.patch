@@ -1,0 +1,23 @@
+--- /tmp/orig-15511869923085760631.java	2025-09-24 21:52:02.006529126 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url433bec1e56_sarobe_DifficultyInvestigation_tgz-pJ8-fr_inria_optimization_cmaes_examples_CMAExample1J8/src/ssamot/utilities/Configuration.java	2025-09-24 21:51:59.486352955 +0000
+@@ -46,13 +46,14 @@
+ 	
+ 	
+ 	private Configuration() throws IOException {
++	    try (FileInputStream propFile = new FileInputStream(PATH
++				+ PROPERTIES_FILENAME)) {
++				    props = new Properties(System.getProperties());
++				    props.load(propFile);
++				}
++	
+ 
+-		FileInputStream propFile = new FileInputStream(PATH
+-				+ PROPERTIES_FILENAME);
+-		props = new Properties(System.getProperties());
+-		props.load(propFile);
+-
+-	}
++}
+ 
+ 	public static Configuration getConfiguration() {
+ 		synchronized (Configuration.class) {

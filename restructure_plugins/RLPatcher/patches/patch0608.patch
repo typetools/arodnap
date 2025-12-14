@@ -1,0 +1,13 @@
+--- /tmp/orig-17597706828965523479.java	2025-09-24 22:37:50.566664481 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url8d3c4d17f5_catseye_JaC64_tgz-pJ8-JaC64J8/src/com/dreamfabric/jac64/C64Reader.java	2025-09-24 22:37:48.462517392 +0000
+@@ -698,9 +698,8 @@
+   }
+ 
+   public boolean readTapeFromFile(String name) {
+-    try {
++    try (FileInputStream reader = new FileInputStream(name)) {
+       System.out.println("Loading " + name);
+-      FileInputStream reader = new FileInputStream(name);
+       return readTape(reader);
+     } catch (Exception e) {
+       System.out.println("readTapeFromFile(filename): Error while opening file " + name + ":");

@@ -1,0 +1,26 @@
+--- /tmp/orig-15427102948946838292.java	2025-09-24 22:20:32.022065776 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url80e39b1957_tobikster_IJN_headers_recognition_tgz-pJ8-org_maltparser_examples_CreatePhraseStructureGraphJ8/src/org/maltparser/core/config/ConfigurationDir.java	2025-09-24 22:20:28.337808233 +0000
+@@ -799,7 +799,7 @@
+      */
+     public void echoInfoFile() throws MaltChainedException {
+     	checkConfigDirectory();
+-    	JarInputStream jis;
++    	JarInputStream jis = null;
+     	try {
+ 	    	if (url == null) {
+ 	    		jis = new JarInputStream(new FileInputStream(workingDirectory.getPath()+File.separator+getName()+".mco"));
+@@ -823,6 +823,14 @@
+     		throw new ConfigurationException("Could not print configuration information file. The configuration file '"+workingDirectory.getPath()+File.separator+getName()+".mco"+"' cannot be found. ", e);
+     	} catch (IOException e) {
+ 			throw new ConfigurationException("Could not print configuration information file. ", e);
++		} finally {
++		    if (jis != null) {
++		        try {
++		            jis.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
+ 		}
+ 
+     }

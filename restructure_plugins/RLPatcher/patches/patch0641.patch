@@ -1,0 +1,31 @@
+--- /tmp/orig-11944147344940681691.java	2025-09-24 22:40:52.255365677 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urla958522fc1_spirosikmd_inmdsy_08_tgz-pJ8-TesterAppJ8/src/nl/rug/peerbox/ui/LogView.java	2025-09-24 22:40:50.739259689 +0000
+@@ -55,10 +55,12 @@
+ 				e.gc.dispose();
+ 			}
+ 		});
++		java.io.FileReader __arodnap_temp0 = null;
+ 
+ 		try {
+ 			File logFile = new File("peerbox.log");
+-			BufferedReader reader = new BufferedReader(new FileReader(logFile));
++			__arodnap_temp0 = new FileReader(logFile);
++			BufferedReader reader = new BufferedReader(__arodnap_temp0);
+ 			String line;
+ 			while ((line = reader.readLine()) != null) {
+ 				if (logText.getText().isEmpty()) {
+@@ -76,6 +78,14 @@
+ 			thread.start();
+ 		} catch (Exception e) {
+ 			System.out.println(e);
++		} finally {
++		    if (__arodnap_temp0 != null) {
++		        try {
++		            __arodnap_temp0.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
+ 		}
+ 
+ 		Button clear = new Button(this, SWT.FLAT);

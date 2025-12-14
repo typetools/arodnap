@@ -1,0 +1,15 @@
+--- /tmp/orig-15943326122101124244.java	2025-09-24 21:35:33.197423130 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url0d38a10ee7_diegopliebana_GEBT_tgz-pJ8-ch_idsia_scenarios_test_EvolveWithChangingSeedsJ8/src/ch/idsia/utils/StatisticalSummary.java	2025-09-24 21:35:29.953196437 +0000
+@@ -239,10 +239,10 @@
+     }
+ 
+     public void save(String path) {
+-        try {
++        try (java.io.FileOutputStream __arodnap_temp0 = new FileOutputStream(path)) {
+             ObjectOutputStream oos =
+                     new ObjectOutputStream(
+-                            new FileOutputStream(path));
++                            __arodnap_temp0);
+             oos.writeObject(this);
+             oos.close();
+         } catch (Exception e) {

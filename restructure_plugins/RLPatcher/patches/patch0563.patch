@@ -1,0 +1,14 @@
+--- /tmp/orig-15804018728253353382.java	2025-09-24 22:34:00.662593185 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url835a90ed59_aschi_regularLanguages_tgz-pJ8-ch_zhaw_regularLanguages_evolution_runners_EvolvingLocalDivisable5LanguageJ8/src/fr/loria/graphViz/GraphViz.java	2025-09-24 22:33:59.190490278 +0000
+@@ -266,9 +266,8 @@
+    {
+ 	   StringBuilder sb = new StringBuilder();
+ 	   
+-	   try
+-	   {
+-		   FileInputStream fis = new FileInputStream(input);
++	   try(
++FileInputStream fis = new FileInputStream(input)) 	   {
+ 		   DataInputStream dis = new DataInputStream(fis);
+ 		   BufferedReader br = new BufferedReader(new InputStreamReader(dis));
+ 		   String line;

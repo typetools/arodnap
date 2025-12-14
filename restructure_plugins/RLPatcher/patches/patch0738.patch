@@ -1,0 +1,12 @@
+--- /tmp/orig-6276420220427931882.java	2025-09-24 22:49:40.120267948 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlce7759b8da_Palachsuper_EBA4_tgz-pJ8-json_TestJ8/src/terminal/http_server/HttpServer.java	2025-09-24 22:49:38.520156087 +0000
+@@ -39,8 +39,7 @@
+             /* * Если порт был свободен и сокет был успешно создан, можно переходить к * следующему шагу - ожиданию клинтов */
+         while (true)
+         {
+-            try {
+-                Socket clientSocket = serverSocket.accept();
++            try (Socket clientSocket = serverSocket.accept()) {
+                 if (!a){
+                     Service.WriteLog("Service thread is stop");
+                     t.stop();

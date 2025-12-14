@@ -1,0 +1,13 @@
+--- /tmp/orig-8905986310430185934.java	2025-09-24 22:49:18.970789419 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlcdd0c1ab49_emiln_JHouseFireExplorer_tgz-pJ8-dk_brics_automaton_DatatypesJ8/src/dk/brics/automaton/Datatypes.java	2025-09-24 22:49:17.162663015 +0000
+@@ -481,8 +481,8 @@
+ 		String dir = System.getProperty("dk.brics.automaton.datatypes");
+ 		if (dir == null)
+ 			dir = "build";
+-		try {
+-			a.store((new FileOutputStream(dir + "/" + name + ".aut")));
++		try (java.io.FileOutputStream __arodnap_temp0 = new FileOutputStream(dir + "/" + name + ".aut")) {
++			a.store((__arodnap_temp0));
+ 		} catch (IOException e) {
+ 			e.printStackTrace();
+ 		}

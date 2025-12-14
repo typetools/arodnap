@@ -1,0 +1,43 @@
+--- /tmp/orig-13593898770657173496.java	2025-09-24 22:44:27.650423633 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlb5d5be4365_abmargb_oursim_ext_tgz-pJ8-br_edu_ufcg_lsd_oursim_experiments_RemoteNoFScenarioGeneratorJ8/src/br/edu/ufcg/lsd/oursim/queue/FileEventProxyTest.java	2025-09-24 22:44:25.202252485 +0000
+@@ -45,18 +45,30 @@
+ 	
+ 	@Test
+ 	public void testLastPage() {
+-		FileEventProxy proxy = new FileEventProxy(
+-				getClass().getResourceAsStream("event-example.conf"));
+-		
+-		Assert.assertTrue(proxy.hasNextEvent());
+-		Assert.assertNotNull(proxy.nextEventTime());
++	java.io.InputStream __arodnap_temp0 = null;
++	try {
++    __arodnap_temp0 = getClass().getResourceAsStream("event-example.conf");
++    FileEventProxy proxy = new FileEventProxy(
++				__arodnap_temp0);
++    Assert.assertTrue(proxy.hasNextEvent());
++    Assert.assertNotNull(proxy.nextEventTime());
++    proxy.nextEventPage(8);
++    List<EventSpec> lastPage = proxy.nextEventPage(8);
++    Assert.assertEquals(2, lastPage.size());
++    Assert.assertFalse(proxy.hasNextEvent());
++    Assert.assertNull(proxy.nextEventTime());
++} finally {
++    if (__arodnap_temp0 != null) {
++        try {
++            __arodnap_temp0.close();
++        } catch (Exception e) {
++            e.printStackTrace();
++        }
++    }
++}
++	
+ 		
+-		proxy.nextEventPage(8);
+-		List<EventSpec> lastPage = proxy.nextEventPage(8);
+ 		
+-		Assert.assertEquals(2, lastPage.size());
+-		Assert.assertFalse(proxy.hasNextEvent());
+-		Assert.assertNull(proxy.nextEventTime());
+ 	}
+ 	
+ 	@Test(expected=IllegalArgumentException.class)

@@ -1,0 +1,13 @@
+--- /tmp/orig-15387268036630480911.java	2025-09-24 22:35:30.060842511 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url888b6fd9b4_jmacglashan_commandsToTasks_tgz-pJ8-commands_tests_Model3TestsJ8/src/commands/model3/TrajectoryModule.java	2025-09-24 22:35:27.752681161 +0000
+@@ -232,7 +232,9 @@
+ 
+ 			String content = "";
+ 			try {
+-				content = new Scanner(new File(path)).useDelimiter("\\Z").next();
++			    try (java.util.Scanner __arodnap_temp0 = new Scanner(new File(path))) {
++			        content = __arodnap_temp0.useDelimiter("\\Z").next();
++			    }
+ 			} catch (FileNotFoundException e) {
+ 				e.printStackTrace();
+ 				System.exit(-1);

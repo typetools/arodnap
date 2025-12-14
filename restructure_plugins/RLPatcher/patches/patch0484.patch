@@ -1,0 +1,14 @@
+--- /tmp/orig-113960417204533182.java	2025-09-24 22:20:22.381391859 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url80e39b1957_tobikster_IJN_headers_recognition_tgz-pJ8-org_maltparser_examples_CreatePhraseStructureGraphJ8/src/org/maltparser/core/config/ConfigurationDir.java	2025-09-24 22:20:18.433115861 +0000
+@@ -761,9 +761,9 @@
+ 		if (url == null) {
+ 			throw new ConfigurationException("The URL cannot be found. ");
+ 		}  	
+-		try {
++		try (java.io.InputStream __arodnap_temp0 = url.openConnection().getInputStream()) {
+ 			JarEntry je;
+-			JarInputStream jis = new JarInputStream(url.openConnection().getInputStream());
++			JarInputStream jis = new JarInputStream(__arodnap_temp0);
+ 			while ((je = jis.getNextJarEntry()) != null) {
+ 				String entryName = je.getName();
+ 				if (entryName.endsWith(".info")) {

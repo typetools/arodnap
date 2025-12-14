@@ -1,0 +1,15 @@
+--- /tmp/orig-11564647749509516898.java	2025-09-24 22:52:36.868624169 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urld829b80034_wjch111_PTSP2013Wang_tgz-pJ8-controllers_momcts_momctsCore_TestPlannerJ8/src/wox/serial/Easy.java	2025-09-24 22:52:34.216438759 +0000
+@@ -18,11 +18,10 @@
+  */
+ public class Easy {
+     public static void save(Object ob, String filename) {
+-        try {
++        try (FileWriter file = new FileWriter(filename)) {
+             ObjectWriter writer = new SimpleWriter();
+             Element el = writer.write(ob);
+             XMLOutputter out = new XMLOutputter(); // ("  ", true);
+-            FileWriter file = new FileWriter(filename);
+             out.output(el, file);
+             file.close();
+             System.out.println("Saved object to " + filename);

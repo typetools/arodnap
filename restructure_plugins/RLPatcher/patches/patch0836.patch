@@ -1,0 +1,22 @@
+--- /tmp/orig-2451488450717453773.java	2025-09-24 22:58:05.519601425 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlfcc351a1ba_kuntapavankumar_Z_tgz-pJ8-edu_concordia_dpis_ReplicaTestJ8/src/edu/concordia/dpis/stationserver/StationServerImpl.java	2025-09-24 22:58:04.059499321 +0000
+@@ -56,7 +56,18 @@
+ 	private final SimpleDateFormat dateFormat = new SimpleDateFormat("mm/DD/yyyy");
+ 
+ 	public StationServerImpl startUDPServer(String port) {
+-		 UDPServer udpServer = new UDPServer(Integer.valueOf(port));
++	edu.concordia.dpis.stationserver.StationServerImpl.UDPServer udpServer = null;
++ try {
++     udpServer = new UDPServer(Integer.valueOf(port));
++ } finally {
++     if (udpServer != null) {
++         try {
++             udpServer.close();
++         } catch (Exception e) {
++             e.printStackTrace();
++         }
++     }
++ }
+ 		this.log.debug(this.stationType.getStationCode()
+ 				+ ":UDPServer started on port[" + port + "]");
+ 		return this;

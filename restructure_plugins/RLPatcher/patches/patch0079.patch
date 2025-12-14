@@ -1,0 +1,12 @@
+--- /tmp/orig-5193649752313589807.java	2025-09-24 21:39:48.123236246 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url11fb0973cf_raichuman9_Swimmer526_tgz-pJ8-fr_inria_optimization_cmaes_examples_CMAExample1J8/src/fr/inria/optimization/cmaes/CMAEvolutionStrategy.java	2025-09-24 21:39:45.135027442 +0000
+@@ -804,8 +804,7 @@
+         this.propertiesFileName = fileName;
+ //        if (fileName.equals(""))
+ //            return properties;
+-        try {
+-            java.io.FileInputStream fis = new java.io.FileInputStream(fileName);
++        try (java.io.FileInputStream fis = new java.io.FileInputStream(fileName)) {
+             properties.load(fis);
+             fis.close();
+         } 

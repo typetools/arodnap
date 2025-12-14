@@ -1,0 +1,23 @@
+--- /tmp/orig-6831131070410694125.java	2025-09-24 22:10:54.229676098 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url75694980d5_fabioalmeid_tp01ftc_tgz-pJ8-agentes_jade_Centralizador_ExemploParserGramaticaCentralizadorJ8/src/gramatica/java_cup/Main.java	2025-09-24 22:10:51.377476719 +0000
+@@ -351,7 +351,19 @@
+ 	  else if (!argv[i].startsWith("-") && i==len-1) {
+ 	      /* use input from file. */
+ 	      try {
+-		  System.setIn(new FileInputStream(argv[i]));
++		     java.io.FileInputStream __arodnap_temp0 = null;
++		     try {
++    __arodnap_temp0 = new FileInputStream(argv[i]);
++    System.setIn(__arodnap_temp0);
++} finally {
++    if (__arodnap_temp0 != null) {
++        try {
++            __arodnap_temp0.close();
++        } catch (Exception e) {
++            e.printStackTrace();
++        }
++    }
++}
+ 	      } catch (java.io.FileNotFoundException e) {
+ 		  usage("Unable to open \"" + argv[i] +"\" for input");
+ 	      }

@@ -1,0 +1,23 @@
+--- /tmp/orig-11985779504584857426.java	2025-09-24 21:49:51.361396467 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url2df0f7c811_przemekgalazka_legacycode_tgz-pJ8-pl_cc_core_cmd_CommandJ8/src/pl/cc/utils/IniFile.java	2025-09-24 21:49:49.273250497 +0000
+@@ -207,7 +207,19 @@
+ 	 *                Description of Exception
+ 	 */
+ 	public void load(String filename) throws FileNotFoundException {
+-		load(new FileInputStream(filename));
++	java.io.FileInputStream __arodnap_temp0 = null;
++	try {
++    __arodnap_temp0 = new FileInputStream(filename);
++    load(__arodnap_temp0);
++} finally {
++    if (__arodnap_temp0 != null) {
++        try {
++            __arodnap_temp0.close();
++        } catch (Exception e) {
++            e.printStackTrace();
++        }
++    }
++}
+ 	}
+ 
+ 	/**

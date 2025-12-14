@@ -1,0 +1,25 @@
+--- /tmp/orig-7610763624729259190.java	2025-09-24 21:50:38.248674090 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url39209c0557_au_research_ANDS_RIFCS_API_tgz-pJ8-org_ands_rifcs_example_SampleRIFCSBuildCollectionV1Dot6Number1J8/src/org/ands/rifcs/base/RIFCSWrapper.java	2025-09-24 21:50:36.820574260 +0000
+@@ -364,14 +364,16 @@
+                 XMLConstants.W3C_XML_SCHEMA_NS_URI);
+ 
+         URL theSchema = new URL(schemaUrl);
+-        // load a WXS schema, represented by a Schema instance
+-        Source schemaFile = new StreamSource(theSchema.openStream());
+-        Schema schema = factory.newSchema(schemaFile);
++        try (java.io.InputStream __arodnap_temp0 = theSchema.openStream()) {
++            Source schemaFile = new StreamSource(__arodnap_temp0);
++            Schema schema = factory.newSchema(schemaFile);
++            Validator validator = schema.newValidator();
++            validator.validate(new DOMSource(doc));
++        }
++
+ 
+         // create a Validator instance, which can be used
+-        // to validate an instance document
+-        Validator validator = schema.newValidator();
+ 
+-        validator.validate(new DOMSource(doc));
++
+     }
+ }

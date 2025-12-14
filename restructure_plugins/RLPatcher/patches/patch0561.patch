@@ -1,0 +1,34 @@
+--- /tmp/orig-12769203837489566093.java	2025-09-24 22:33:51.981986373 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url835a90ed59_aschi_regularLanguages_tgz-pJ8-ch_zhaw_regularLanguages_evolution_runners_EvolvingLocalDivisable5LanguageJ8/src/fr/loria/graphViz/GraphViz.java	2025-09-24 22:33:50.585888779 +0000
+@@ -185,6 +185,7 @@
+    {
+       File img;
+       byte[] img_stream = null;
++      java.io.FileInputStream in = null;
+ 
+       try {
+          img = File.createTempFile("graph_", "."+type, new File(GraphViz.TEMP_DIR));
+@@ -196,7 +197,7 @@
+          
+          p.waitFor();
+ 
+-         FileInputStream in = new FileInputStream(img.getAbsolutePath());
++         in = new FileInputStream(img.getAbsolutePath());
+          img_stream = new byte[in.available()];
+          in.read(img_stream);
+          // Close it if we need to
+@@ -213,6 +214,14 @@
+       catch (java.lang.InterruptedException ie) {
+          System.err.println("Error: the execution of the external program was interrupted");
+          ie.printStackTrace();
++      } finally {
++          if (in != null) {
++              try {
++                  in.close();
++              } catch (Exception e) {
++                  e.printStackTrace();
++              }
++          }
+       }
+ 
+       return img_stream;

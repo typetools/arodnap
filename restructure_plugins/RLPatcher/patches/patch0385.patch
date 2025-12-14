@@ -1,0 +1,26 @@
+--- /tmp/orig-5960670892968269277.java	2025-09-24 22:10:10.654630052 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url73e3057d61_empeeoh_BACnet4J_tgz-pJ8-com_serotonin_bacnet4j_test_OverflowTestJ8/src/com/serotonin/bacnet4j/rs485/ScriptTest.java	2025-09-24 22:10:06.986373628 +0000
+@@ -17,16 +17,18 @@
+  */
+ public class ScriptTest {
+     public static void main(String[] args) throws Exception {
+-        MasterNode master = new MasterNode(getInputStream(), new DumpOut(), (byte) 4, 2);
+-        new MstpNetwork(master);
+-        master.setTimeSource(new TimeSource() {
++        try (java.io.InputStream __arodnap_temp0 = getInputStream()) {
++            MasterNode master = new MasterNode(__arodnap_temp0, new DumpOut(), (byte) 4, 2);
++            new MstpNetwork(master);
++            master.setTimeSource(new TimeSource() {
+             @Override
+             public long currentTimeMillis() {
+                 return 0;
+             }
+         });
+-        master.initialize(false);
+-        master.run();
++            master.initialize(false);
++            master.run();
++        }
+     }
+ 
+     static InputStream getInputStream() {

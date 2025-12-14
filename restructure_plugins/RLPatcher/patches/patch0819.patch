@@ -1,0 +1,33 @@
+--- /tmp/orig-11207059369762730266.java	2025-09-24 22:57:00.603061862 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlead5353366_Zeldon_BigData_Class_tgz-pJ8-LocalTestsJ8/src/com/beust/jcommander/defaultprovider/PropertyFileDefaultProvider.java	2025-09-24 22:56:59.014950807 +0000
+@@ -43,11 +43,13 @@
+   }
+ 
+   private void init(String fileName) {
+-    try {
++  java.io.InputStream __arodnap_temp0 = null;
++  try {
+       m_properties = new Properties();
+       URL url = ClassLoader.getSystemResource(fileName);
++      __arodnap_temp0 = url.openStream();
+       if (url != null) {
+-        m_properties.load(url.openStream());
++        m_properties.load(__arodnap_temp0);
+       } else {
+         throw new ParameterException("Could not find property file: " + fileName
+             + " on the class path");
+@@ -55,6 +57,14 @@
+     }
+     catch (IOException e) {
+       throw new ParameterException("Could not open property file: " + fileName);
++    } finally {
++        if (__arodnap_temp0 != null) {
++            try {
++                __arodnap_temp0.close();
++            } catch (Exception e) {
++                e.printStackTrace();
++            }
++        }
+     }
+   }
+   

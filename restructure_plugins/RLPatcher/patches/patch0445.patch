@@ -1,0 +1,47 @@
+--- /tmp/orig-15191649546028047171.java	2025-09-24 22:15:55.378727452 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url7a45f192ca_mfullen_ping_pong_net_tgz-pJ8-ping_pong_net_client_io_TestClientNonPPNServerJ8/src/ping/pong/net/connection/io/IoUdpWriteRunnableTest.java	2025-09-24 22:15:53.558600219 +0000
+@@ -97,11 +97,8 @@
+         }, udpSocket);
+         Thread thread = new Thread(ioUdpReadRunnable);
+         thread.start();
+-
+-
+-        DatagramSocket clientUdpSocket = new DatagramSocket();
+-
+-        IoUdpWriteRunnable<String> ioUdpWriteRunnable = new IoUdpWriteRunnable<String>(new InetSocketAddress(config.getIpAddress(), config.getUdpPort()), new RunnableEventListener()
++        try (DatagramSocket clientUdpSocket = new DatagramSocket()) {
++            IoUdpWriteRunnable<String> ioUdpWriteRunnable = new IoUdpWriteRunnable<String>(new InetSocketAddress(config.getIpAddress(), config.getUdpPort()), new RunnableEventListener()
+         {
+             @Override
+             public void onRunnableClosed(DisconnectState disconnectState)
+@@ -109,17 +106,20 @@
+                 logger.debug("Close called {}", disconnectState);
+             }
+         }, clientUdpSocket);
++            ioUdpWriteRunnable.enqueueMessage(message);
++            Thread writethread = new Thread(ioUdpWriteRunnable);
++            writethread.start();
++            writethread.join(50);
++            thread.join(100);
++            assertEquals(messageProcessorImpl.myMessage, message);
++            ioUdpReadRunnable.close();
++        }
++
++
++
++
++
+ 
+-        ioUdpWriteRunnable.enqueueMessage(message);
+-        Thread writethread = new Thread(ioUdpWriteRunnable);
+-        writethread.start();
+-
+-        writethread.join(50);
+-        thread.join(100);
+-
+-        assertEquals(messageProcessorImpl.myMessage, message);
+-        ioUdpReadRunnable.close();
+-        ioUdpWriteRunnable.close();
+     }
+ 
+     /**

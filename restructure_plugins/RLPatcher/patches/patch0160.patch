@@ -1,0 +1,22 @@
+--- /tmp/orig-11940153853718760484.java	2025-09-24 21:48:38.960335321 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url29ae058134_yuriy_chumak_jatha_tgz-pJ8-org_jatha_LispJ8/src/org/jatha/compile/LispCompiler.java	2025-09-24 21:48:36.684176208 +0000
+@@ -265,13 +265,15 @@
+ 			// try to load text file, not a class
+ 			Reader resourceReader;
+ 			try {
+-				resourceReader = new InputStreamReader(
+-						classLoader.getResourceAsStream(pkg.replace('.', '/') + module)
++			    try (java.io.InputStream __arodnap_temp0 = classLoader.getResourceAsStream(pkg.replace('.', '/') + module)) {
++			        resourceReader = new InputStreamReader(
++						__arodnap_temp0
+ 				);
+-				LispParser cli = new LispParser(f_lisp, resourceReader);
+-				while (true) {
++			        LispParser cli = new LispParser(f_lisp, resourceReader);
++			        while (true) {
+ 					f_lisp.MACHINE.Execute(compile(f_lisp.MACHINE, cli.read(), NIL), NIL);
+ 				}
++			    }
+ 			}
+ 			catch (EOFException ex) // ok. loaded.
+ 			{

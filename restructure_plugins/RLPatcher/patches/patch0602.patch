@@ -1,0 +1,24 @@
+--- /tmp/orig-14069637405109549427.java	2025-09-24 22:37:18.780442486 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url8d1df200a8_gilleain_signatures_tgz-pJ8-signature_chemistry_LargeMoleculeTestJ8/src/signature/chemistry/MoleculeReader.java	2025-09-24 22:37:17.168329792 +0000
+@@ -44,10 +44,20 @@
+     public static List<Molecule> readSDFFile(String filename) {
+ 
+         File file = new File(filename);
++        java.io.FileInputStream __arodnap_temp0 = null;
+         try {
+-            return readSDFfromStream(new FileInputStream(file));
++        __arodnap_temp0 = new FileInputStream(file);
++        return readSDFfromStream(__arodnap_temp0);
+         } catch (FileNotFoundException e) {
+             System.err.println(e.toString());
++        } finally {
++            if (__arodnap_temp0 != null) {
++                try {
++                    __arodnap_temp0.close();
++                } catch (Exception e) {
++                    e.printStackTrace();
++                }
++            }
+         }
+         return null;
+     }

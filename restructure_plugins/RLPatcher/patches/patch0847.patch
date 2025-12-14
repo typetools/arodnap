@@ -1,0 +1,25 @@
+--- /tmp/orig-14495008272696105692.java	2025-09-24 22:58:40.398040446 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlfd6bd5edbe_AntonPoznyak_LogFileGenerator_tgz-pJ8-logfilegen_StartMePleaseJ8/src/logfilegen/forFile/WriterFile.java	2025-09-24 22:58:39.265961281 +0000
+@@ -12,13 +12,21 @@
+ 	}
+ 	
+ 	public void write(){
+-		java.io.FileWriter fileWriter;
++		java.io.FileWriter fileWriter = null;
+ 		try{
+ 			fileWriter = new FileWriter(file);
+ 			fileWriter.write(source);
+ 			fileWriter.close();
+ 		} catch (IOException e){
+ 			System.out.println("Ńan not be written to the file :( ");
++		} finally {
++		    if (fileWriter != null) {
++		        try {
++		            fileWriter.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
+ 		}
+ 	}
+ }

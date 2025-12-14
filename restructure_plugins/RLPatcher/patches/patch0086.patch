@@ -1,0 +1,15 @@
+--- /tmp/orig-4819937505196046487.java	2025-09-24 21:40:35.938577374 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url146c819f25_jlink_Parse4SJM_tgz-pJ8-sjm_examples_book_robot_ShowRobotRefactoredJ8/src/sjm/examples/book/tokens/ShowSuppliedReader.java	2025-09-24 21:40:33.302393169 +0000
+@@ -18,9 +18,9 @@
+ 	 */
+ 	public static void main(String[] args) throws IOException {
+ 		String s = "Let's file this away.";
+-		FileWriter fw = new FileWriter("temp.txt");
+-		fw.write(s);
+-		fw.close();
++		try (FileWriter fw = new FileWriter("temp.txt")) {
++		    fw.write(s);
++		}
+ 
+ 		FileReader fr = new FileReader("temp.txt");
+ 		PushbackReader pr = new PushbackReader(fr, 4);

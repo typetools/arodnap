@@ -1,0 +1,17 @@
+--- /tmp/orig-10798451879762157910.java	2025-09-24 21:49:11.542612963 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url2a908001cd_malictus_klang_tgz-pJ8-malictus_klang_test_PrimitiveTestJ8/src/malictus/klang/test/FileReadWriteTest.java	2025-09-24 21:49:09.090441545 +0000
+@@ -123,6 +123,14 @@
+ 		} catch (Exception err) {
+ 			err.printStackTrace();
+ 			System.out.println("ERROR");
++		} finally {
++		    if (raf != null) {
++		        try {
++		            raf.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
+ 		}
+ 	}
+ 

@@ -1,0 +1,19 @@
+--- /tmp/orig-483353146884137847.java	2025-09-24 22:40:59.467869893 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urla958522fc1_spirosikmd_inmdsy_08_tgz-pJ8-TesterAppJ8/src/nl/rug/peerbox/logic/filesystem/FileServer.java	2025-09-24 22:40:57.963764744 +0000
+@@ -38,8 +38,7 @@
+ 			server.bind(new InetSocketAddress(ctx.getLocalPeer().getAddress(), ctx.getLocalPeer().getPort()));
+ 			while (!Thread.currentThread().isInterrupted()) {
+ 				logger.info("Waiting for incoming connection");
+-				try {
+-					final Socket s = server.accept();
++				try (final Socket s = server.accept()) {
+ 					logger.debug("Accepted incoming connection from "
+ 							+ s.getRemoteSocketAddress());
+ 					pool.execute(new SendFileTask(s));
+@@ -99,4 +98,4 @@
+ 		}
+ 	}
+ 
+-}
++}
+\ No newline at end of file

@@ -1,0 +1,41 @@
+--- /tmp/orig-18243186538455821319.java	2025-09-24 21:53:00.642628042 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url43a0865bb0_kevinjdolan_darwin_tgz-pJ8-tui_DriverJ8/src/darwInvest/data/gathering/dataSource/ReutersGoogleFinanceNYSE.java	2025-09-24 21:52:58.422472843 +0000
+@@ -99,12 +99,13 @@
+ 			try {
+ 				String nexturl = reuters.concat("&pn=" + pagenumber);
+ 				URL reutersurl = new URL(nexturl);
+-				BufferedReader reutersreader = new BufferedReader(new InputStreamReader(reutersurl.openStream()));
+-				System.out.println(ticker.getSymbol() + ":" + nexturl);
+-				Scanner s3 = new Scanner(reutersreader);
+-				s3.useDelimiter("[\n\r]+");
+-				Boolean done = false;
+-				while(s3.hasNext() && !done && storycounter < nostories) {
++				try (java.io.InputStream __arodnap_temp0 = reutersurl.openStream()) {
++    BufferedReader reutersreader = new BufferedReader(new InputStreamReader(__arodnap_temp0));
++    System.out.println(ticker.getSymbol() + ":" + nexturl);
++    Scanner s3 = new Scanner(reutersreader);
++    s3.useDelimiter("[\n\r]+");
++    Boolean done = false;
++    while(s3.hasNext() && !done && storycounter < nostories) {
+ 					String next = s3.next();
+ 					if(next.contains("<div class=\"secondaryContent\">")) {
+ 						done = true;
+@@ -135,13 +136,13 @@
+ 						storycounter++;
+ 					}
+ 				}
+-				pagenumber++;
+-				if (s3 != null) {
++    pagenumber++;
++    if (s3 != null) {
+ 					s3.close();
+ 				}
+-				if (reutersreader != null) {
+-					reutersreader.close();
+-				}
++    if (reutersreader != null) {
++}
++}
+ 			} catch (Exception e) {
+ 				e.printStackTrace();
+ 			}

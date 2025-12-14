@@ -1,0 +1,20 @@
+--- /tmp/orig-17296681069227761183.java	2025-09-24 21:55:12.219825856 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url47af6b1535_rolandotr_db_comparison_tgz-pJ8-methodology_HistoryJ8/src/protocols/specifications/PoulidorProtocol.java	2025-09-24 21:55:10.467703375 +0000
+@@ -243,13 +243,14 @@
+ 		mafia2 = new double[n+1];
+ 		for (int i = 1; i <= n; i++){
+ 			File f = new File(this.getMafiaFileNameOfValues());
+-			BufferedReader reader = new BufferedReader(new FileReader(f));
+-			while (reader.ready()){
++			try (java.io.FileReader __arodnap_temp0 = new FileReader(f)) {
++			    BufferedReader reader = new BufferedReader(__arodnap_temp0);
++			    while (reader.ready()){
+ 				tmp = reader.readLine();
+ 				split = tmp.split(" ");
+ 				mafia2[Integer.parseInt(split[0])] = Double.parseDouble(split[1]);
+ 			}
+-			reader.close();
++			}
+ 		}
+ 	}	
+ 

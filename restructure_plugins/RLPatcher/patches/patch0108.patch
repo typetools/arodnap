@@ -1,0 +1,21 @@
+--- /tmp/orig-11761467844820245808.java	2025-09-24 21:42:51.396042559 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url20b0f880a5_jgraph_legacy_jgraph5_tgz-pJ8-org_jgraph_example_HelloWorldJ8/src/com/jgraph/example/GraphEdX.java	2025-09-24 21:42:46.935730892 +0000
+@@ -304,7 +304,7 @@
+ 			Container parent = graph.getParent();
+ 			BasicMarqueeHandler marquee = graph.getMarqueeHandler();
+ 			graph.setMarqueeHandler(null);
+-			try {
++			try (java.io.FileOutputStream __arodnap_temp0 = new FileOutputStream(fileChooser.getSelectedFile())) {
+ 				// Serializes the graph by removing it from the component
+ 				// hierarchy and removing all listeners from it. The marquee
+ 				// handler, begin an inner class of GraphEd, is not marked
+@@ -313,8 +313,7 @@
+ 				uninstallListeners(graph);
+ 				parent.remove(graph);
+ 				ObjectOutputStream out = new ObjectOutputStream(
+-						new BufferedOutputStream(new FileOutputStream(
+-								fileChooser.getSelectedFile())));
++						new BufferedOutputStream(__arodnap_temp0));
+ 				out.writeObject(graph);
+ 				out.flush();
+ 				out.close();

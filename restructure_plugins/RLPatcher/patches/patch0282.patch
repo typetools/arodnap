@@ -1,0 +1,22 @@
+--- /tmp/orig-1551826522920278891.java	2025-09-24 21:59:11.096524368 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url4c41254592_topskychen_AuthTopk_tgz-pJ8-quickhull3d_QuickHull3DTestJ8/src/utility/geo/mergeIndexDL.java	2025-09-24 21:59:08.264326385 +0000
+@@ -67,8 +67,8 @@
+ 	
+ 	
+ 	public static void runTest(String type, String filePath) throws IOException{
+-		RandomAccessFile raf = new RandomAccessFile(filePath + "/" + type + ".dat", "r");
+-		for(int i = 0; i < testIndexs.size(); i++){
++	    try (RandomAccessFile raf = new RandomAccessFile(filePath + "/" + type + ".dat", "r")) {
++	        for(int i = 0; i < testIndexs.size(); i++){
+ 			long [] idx = testIndexs.get(i);
+ 			raf.seek(idx[1]);
+ 			byte[] data = new byte[(int) idx[2]];
+@@ -80,7 +80,7 @@
+ 				System.out.println("Pass in csr" + machineList[i]);
+ 			}
+ 		}
+-		raf.close();
++	    }
+ 	}
+ 	
+ 	/**

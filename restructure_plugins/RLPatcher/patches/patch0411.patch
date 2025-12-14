@@ -1,0 +1,52 @@
+--- /tmp/orig-2719191754078568002.java	2025-09-24 22:12:27.296181767 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url7a45f192ca_mfullen_ping_pong_net_tgz-pJ8-ping_pong_net_client_io_TestClientNonPPNServerJ8/src/ping/pong/net/connection/io/IoUdpReadRunnableTest.java	2025-09-24 22:12:25.500056211 +0000
+@@ -88,9 +88,9 @@
+     public void testCloseWhileRunning() throws SocketException,
+                                                InterruptedException
+     {
+-        DatagramSocket udpSocket = new DatagramSocket(7003);
+-        MessageProcessorImpl messageProcessorImpl = new MessageProcessorImpl();
+-        final IoUdpReadRunnable<byte[]> ioUdpReadRunnable = new IoUdpReadRunnable<byte[]>(messageProcessorImpl, new RunnableEventListener()
++        try (DatagramSocket udpSocket = new DatagramSocket(7003)) {
++            MessageProcessorImpl messageProcessorImpl = new MessageProcessorImpl();
++            final IoUdpReadRunnable<byte[]> ioUdpReadRunnable = new IoUdpReadRunnable<byte[]>(messageProcessorImpl, new RunnableEventListener()
+         {
+             @Override
+             public void onRunnableClosed(DisconnectState disconnectState)
+@@ -98,10 +98,10 @@
+                 logger.debug("Close called {}", disconnectState);
+             }
+         }, udpSocket);
+-        assertFalse(ioUdpReadRunnable.isRunning());
+-        Thread thread = new Thread(ioUdpReadRunnable);
+-        thread.start();
+-        Thread stopThread = new Thread(new Runnable()
++            assertFalse(ioUdpReadRunnable.isRunning());
++            Thread thread = new Thread(ioUdpReadRunnable);
++            thread.start();
++            Thread stopThread = new Thread(new Runnable()
+         {
+             @Override
+             public void run()
+@@ -109,13 +109,14 @@
+                 ioUdpReadRunnable.close();
+             }
+         });
+-        thread.join(100);
+-        assertTrue(ioUdpReadRunnable.isRunning());
+-
+-        stopThread.start();
+-        stopThread.join(50);
+-        assertFalse(ioUdpReadRunnable.isRunning());
+-    }
++            thread.join(100);
++            assertTrue(ioUdpReadRunnable.isRunning());
++            stopThread.start();
++            stopThread.join(50);
++            assertFalse(ioUdpReadRunnable.isRunning());
++        }
++    
++}
+ 
+     @Test
+     public void closeWithNullUdpSocket()

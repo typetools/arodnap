@@ -1,0 +1,28 @@
+--- /tmp/orig-9089968532588899967.java	2025-09-24 22:51:27.499774693 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urld58fd5e7a9_longrm_weibo_robot_tgz-pJ8-weibo4j_org_json_TestJ8/src/weibo4j/Configuration.java	2025-09-24 22:51:25.399627875 +0000
+@@ -82,13 +82,23 @@
+     }
+ 
+     private static boolean loadProperties(Properties props, String path) {
+-        try {
++    java.io.FileInputStream __arodnap_temp0 = null;
++    try {
+             File file = new File(path);
++            __arodnap_temp0 = new FileInputStream(file);
+             if(file.exists() && file.isFile()){
+-                props.load(new FileInputStream(file));
++                props.load(__arodnap_temp0);
+                 return true;
+             }
+         } catch (Exception ignore) {
++        } finally {
++            if (__arodnap_temp0 != null) {
++                try {
++                    __arodnap_temp0.close();
++                } catch (Exception e) {
++                    e.printStackTrace();
++                }
++            }
+         }
+         return false;
+     }

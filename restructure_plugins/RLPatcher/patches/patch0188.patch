@@ -1,0 +1,17 @@
+--- /tmp/orig-8826044522930144861.java	2025-09-24 21:51:11.214978577 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url416ee5b4ee_martinmarinov_HonProj_tgz-pJ8-martin_gui_MainJ8/src/martin/quantum/McalcDescription.java	2025-09-24 21:51:09.082829530 +0000
+@@ -60,10 +60,10 @@
+ 	}	
+ 	
+ 	public void loadFromFile(final File f)  throws Exception {
+-		final FileInputStream in = new FileInputStream(f);
+-		p.load(in);
+-		in.close();
+-		
++	try (final FileInputStream in = new FileInputStream(f)) {
++	    p.load(in);
++	}
++	
+ 		n = Integer.valueOf(p.getProperty("prop_no"));
+ 		branches = p.getProperty("prop_branch");
+ 		corrections = p.getProperty("prop_corr");

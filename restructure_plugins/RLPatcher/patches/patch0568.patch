@@ -1,0 +1,21 @@
+--- /tmp/orig-11145565595360007517.java	2025-09-24 22:34:18.775859381 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url8551e9ebc1_mishika05_Salesforce_DataGen_tgz-pJ8-org_json_TestJ8/src/MyProperties.java	2025-09-24 22:34:17.267753958 +0000
+@@ -26,9 +26,9 @@
+      */
+     public MyProperties(String propFile) {
+     	Properties prop = new Properties();
+-    	try {
++    	try (java.io.FileInputStream __arodnap_temp0 = new FileInputStream(propFile)) {
+             //load a properties file
+-    		prop.load(new FileInputStream(propFile));
++    		prop.load(__arodnap_temp0);
+     		this.environment = prop.getProperty("environment");
+     		this.callbackUrl = prop.getProperty("callbackUrl");
+     		this.CLIENT_ID = prop.getProperty("CLIENT_ID");
+@@ -48,4 +48,4 @@
+    
+     
+     
+-}
++}
+\ No newline at end of file

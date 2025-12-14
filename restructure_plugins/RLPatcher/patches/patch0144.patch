@@ -1,0 +1,26 @@
+--- /tmp/orig-18142831968695655695.java	2025-09-24 21:46:56.745190118 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url294e6c45f3_Ecdosis_NMergeNew_tgz-pJ8-TestJ8/src/Test.java	2025-09-24 21:46:53.980996893 +0000
+@@ -546,14 +546,15 @@
+ 				String str1 = bos.toString();
+                 char[] data1 = new char[str1.length()];
+                 str1.getChars(0,data1.length,data1,0);
+-				FileInputStream fis = new FileInputStream( versions[vId-1] );
+-				byte[] bytes = new byte[(int)versions[vId-1].length()];
+-				fis.read( bytes );
+-                String str2 = new String(bytes,"UTF-8");
+-                char[] data2 = new char[str2.length()];
+-                str2.getChars(0,data2.length,data2,0);
+-				compareTwoCharArrays( data1, data2 );
+-				System.out.print(".");
++				            try (FileInputStream fis = new FileInputStream( versions[vId-1] )) {
++				                byte[] bytes = new byte[(int)versions[vId-1].length()];
++				                fis.read( bytes );
++				                String str2 = new String(bytes,"UTF-8");
++				                char[] data2 = new char[str2.length()];
++				                str2.getChars(0,data2.length,data2,0);
++				                compareTwoCharArrays( data1, data2 );
++				            }
++				            System.out.print(".");
+ 			}
+ 			testsPassed++;
+ 			System.out.println(" test passed.");

@@ -1,0 +1,23 @@
+--- /tmp/orig-11022707840672503781.java	2025-09-24 22:45:57.832728148 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlbd77b745af_KokaKiwi_MCLauncher_tgz-pJ8-net_contrapunctus_lzma_BenchmarkJ8/src/com/kokakiwi/mclauncher/ui/simple/components/LogoPanel.java	2025-09-24 22:45:56.000600067 +0000
+@@ -18,10 +18,9 @@
+     {
+         setOpaque(true);
+         java.awt.Image tempBgImage = null;
+-try
+-        {
+-            final BufferedImage src = ImageIO.read(LogoPanel.class
+-                    .getResourceAsStream("/res/logo.png"));
++try(
++java.io.InputStream __arodnap_temp0 = LogoPanel.class.getResourceAsStream("/res/logo.png"))         {
++            final BufferedImage src = ImageIO.read(__arodnap_temp0);
+             final int w = src.getWidth();
+             final int h = src.getHeight();
+             tempBgImage = src.getScaledInstance(w, h, 16);
+@@ -47,4 +46,4 @@
+     {
+         g.drawImage(bgImage, 24, 24, null);
+     }
+-}
++}
+\ No newline at end of file

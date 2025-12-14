@@ -1,0 +1,96 @@
+--- /tmp/orig-12374133425852342848.java	2025-09-24 21:49:35.624296376 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url2b9f720f64_jfimbett_QBnB_tgz-pJ8-tests_TestJ8/src/tests/KnapsackInstances.java	2025-09-24 21:49:34.400210807 +0000
+@@ -20,16 +20,16 @@
+ 
+ 	public void loadFromFile(String file) throws IOException{
+ 		File f= new File(file);
+-		FileReader fr= new FileReader(f);
+-		BufferedReader bf= new BufferedReader(fr);
+-		String line= bf.readLine();
+-		double K=0;
+-		int vars=Integer.parseInt(line);
+-		line= bf.readLine();
+-		double[] W= new double[vars];
+-		double[] P=new double[vars];
+-		int k=0;
+-		while(line!=null){
++		try (FileReader fr= new FileReader(f)) {
++		    BufferedReader bf= new BufferedReader(fr);
++		    String line= bf.readLine();
++		    double K=0;
++		    int vars=Integer.parseInt(line);
++		    line= bf.readLine();
++		    double[] W= new double[vars];
++		    double[] P=new double[vars];
++		    int k=0;
++		    while(line!=null){
+ 			if(k==0){
+ 				K=Double.parseDouble(line);
+ 			}
+@@ -51,40 +51,41 @@
+ 			k++;
+ 			line=bf.readLine();
+ 		}
+-		
+-		//Creates the model
+-		Model m = new Model();
+-		QBnBVariable[] x= new QBnBVariable[W.length];
+-		for (int i = 0; i < x.length; i++) {
++		    Model m = new Model();
++		    QBnBVariable[] x= new QBnBVariable[W.length];
++		    for (int i = 0; i < x.length; i++) {
+ 			x[i]= new QBnBVariable(0, 1, 1, "x"+(i+1));
+ 			m.addVar(x[i]);
+ 		}
+-		
+-		//Main Restricion
+-		QBnBLinExp le = new QBnBLinExp();
+-		for (int i = 0; i < x.length; i++) {
++		    QBnBLinExp le = new QBnBLinExp();
++		    for (int i = 0; i < x.length; i++) {
+ 			le.addTerm(W[i], x[i]);
+ 		}
+-		QBnBconstr c = new QBnBconstr(le, 1, K, "K", m);
+-		m.addConst(c);
+-		
+-		//Objective function
+-		QBnBLinExp z = new QBnBLinExp();
+-		for (int i = 0; i < x.length; i++) {
++		    QBnBconstr c = new QBnBconstr(le, 1, K, "K", m);
++		    m.addConst(c);
++		    QBnBLinExp z = new QBnBLinExp();
++		    for (int i = 0; i < x.length; i++) {
+ 			z.addTerm(P[i], x[i]);
+ 		}
+-		m.addObj(z);
+-		
+-		m.update();
+-		QBnBEnv env= new QBnBEnv(m);
+-		env.print(true);
+-		env.maximize();
+-		
+-		//Prints 
+-		System.out.println("Value: "+env.getBestSolution());
+-		for (int i = 0; i < x.length; i++) {
++		    m.addObj(z);
++		    m.update();
++		    QBnBEnv env= new QBnBEnv(m);
++		    env.print(true);
++		    env.maximize();
++		    System.out.println("Value: "+env.getBestSolution());
++		    for (int i = 0; i < x.length; i++) {
+ 			System.out.println(x[i].getName()+": "+Math.round(x[i].getValue()));
+ 		}
++		}
++
++
++		
++
++		
++
++		
++		
++
+ 	}
+ 	public static void main(String[] args) {
+ 		// TODO Auto-generated method stub

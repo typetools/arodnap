@@ -1,0 +1,14 @@
+--- /tmp/orig-15684109768841620439.java	2025-09-24 22:04:25.262485925 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url5a01f2c1d9_core9_core_tgz-pJ8-io_core9_core_boot_BootstrapFrameworkJ8/src/net/xeoh/plugins/base/impl/classpath/cache/JARCache.java	2025-09-24 22:04:23.190341073 +0000
+@@ -177,9 +177,8 @@
+ 			cacheFile = DEFAULT_CACHE_FILE;
+ 		}
+ 
+-		try {
+-			// lock the lockfile
+-			final FileOutputStream fos = new FileOutputStream(cacheFile);
++		try (final FileOutputStream fos = new FileOutputStream(cacheFile)) {
++
+ 			@SuppressWarnings("resource")
+ 			final ObjectOutputStream oos = new ObjectOutputStream(fos);
+ 

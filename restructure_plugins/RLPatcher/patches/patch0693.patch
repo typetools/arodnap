@@ -1,0 +1,19 @@
+--- /tmp/orig-6755071726507808826.java	2025-09-24 22:45:30.070787351 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlbd77b745af_KokaKiwi_MCLauncher_tgz-pJ8-net_contrapunctus_lzma_BenchmarkJ8/src/com/kokakiwi/mclauncher/core/updater/VersionChecker.java	2025-09-24 22:45:28.234658990 +0000
+@@ -103,11 +103,11 @@
+         {
+             file.createNewFile();
+         }
+-        
+-        final DataOutputStream out = new DataOutputStream(new FileOutputStream(
+-                file));
+-        out.writeUTF(lastVersion);
+-        out.close();
++        try (java.io.FileOutputStream __arodnap_temp0 = new FileOutputStream(file)) {
++            final DataOutputStream out = new DataOutputStream(__arodnap_temp0);
++            out.writeUTF(lastVersion);
++        }
++
+     }
+     
+     public static String getLastVersion(LauncherAPI api, String source)

@@ -1,0 +1,19 @@
+--- /tmp/orig-15369030649448160441.java	2025-09-24 21:54:59.486935772 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url47af6b1535_rolandotr_db_comparison_tgz-pJ8-methodology_HistoryJ8/src/utils/Data.java	2025-09-24 21:54:57.734813291 +0000
+@@ -78,11 +78,11 @@
+ 				}
+ 			}
+ 			for (String pName : bestValues.keySet()) {
+-				FileWriter writer = new FileWriter(new File(pName+"-"+attribute.getName()+"-increment-"+increment+".DAT"), true);
+-				writer.append(protocols[0].getTotalBitsExchangedDuringFastPhase()+" \t ");
+-				writer.append(bestValues.get(pName).getValue().toString());
+-				writer.append(newLine);
+-				writer.close();
++			    try (FileWriter writer = new FileWriter(new File(pName+"-"+attribute.getName()+"-increment-"+increment+".DAT"), true)) {
++			        writer.append(protocols[0].getTotalBitsExchangedDuringFastPhase()+" \t ");
++			        writer.append(bestValues.get(pName).getValue().toString());
++			        writer.append(newLine);
++			    }
+ 			}
+ 		}
+ 	}

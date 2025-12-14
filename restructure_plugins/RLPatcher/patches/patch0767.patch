@@ -1,0 +1,17 @@
+--- /tmp/orig-8502776017917083383.java	2025-09-24 22:51:59.105984238 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urld73c47f3e5_lindenb_dataindexer_tgz-pJ8-test_github_lindenb_dataindexer_SimpleIntegerJ8/src/com/github/lindenb/dataindexer/AbstractDataIndexer.java	2025-09-24 22:51:57.925901740 +0000
+@@ -56,9 +56,10 @@
+ 	protected void writeSummary()
+ 		throws IOException
+ 		{
+-		DataOutputStream daos=new DataOutputStream(new FileOutputStream(getConfig().getSummaryFile()));
+-		daos.writeLong(this.numberOfItems);
+-		daos.flush();
+-		daos.close();
++		    try (java.io.FileOutputStream __arodnap_temp0 = new FileOutputStream(getConfig().getSummaryFile())) {
++		        DataOutputStream daos=new DataOutputStream(__arodnap_temp0);
++		        daos.writeLong(this.numberOfItems);
++		        daos.flush();
++		    }
+ 		}
+ 	}

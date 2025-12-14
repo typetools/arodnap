@@ -1,0 +1,13 @@
+--- /tmp/orig-2999315413543003576.java	2025-09-24 21:56:43.850231216 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url47fcfc0133_baliosian_tau_fst_tgz-pJ8-uy_edu_fing_mina_fsa_test_old_TestComposition1J8/src/uy/edu/fing/mina/fsa/utils/Utils.java	2025-09-24 21:56:41.422061477 +0000
+@@ -65,8 +65,8 @@
+ 
+   public static void writeLabels(String filename, Tffst tffst) {
+ 	Set<TfString> outLabels = new HashSet<TfString>();
+-	try {
+-	  BufferedWriter out = new BufferedWriter(new FileWriter(filename));
++	try (java.io.FileWriter __arodnap_temp0 = new FileWriter(filename)) {
++	  BufferedWriter out = new BufferedWriter(__arodnap_temp0);
+ 	  Set<Transition> trans = tffst.getTransitions();
+ 	  for (Transition transition : trans)
+ 		outLabels.add(transition.getLabelOut());

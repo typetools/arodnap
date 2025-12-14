@@ -1,0 +1,18 @@
+--- /tmp/orig-5288781335006456836.java	2025-09-24 22:51:52.917551613 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urld58fd5e7a9_longrm_weibo_robot_tgz-pJ8-weibo4j_org_json_TestJ8/src/com/ufgov/longrm/AccessTokenUtil.java	2025-09-24 22:51:50.849407032 +0000
+@@ -56,11 +56,11 @@
+     properties.setProperty(screenName + ".USER_ID", accessToken.getUserId() + "");
+     properties.setProperty(screenName + ".TOKEN", accessToken.getToken());
+     properties.setProperty(screenName + ".TOKEN_SECRET", accessToken.getTokenSecret());
++    try (OutputStream outStream = new FileOutputStream(file)) {
++        properties.store(outStream, "Update " + screenName + "'s access token!");
++        inStream.close();
++    }
+ 
+-    OutputStream outStream = new FileOutputStream(file);
+-    properties.store(outStream, "Update " + screenName + "'s access token!");
+-    inStream.close();
+-    outStream.close();
+   }
+ 
+ }

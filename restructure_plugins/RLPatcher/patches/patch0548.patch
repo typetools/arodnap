@@ -1,0 +1,42 @@
+--- /tmp/orig-15835737548363712077.java	2025-09-24 22:31:43.705019254 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url80e39b1957_tobikster_IJN_headers_recognition_tgz-pJ8-org_maltparser_examples_CreatePhraseStructureGraphJ8/src/org/maltparser/core/helper/Util.java	2025-09-24 22:31:40.200774292 +0000
+@@ -124,10 +124,14 @@
+ 	}
+ 	
+ 	public static void copyfile(String source, String destination) throws MaltChainedException {
+-    	try {
++ java.io.FileOutputStream __arodnap_temp1 = null;
++ java.io.FileInputStream __arodnap_temp0 = null;
++  	try {
+     		byte[] readBuffer = new byte[BUFFER];
+-	    	BufferedInputStream bis = new BufferedInputStream(new FileInputStream(source));
+-	        BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(destination), BUFFER);
++	    	__arodnap_temp0 = new FileInputStream(source);
++	    	BufferedInputStream bis = new BufferedInputStream(__arodnap_temp0);
++	     __arodnap_temp1 = new FileOutputStream(destination);
++      BufferedOutputStream bos = new BufferedOutputStream(__arodnap_temp1, BUFFER);
+ 	        int n = 0;
+ 		    while ((n = bis.read(readBuffer, 0, BUFFER)) != -1) {
+ 		    	bos.write(readBuffer, 0, n);
+@@ -139,6 +143,21 @@
+ 			throw new MaltChainedException("The destination file '"+destination+"' cannot be created when coping the file. ", e);
+ 		} catch (IOException e) {
+ 			throw new MaltChainedException("The source file '"+source+"' cannot be copied to destination '"+destination+"'. ", e);
++		} finally {
++		    if (__arodnap_temp1 != null) {
++		        try {
++		            __arodnap_temp1.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
++		    if (__arodnap_temp0 != null) {
++		        try {
++		            __arodnap_temp0.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
+ 		}
+ 	}
+ 

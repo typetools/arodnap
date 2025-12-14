@@ -13,6 +13,7 @@ SRC_FILES = "cf_srcs.txt"
 JARS_ROOT = os.path.abspath(os.path.join(HERE, "restructure_plugins", "prebuilt_plugin_jars"))
 OWNING_FIELD_JAR = os.path.join(JARS_ROOT, "OwningFieldFixer-1.0-SNAPSHOT.jar")
 CLOSE_INJECTOR_JAR = os.path.join(JARS_ROOT, "AutoCloseInjector-1.0-SNAPSHOT.jar")
+RLPATCHER_JAR = os.path.join(JARS_ROOT, "RLPatcher-1.0-SNAPSHOT.jar")
 STUBS_FOLDER = os.path.abspath(os.path.join(HERE, "checker_framework", "stubs"))
 
 # `javac` flags

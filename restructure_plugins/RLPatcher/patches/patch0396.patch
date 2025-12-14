@@ -1,0 +1,15 @@
+--- /tmp/orig-12837346752270799997.java	2025-09-24 22:11:15.839186677 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url78eec0e0b6_Orikuro_vic_tgz-pJ8-net_nexon_vindictus_itemcomparer_inport_StaticImportJ8/src/net/nexon/vindictus/itemcomparer/inport/ScrollProperty.java	2025-09-24 22:11:14.067062799 +0000
+@@ -18,10 +18,9 @@
+ 
+ 	public ScrollProperty() {
+ 		Properties props = new Properties();
+-		try {
++		try (java.io.FileInputStream __arodnap_temp0 = new FileInputStream("data" + File.separator + "scrolls.properties")) {
+ 			BufferedInputStream stream = new BufferedInputStream(
+-					new FileInputStream("data" + File.separator
+-							+ "scrolls.properties"));
++					__arodnap_temp0);
+ 			props.load(stream);
+ 			
+ 			enthu = new Double(props.getProperty("enthu"));

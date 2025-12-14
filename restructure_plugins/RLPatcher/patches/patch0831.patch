@@ -1,0 +1,13 @@
+--- /tmp/orig-10637788367472063705.java	2025-09-24 22:57:44.442127494 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlfcc351a1ba_kuntapavankumar_Z_tgz-pJ8-edu_concordia_dpis_ReplicaTestJ8/src/edu/concordia/dpis/stationserver/FaultyStationServerImpl.java	2025-09-24 22:57:43.158037699 +0000
+@@ -132,8 +132,8 @@
+ 			log.error(e.getMessage());
+ 		}
+ 
+-		try {
+-			tcpProperties.load(new FileInputStream("tcp.properties"));
++		try (java.io.FileInputStream __arodnap_temp0 = new FileInputStream("tcp.properties")) {
++			tcpProperties.load(__arodnap_temp0);
+ 		} catch (IOException e) {
+ 			e.printStackTrace();
+ 			log.error(e.getMessage());

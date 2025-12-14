@@ -1,0 +1,19 @@
+--- /tmp/orig-16450892992147185624.java	2025-09-24 21:37:57.847530655 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url0e7d57473a_kyorohiro_HetimaUtil_tgz-pJ8-net_hetimatan_net_http_HttpServer3xxJ8/src/net/hetimatan/util/http/HttpGetRequestUri.java	2025-09-24 21:37:55.795387261 +0000
+@@ -23,8 +23,7 @@
+ 
+ 	// todo throw IOEXception?
+ 	public static HttpGetRequestUri crateHttpGetRequestUri(String requestPath) {
+-		try {
+-			CashKyoroFile base = new CashKyoroFile(requestPath.getBytes());
++		try (CashKyoroFile base = new CashKyoroFile(requestPath.getBytes())) {
+ 			MarkableReader reader  = new MarkableFileReader(base, 100);
+ 			return HttpGetRequestUri.decode(reader);
+ 		} catch(Exception e) {
+@@ -341,4 +340,4 @@
+ 			reader.close();
+ 		}
+ 	}
+-}
++}
+\ No newline at end of file

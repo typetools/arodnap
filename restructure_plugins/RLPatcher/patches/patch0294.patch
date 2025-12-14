@@ -1,0 +1,32 @@
+--- /tmp/orig-1024575103674827854.java	2025-09-24 22:00:47.755281233 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url4c41254592_topskychen_AuthTopk_tgz-pJ8-quickhull3d_QuickHull3DTestJ8/src/utility/Compare/buildIndexDP.java	2025-09-24 22:00:44.727069549 +0000
+@@ -45,10 +45,12 @@
+ 	 * */
+ 	public static void loadData(String sourceFileName){
+ 		points = new ArrayList<long[]>();
+-		
++		java.io.FileReader __arodnap_temp0 = null;
++
+ 		try {
+ 			String line = null;
+-			LineNumberReader lr = new LineNumberReader(new FileReader(sourceFileName));
++			__arodnap_temp0 = new FileReader(sourceFileName);
++			LineNumberReader lr = new LineNumberReader(__arodnap_temp0);
+ 			try {
+ 				while((line = lr.readLine()) != null){
+ 					String[] tks = line.split("\t");
+@@ -66,6 +68,14 @@
+ 		} catch (FileNotFoundException e) {
+ 			// TODO Auto-generated catch block
+ 			e.printStackTrace();
++		} finally {
++		    if (__arodnap_temp0 != null) {
++		        try {
++		            __arodnap_temp0.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
+ 		}
+ 		System.out.println("Load finished!");
+ 	}

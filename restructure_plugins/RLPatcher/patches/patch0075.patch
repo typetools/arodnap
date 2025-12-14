@@ -1,0 +1,30 @@
+--- /tmp/orig-12439764034354425547.java	2025-09-24 21:39:21.429370994 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url0e7d57473a_kyorohiro_HetimaUtil_tgz-pJ8-net_hetimatan_net_http_HttpServer3xxJ8/src/net/hetimatan/io/file/TestForKyoroFileForFiles.java	2025-09-24 21:39:19.377227599 +0000
+@@ -56,11 +56,22 @@
+ 		CashKyoroFile[] files = new CashKyoroFile[2];
+ 		files[0] = new CashKyoroFile("あいう".getBytes());
+ 		files[1] = new CashKyoroFile("かきく".getBytes());
+-		KyoroFileForFiles kff = new KyoroFileForFiles(files);
+-		byte[] buffer = new byte[256];
+-		int len = kff.read(buffer);
+-		assertEquals("あいうかきく".getBytes().length, len);
+-		assertEquals("あいうかきく", new String(buffer, 0, len));
++		net.hetimatan.io.file.KyoroFileForFiles kff = null;
++		try {
++		    kff = new KyoroFileForFiles(files);
++		    byte[] buffer = new byte[256];
++		    int len = kff.read(buffer);
++		    assertEquals("あいうかきく".getBytes().length, len);
++		    assertEquals("あいうかきく", new String(buffer, 0, len));
++		} finally {
++		    if (kff != null) {
++		        try {
++		            kff.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
++		}
+ 	}
+ 
+ 	public void testTwo002() throws IOException {

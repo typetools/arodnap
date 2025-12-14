@@ -1,0 +1,38 @@
+--- /tmp/orig-17769038488987997909.java	2025-09-24 22:41:04.676234002 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urla958522fc1_spirosikmd_inmdsy_08_tgz-pJ8-TesterAppJ8/src/nl/rug/peerbox/logic/filesystem/FileServer.java	2025-09-24 22:41:03.140126615 +0000
+@@ -66,7 +66,8 @@
+ 
+ 		@Override
+ 		public void run() {
+-			try {
++		java.io.FileInputStream __arodnap_temp0 = null;
++		try {
+ 				BufferedReader st = new BufferedReader(new InputStreamReader(
+ 						s.getInputStream()));
+ 				String fileid = st.readLine();
+@@ -74,9 +75,10 @@
+ 				File myFile = new File(ctx.getPathToPeerbox()
+ 						+ System.getProperty("file.separator") + fileid);
+ 				byte[] mybytearray = new byte[(int) myFile.length()];
++				__arodnap_temp0 = new FileInputStream(myFile);
+ 
+ 				BufferedInputStream bis = new BufferedInputStream(
+-						new FileInputStream(myFile));
++						__arodnap_temp0);
+ 
+ 				bis.read(mybytearray, 0, mybytearray.length);
+ 
+@@ -95,6 +97,13 @@
+ 				} catch (IOException e) {
+ 					logger.error(e);
+ 				}
++				if (__arodnap_temp0 != null) {
++				    try {
++				        __arodnap_temp0.close();
++				    } catch (Exception e) {
++				        e.printStackTrace();
++				    }
++				}
+ 			}
+ 		}
+ 	}

@@ -1,0 +1,17 @@
+--- /tmp/orig-7213514797996895035.java	2025-09-24 22:19:10.216347274 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url80587fc7d5_dennervidal_CloudSim_DVFS_tgz-pJ8-Examples_Dvfs_example_simpleJ8/src/org/cloudbus/cloudsim/UtilizationModelStochastic.java	2025-09-24 22:19:07.332145658 +0000
+@@ -89,10 +89,10 @@
+ 	 * @throws Exception the exception
+ 	 */
+ 	public void saveHistory(String filename) throws Exception {
+-		FileOutputStream fos = new FileOutputStream(filename);
+-		ObjectOutputStream oos = new ObjectOutputStream(fos);
+-		oos.writeObject(getHistory());
+-		oos.close();
++	    try (FileOutputStream fos = new FileOutputStream(filename)) {
++	        ObjectOutputStream oos = new ObjectOutputStream(fos);
++	        oos.writeObject(getHistory());
++	    }
+ 	}
+ 
+ 	/**

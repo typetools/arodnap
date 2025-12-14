@@ -1,0 +1,50 @@
+--- /tmp/orig-6787664263825374028.java	2025-09-24 22:06:07.157608771 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url696d9a93c9_liaosiwei_bayesnetwork_tgz-pJ8-tutorial_TutorialJ8/src/com/alibaba/DataPlot.java	2025-09-24 22:06:05.565497477 +0000
+@@ -14,20 +14,19 @@
+  */
+ public class DataPlot {
+     public static void main(String[] args) {
+-        DataRead reader = new DataRead();
++    com.alibaba.DataRead reader = null;
++    try {
++        reader = new DataRead();
+         reader.read();
+         if (!reader.read()) {
+             System.out.println("read file error");
+             return;
+         }
+         Map<String, Map<String, Map<Integer, HashSet<Integer>>>> table = reader.getData();
+-        reader.close();
+-
+         double[] x = new double[table.size()];
+         double[] y = new double[table.size()];
+         double[] z = new double[table.size()];
+         Plot2DPanel plot = new Plot2DPanel();
+-
+         int num = 0;
+         for (String user: table.keySet()) {
+             long click = 0, buy = 0, save = 0;
+@@ -41,10 +40,22 @@
+             y[num] = buy;
+             z[num++] = save;
+         }
+-        //plot.addScatterPlot("plot about relationship between users' behavior of click and buy", x, y);
+         plot.addScatterPlot("plot about relationship between user's behavior of save and buy", z, y);
+         JFrame frame = new JFrame("a plot panel");
+         frame.setContentPane(plot);
+         frame.setVisible(true);
++    } finally {
++        if (reader != null) {
++            try {
++                reader.close();
++            } catch (Exception e) {
++                e.printStackTrace();
++            }
++        }
++    }
++
++
++
++
+     }
+ }

@@ -1,0 +1,14 @@
+--- /tmp/orig-4261025254825386332.java	2025-09-24 22:51:41.336742015 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urld58fd5e7a9_longrm_weibo_robot_tgz-pJ8-weibo4j_org_json_TestJ8/src/com/ufgov/longrm/AccessTokenUtil.java	2025-09-24 22:51:39.344602748 +0000
+@@ -33,8 +33,9 @@
+ 
+   public static List<String> getScreenNameList() throws IOException {
+     Properties properties = new Properties();
+-    FileInputStream inStream = new FileInputStream(file);
+-    properties.load(inStream);
++    try (FileInputStream inStream = new FileInputStream(file)) {
++        properties.load(inStream);
++    }
+ 
+     List<String> screenNameList = new ArrayList<String>();
+     for (Enumeration<?> e = properties.propertyNames(); e.hasMoreElements();) {

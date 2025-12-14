@@ -1,0 +1,29 @@
+--- /tmp/orig-8452337986838209942.java	2025-09-24 21:53:44.057662941 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url47af6b1535_rolandotr_db_comparison_tgz-pJ8-methodology_HistoryJ8/src/utils/Report.java	2025-09-24 21:53:42.309540740 +0000
+@@ -142,11 +142,12 @@
+ 
+ 	private static List<DBProtocol> getTreeBasedProtocol(File f) throws NumberFormatException, IOException {
+ 		List<DBProtocol> protocols = new LinkedList<>();
+-		BufferedReader reader = new BufferedReader(new FileReader(f));
+-		String regex = "Tree-\\{(\\d+), (\\d+)\\}";
+-		Pattern pattern = Pattern.compile(regex);
+-		String retrievedText = null;
+-		for (String line = reader.readLine(); line  != null; line = reader.readLine()){
++		try (java.io.FileReader __arodnap_temp0 = new FileReader(f)) {
++		    BufferedReader reader = new BufferedReader(__arodnap_temp0);
++		    String regex = "Tree-\\{(\\d+), (\\d+)\\}";
++		    Pattern pattern = Pattern.compile(regex);
++		    String retrievedText = null;
++		    for (String line = reader.readLine(); line  != null; line = reader.readLine()){
+ 			Matcher m = pattern.matcher(line);
+ 			while (m.find()) {
+ 				TreeBasedProtocol p = new TreeBasedProtocol(Integer.parseInt(m.group(2)), DBProtocol.SIZE_OF_NONCES);
+@@ -155,7 +156,7 @@
+ 				protocols.add(p);
+ 			}
+ 		}
+-		reader.close();
++		}
+ 		return protocols;
+ 	}
+ 

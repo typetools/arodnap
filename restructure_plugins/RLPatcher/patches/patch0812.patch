@@ -1,0 +1,43 @@
+--- /tmp/orig-4662110083111452369.java	2025-09-24 22:56:26.748694752 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urle381b6cba7_IkarosKappler_ikrs_http_tgz-pJ8-ikrs_json_rpc_JSONRPCHandlerJ8/src/ikrs/util/HexDumpOutputStream.java	2025-09-24 22:56:24.188515774 +0000
+@@ -273,14 +273,16 @@
+ 	    System.exit( 1 );
+ 
+ 	}
++	ikrs.util.HexDumpOutputStream out = null;
++	java.io.InputStream in = null;
+ 
+ 
+ 	try {
+ 
+ 
+-	    java.io.InputStream in = new java.io.FileInputStream( new java.io.File(argv[0]) );
++	    in = new java.io.FileInputStream( new java.io.File(argv[0]) );
+ 	    Writer writer = new java.io.PrintWriter( new java.io.OutputStreamWriter( System.out ) ); 
+-	    HexDumpOutputStream out = new HexDumpOutputStream( writer );
++	    out = new HexDumpOutputStream( writer );
+ 
+ 	    
+ 	    int b;
+@@ -298,6 +300,21 @@
+ 
+ 	    e.printStackTrace();
+ 
++	} finally {
++	    if (out != null) {
++	        try {
++	            out.close();
++	        } catch (Exception e) {
++	            e.printStackTrace();
++	        }
++	    }
++	    if (in != null) {
++	        try {
++	            in.close();
++	        } catch (Exception e) {
++	            e.printStackTrace();
++	        }
++	    }
+ 	}
+ 	    
+ 

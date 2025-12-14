@@ -1,0 +1,26 @@
+--- /tmp/orig-332791798053611265.java	2025-09-24 21:48:33.375944948 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url294e6c45f3_Ecdosis_NMergeNew_tgz-pJ8-TestJ8/src/Test.java	2025-09-24 21:48:30.771762905 +0000
+@@ -1045,14 +1045,15 @@
+ 			tempOut.close();
+ 			// now read it back in and compare it to the original
+ 			FileInputStream fis1 = new FileInputStream( versions[i] );
+-			FileInputStream fis2 = new FileInputStream( tempOutFile );
+-			byte[] data1 = new byte[(int)versions[i].length()];
+-			byte[] data2 = new byte[(int)tempOutFile.length()];
+-            fis1.read( data1 );
+-			fis2.read( data2 );
+-			char[] chars1 = bytesToChars( data1,"UTF-8");
+-			char[] chars2 = bytesToChars( data2,"UTF-8");
+-			compareTwoCharArrays( chars1, chars2 );
++			try (FileInputStream fis2 = new FileInputStream( tempOutFile )) {
++			    byte[] data1 = new byte[(int)versions[i].length()];
++			    byte[] data2 = new byte[(int)tempOutFile.length()];
++			    fis1.read( data1 );
++			    fis2.read( data2 );
++			    char[] chars1 = bytesToChars( data1,"UTF-8");
++			    char[] chars2 = bytesToChars( data2,"UTF-8");
++			    compareTwoCharArrays( chars1, chars2 );
++			}
+ 		}
+ 	}
+ 	/**

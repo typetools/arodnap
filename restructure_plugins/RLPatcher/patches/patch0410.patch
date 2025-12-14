@@ -1,0 +1,28 @@
+--- /tmp/orig-15810042591963791899.java	2025-09-24 22:12:22.843870535 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url7a45f192ca_mfullen_ping_pong_net_tgz-pJ8-ping_pong_net_client_io_TestClientNonPPNServerJ8/src/ping/pong/net/connection/io/IoUdpReadRunnableTest.java	2025-09-24 22:12:21.095748335 +0000
+@@ -69,9 +69,9 @@
+     public void testCloseWhileNotRunning() throws SocketException,
+                                                   InterruptedException
+     {
+-        DatagramSocket udpSocket = new DatagramSocket(7002);
+-        MessageProcessorImpl messageProcessorImpl = new MessageProcessorImpl();
+-        IoUdpReadRunnable<byte[]> ioUdpReadRunnable = new IoUdpReadRunnable<byte[]>(messageProcessorImpl, new RunnableEventListener()
++        try (DatagramSocket udpSocket = new DatagramSocket(7002)) {
++            MessageProcessorImpl messageProcessorImpl = new MessageProcessorImpl();
++            IoUdpReadRunnable<byte[]> ioUdpReadRunnable = new IoUdpReadRunnable<byte[]>(messageProcessorImpl, new RunnableEventListener()
+         {
+             @Override
+             public void onRunnableClosed(DisconnectState disconnectState)
+@@ -79,9 +79,9 @@
+                 logger.debug("Close called {}", disconnectState);
+             }
+         }, udpSocket);
+-        assertFalse(ioUdpReadRunnable.isRunning());
+-        ioUdpReadRunnable.close();
+-        assertFalse(ioUdpReadRunnable.isRunning());
++            assertFalse(ioUdpReadRunnable.isRunning());
++            assertFalse(ioUdpReadRunnable.isRunning());
++        }
+     }
+ 
+     @Test

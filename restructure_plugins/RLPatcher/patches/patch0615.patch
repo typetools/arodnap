@@ -1,0 +1,43 @@
+--- /tmp/orig-3303181629516093983.java	2025-09-24 22:38:31.869551733 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url8d3c4d17f5_catseye_JaC64_tgz-pJ8-JaC64J8/src/com/dreamfabric/c64utils/IPPacket.java	2025-09-24 22:38:29.541388984 +0000
+@@ -125,18 +125,17 @@
+   }
+ 
+   public static void main(String[] args) throws IOException {
+-    FileInputStream fs = new FileInputStream("test.txt");
+-    IPPacket p = new IPPacket();
+-    p.readIPPacket(fs);
+-    System.out.println("---- IP Data -----");
+-    System.out.println("Version: " + p.getVersion());
+-    System.out.println("HDL: " + p.getHeaderLengthBytes());
+-    System.out.println("TotLen: " + p.getTotalLength());
+-    System.out.println("Protocol: " + p.getProtocol());
+-    System.out.println("IP Adr dst: " + getIPStr(p.getDestinationIP()));
+-    System.out.println("IP Adr src: " + getIPStr(p.getSourceIP()));
+-
+-    if (p.getProtocol() == 6) {
++      try (FileInputStream fs = new FileInputStream("test.txt")) {
++          IPPacket p = new IPPacket();
++          p.readIPPacket(fs);
++          System.out.println("---- IP Data -----");
++          System.out.println("Version: " + p.getVersion());
++          System.out.println("HDL: " + p.getHeaderLengthBytes());
++          System.out.println("TotLen: " + p.getTotalLength());
++          System.out.println("Protocol: " + p.getProtocol());
++          System.out.println("IP Adr dst: " + getIPStr(p.getDestinationIP()));
++          System.out.println("IP Adr src: " + getIPStr(p.getSourceIP()));
++          if (p.getProtocol() == 6) {
+       TCPPacket tcp = new TCPPacket(p);
+       System.out.println("---- TCP Data -----");
+       System.out.println("Source Port: " + tcp.getSourcePort());
+@@ -153,7 +152,9 @@
+ 	System.out.print("" + (char) tcp.data[offset + i]);
+       }
+     }
++      }
++  
+ 
+-  }
++}
+ 
+ }

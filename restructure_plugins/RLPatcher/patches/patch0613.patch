@@ -1,0 +1,34 @@
+--- /tmp/orig-3788950170858111839.java	2025-09-24 22:38:21.424821601 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url8d3c4d17f5_catseye_JaC64_tgz-pJ8-JaC64J8/src/com/dreamfabric/c64utils/AutoStore.java	2025-09-24 22:38:19.072657174 +0000
+@@ -60,6 +60,7 @@
+     }
+ 
+     System.out.println("URL: " + urls);
++    java.io.InputStream is = null;
+ 
+     try {
+       URL url = getClass().getResource(urls);
+@@ -67,7 +68,7 @@
+       //     urlc.setDoOutput(true);
+       //     urlc.setUseCaches(false);
+       HttpURLConnection httpConnection = (HttpURLConnection) urlc;
+-      InputStream is = httpConnection.getInputStream();
++      is = httpConnection.getInputStream();
+ 
+       System.out.println("Read back:");
+       int c;
+@@ -77,6 +78,14 @@
+       System.out.println("----------------");
+     } catch (Exception e) {
+       e.printStackTrace();
++    } finally {
++        if (is != null) {
++            try {
++                is.close();
++            } catch (Exception e) {
++                e.printStackTrace();
++            }
++        }
+     }
+     return null;
+   }

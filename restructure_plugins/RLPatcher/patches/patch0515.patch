@@ -1,0 +1,23 @@
+--- /tmp/orig-2056188767844621755.java	2025-09-24 22:25:42.927799354 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url80e39b1957_tobikster_IJN_headers_recognition_tgz-pJ8-org_maltparser_examples_CreatePhraseStructureGraphJ8/src/org/maltparser/ml/cheater/Cheater.java	2025-09-24 22:25:39.167536495 +0000
+@@ -424,7 +424,19 @@
+ 	}
+ 	
+ 	protected JarEntry getConfigFileEntry(String suffix) throws MaltChainedException {
+-		return getConfiguration().getConfigurationDir().getConfigFileEntry(owner.getModelName()+getLearningMethodName()+suffix);
++	org.maltparser.core.config.ConfigurationDir __arodnap_temp0 = null;
++	try {
++    __arodnap_temp0 = getConfiguration().getConfigurationDir();
++    return __arodnap_temp0.getConfigFileEntry(owner.getModelName()+getLearningMethodName()+suffix);
++} finally {
++    if (__arodnap_temp0 != null) {
++        try {
++            __arodnap_temp0.terminate();
++        } catch (Exception e) {
++            e.printStackTrace();
++        }
++    }
++}
+ 	}
+ 	
+ 	

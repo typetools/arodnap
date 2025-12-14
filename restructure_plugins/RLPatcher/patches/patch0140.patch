@@ -1,0 +1,16 @@
+--- /tmp/orig-8366409873633392701.java	2025-09-24 21:46:31.831448584 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url28dfd00382_byang223_TurnBAPI_tgz-pJ8-units_upgrades_UpgradeTestJ8/src/editmode/CommandSave.java	2025-09-24 21:46:29.907314082 +0000
+@@ -91,10 +91,9 @@
+ 
+ 		savename += "game.ser";
+ 
+-		try
+-		{
+-			FileOutputStream fileOut =
+-					new FileOutputStream(savename);
++		try(
++FileOutputStream fileOut =
++					new FileOutputStream(savename)) 		{
+ 			ObjectOutputStream out =
+ 					new ObjectOutputStream(fileOut);
+ 			out.writeObject(game);

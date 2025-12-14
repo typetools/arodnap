@@ -1,0 +1,18 @@
+--- /tmp/orig-2291759014983214871.java	2025-09-24 22:07:29.387356913 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url70997c83aa_Xilaew_risiko_tgz-pJ8-risiko_XMI2XMLtransformerJ8/src/risiko/EngineTest.java	2025-09-24 22:07:27.203204233 +0000
+@@ -12,9 +12,13 @@
+ 		Engine engine = new Engine();
+ 		File boardFile = new File("examples/default.board");
+ 		File stateFile = new File("examples/default.state");
+-		engine.setBoard(new FileInputStream(boardFile));
++		try (java.io.FileInputStream __arodnap_temp0 = new FileInputStream(boardFile)) {
++		    engine.setBoard(__arodnap_temp0);
++		}
+ 		engine.getBoard(System.out);
+-		engine.setState(new FileInputStream(stateFile));
++		try (java.io.FileInputStream __arodnap_temp1 = new FileInputStream(stateFile)) {
++		    engine.setState(__arodnap_temp1);
++		}
+ 		engine.getState(System.out);
+ 	}
+ }

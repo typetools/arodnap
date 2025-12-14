@@ -1,0 +1,28 @@
+--- /tmp/orig-4537174546910764127.java	2025-09-24 21:57:14.708388334 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url49584c1d41_Arrem_GGS_tgz-pJ8-com_gamezgalaxy_test_console_MainJ8/src/com/gamezgalaxy/GGS/API/plugin/CommandHandler.java	2025-09-24 21:57:12.496233695 +0000
+@@ -152,11 +152,11 @@
+ 			new File("properties").mkdir();
+ 		if (!new File("properties/commands.config").exists())
+ 			makeDefault();
+-		FileInputStream fstream = new FileInputStream("properties/commands.config");
+-		DataInputStream in = new DataInputStream(fstream);
+-		BufferedReader br = new BufferedReader(new InputStreamReader(in));
+-		String strLine;
+-		while ((strLine = br.readLine()) != null)   {
++		try (FileInputStream fstream = new FileInputStream("properties/commands.config")) {
++		    DataInputStream in = new DataInputStream(fstream);
++		    BufferedReader br = new BufferedReader(new InputStreamReader(in));
++		    String strLine;
++		    while ((strLine = br.readLine()) != null)   {
+ 			if (strLine.startsWith("#"))
+ 				continue;
+ 			String cmdname = strLine.split("\\:")[0];
+@@ -167,7 +167,7 @@
+ 				}
+ 			}
+ 		}
+-		in.close();
++		}
+ 	}
+ 	
+ 	private void makeDefault() {

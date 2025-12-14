@@ -1,0 +1,30 @@
+--- /tmp/orig-5667819846988051285.java	2025-09-24 22:43:49.703770837 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlb5d5be4365_abmargb_oursim_ext_tgz-pJ8-br_edu_ufcg_lsd_oursim_experiments_RemoteNoFScenarioGeneratorJ8/src/br/edu/ufcg/lsd/oursim/factories/JsonGridFactoryTest.java	2025-09-24 22:43:47.451613392 +0000
+@@ -71,11 +71,23 @@
+ 	
+ 	@Test(expected=IllegalArgumentException.class)
+ 	public void testBadBroker() {
+-		JsonGridFactory factory = new JsonGridFactory(
++	java.io.InputStream __arodnap_temp0 = null;
++	try {
++    __arodnap_temp0 = getClass().getResourceAsStream("grid-badbroker.conf");
++    JsonGridFactory factory = new JsonGridFactory(
+ 				Configuration.createDefaults(), 
+-				getClass().getResourceAsStream("grid-badbroker.conf"));
+-		
+-		factory.createGrid();
++				__arodnap_temp0);
++    factory.createGrid();
++} finally {
++    if (__arodnap_temp0 != null) {
++        try {
++            __arodnap_temp0.close();
++        } catch (Exception e) {
++            e.printStackTrace();
++        }
++    }
++}
++	
+ 		
+ 	}
+ 	

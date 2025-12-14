@@ -1,0 +1,29 @@
+--- /tmp/orig-12480504593414613982.java	2025-09-24 22:31:32.584241863 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url80e39b1957_tobikster_IJN_headers_recognition_tgz-pJ8-org_maltparser_examples_CreatePhraseStructureGraphJ8/src/org/maltparser/core/options/OptionManager.java	2025-09-24 22:31:28.751973971 +0000
+@@ -549,7 +549,9 @@
+ 					if (nSpaces <= 1) {
+ 						nSpaces = 1;
+ 					}
+-					sb.append(new Formatter().format("  %s (%4s)%"+nSpaces+"s %s\n", option.getName(), "-"+option.getFlag()," ", option.getDefaultValueString()));
++					try (java.util.Formatter __arodnap_temp0 = new Formatter()) {
++					    sb.append(__arodnap_temp0.format("  %s (%4s)%"+nSpaces+"s %s\n", option.getName(), "-"+option.getFlag()," ", option.getDefaultValueString()));
++					}
+ 				}
+ 			}
+ 		} else {
+@@ -564,9 +566,13 @@
+ 					}
+ 					
+ 					if (value == null) {
+-						sb.append(new Formatter().format("  %s (%4s)%"+nSpaces+"s %s\n", option.getName(), "-"+option.getFlag(), " ", option.getDefaultValueString()));
++					    try (java.util.Formatter __arodnap_temp1 = new Formatter()) {
++					        sb.append(__arodnap_temp1.format("  %s (%4s)%"+nSpaces+"s %s\n", option.getName(), "-"+option.getFlag(), " ", option.getDefaultValueString()));
++					    }
+ 					} else {
+-						sb.append(new Formatter().format("  %s (%4s)%"+nSpaces+"s %s\n", option.getName(), "-"+option.getFlag(), " ", value));
++					    try (java.util.Formatter __arodnap_temp2 = new Formatter()) {
++					        sb.append(__arodnap_temp2.format("  %s (%4s)%"+nSpaces+"s %s\n", option.getName(), "-"+option.getFlag(), " ", value));
++					    }
+ 					}
+ 				}
+ 			}

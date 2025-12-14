@@ -1,0 +1,34 @@
+--- /tmp/orig-2845538871134314110.java	2025-09-24 22:04:53.372450933 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url5a01f2c1d9_core9_core_tgz-pJ8-io_core9_core_boot_BootstrapFrameworkJ8/src/net/xeoh/plugins/base/impl/classpath/locator/locations/JARClasspathLocation.java	2025-09-24 22:04:51.364310555 +0000
+@@ -203,6 +203,7 @@
+ 	 */
+ 	public static Collection<String> listToplevelClassNamesForURI(URI uri) {
+ 		final Collection<String> rval = new ArrayList<String>();
++		java.util.jar.JarFile jarFile = null;
+ 
+ 		// Ensure we have a proper cache entry ...
+ 		// getCacheEntry();
+@@ -216,7 +217,7 @@
+ 		try {
+ 			final JarURLConnection connection = (JarURLConnection) new URI("jar:" + uri + "!/")
+ 			        .toURL().openConnection();
+-			final JarFile jarFile = connection.getJarFile();
++			jarFile = connection.getJarFile();
+ 
+ 			final Enumeration<JarEntry> entries = jarFile.entries();
+ 
+@@ -255,6 +256,14 @@
+ 			e.printStackTrace();
+ 		} catch (URISyntaxException e) {
+ 			e.printStackTrace();
++		} finally {
++		    if (jarFile != null) {
++		        try {
++		            jarFile.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
+ 		}
+ 
+ 		return rval;

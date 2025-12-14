@@ -1,0 +1,35 @@
+--- /tmp/orig-14367538836158587144.java	2025-09-24 22:49:45.604651353 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlce7759b8da_Palachsuper_EBA4_tgz-pJ8-json_TestJ8/src/terminal/service/Service.java	2025-09-24 22:49:44.088545365 +0000
+@@ -99,6 +99,7 @@
+ 
+     public static void WritePaymentLog(String log, String id_payment){
+         StringBuilder sb = new StringBuilder();
++        java.io.FileReader __arodnap_temp0 = null;
+         try{
+             String path_log = "/home/terminal/Log/LogPayment/Payment_"+id_payment+".txt";
+             File Log_path = new File(path_log);
+@@ -110,7 +111,8 @@
+                     e.printStackTrace();
+                 }
+             }
+-            BufferedReader in = new BufferedReader(new FileReader( new File(path_log).getAbsoluteFile()));
++            __arodnap_temp0 = new FileReader(new File(path_log).getAbsoluteFile());
++            BufferedReader in = new BufferedReader(__arodnap_temp0);
+             String read_log;
+             if (sb.length()>0)
+             {
+@@ -133,6 +135,14 @@
+         }
+         catch (Exception e){
+ 
++        } finally {
++            if (__arodnap_temp0 != null) {
++                try {
++                    __arodnap_temp0.close();
++                } catch (Exception e) {
++                    e.printStackTrace();
++                }
++            }
+         }
+     }
+ 

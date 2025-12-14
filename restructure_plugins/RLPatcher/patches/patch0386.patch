@@ -1,0 +1,28 @@
+--- /tmp/orig-8205705845898960198.java	2025-09-24 22:10:15.250951350 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url74b2be4e76_gurbano_petulant_octo_sudoku_tgz-pJ8-test_testJ8/src/ocr/MainEntry.java	2025-09-24 22:10:13.802850123 +0000
+@@ -392,8 +392,8 @@
+     */
+    void load_actionPerformed(java.awt.event.ActionEvent event)
+    {
+-     try {
+-       FileReader f;// the actual file stream
++   java.io.FileReader f = null;
++   try {
+        BufferedReader r;// used to read the file line by line
+ 
+        f = new FileReader( new File("./sample.dat") );
+@@ -428,6 +428,14 @@
+        JOptionPane.showMessageDialog(this,
+                                      "Error: " + e,"Training",
+                                      JOptionPane.ERROR_MESSAGE);
++     } finally {
++         if (f != null) {
++             try {
++                 f.close();
++             } catch (Exception e) {
++                 e.printStackTrace();
++             }
++         }
+      }
+ 
+    }

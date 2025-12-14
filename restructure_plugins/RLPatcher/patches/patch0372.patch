@@ -1,0 +1,26 @@
+--- /tmp/orig-9779495727940260478.java	2025-09-24 22:08:25.103251647 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url70ed135da7_ralfbiedert_jcores_tgz-pJ8-sandbox_SimpleFilterTestJ8/src/net/jcores/extensions/serialization/CoreSerializer.java	2025-09-24 22:08:21.591006128 +0000
+@@ -62,12 +62,21 @@
+      * @param destination
+      */
+     public void store(String destination) {
+-        try {
++    java.io.OutputStream os = null;
++    try {
+             final XStream xstream = new XStream();
+-            final OutputStream os = new FileOutputStream(destination);
++            os = new FileOutputStream(destination);
+             xstream.toXML(this.adapter, os);
+         } catch (FileNotFoundException e) {
+             this.commonCore.report(MessageType.EXCEPTION, "File not found " + destination);
++        } finally {
++            if (os != null) {
++                try {
++                    os.close();
++                } catch (Exception e) {
++                    e.printStackTrace();
++                }
++            }
+         }
+     }
+ 

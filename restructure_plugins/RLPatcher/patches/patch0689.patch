@@ -1,0 +1,20 @@
+--- /tmp/orig-11064110504236538350.java	2025-09-24 22:45:12.337547645 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlbd77b745af_KokaKiwi_MCLauncher_tgz-pJ8-net_contrapunctus_lzma_BenchmarkJ8/src/com/kokakiwi/mclauncher/core/Loginer.java	2025-09-24 22:45:10.405412572 +0000
+@@ -107,11 +107,12 @@
+         
+         final Cipher cipher = getCipher(Cipher.ENCRYPT_MODE, main.getConfig()
+                 .getString("login.encryptionKey"));
+-        final DataOutputStream out = new DataOutputStream(
+-                new CipherOutputStream(new FileOutputStream(file), cipher));
+-        out.writeUTF(username);
+-        out.writeUTF(password);
+-        out.close();
++        try (javax.crypto.CipherOutputStream __arodnap_temp0 = new CipherOutputStream(new FileOutputStream(file), cipher)) {
++            final DataOutputStream out = new DataOutputStream(
++                __arodnap_temp0);
++            out.writeUTF(username);
++            out.writeUTF(password);
++        }
+     }
+     
+     public void readLogin() throws Exception

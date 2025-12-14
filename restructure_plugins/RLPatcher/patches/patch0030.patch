@@ -1,0 +1,27 @@
+--- /tmp/orig-4544003486467781309.java	2025-09-24 21:34:34.405314995 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url0d38a10ee7_diegopliebana_GEBT_tgz-pJ8-ch_idsia_scenarios_test_EvolveWithChangingSeedsJ8/src/grammaticalbehaviors/bt/behaviortree/Main.java	2025-09-24 21:34:31.329100042 +0000
+@@ -17,9 +17,21 @@
+      * @param args the command line arguments
+      */
+     public static void main(String[] args) {
+-        // TODO code application logic here
+-        BehaviorTree bt = new BehaviorTree(null,new MarioXMLReader());
+-        bt.execute();
++    grammaticalbehaviors.GEBT_Mario.MarioXMLReader __arodnap_temp0 = null;
++    try {
++    __arodnap_temp0 = new MarioXMLReader();
++    BehaviorTree bt = new BehaviorTree(null,__arodnap_temp0);
++    bt.execute();
++} finally {
++    if (__arodnap_temp0 != null) {
++        try {
++            __arodnap_temp0.openDouble(null, null);
++        } catch (Exception e) {
++            e.printStackTrace();
++        }
++    }
++}
++
+     
+     }
+ 

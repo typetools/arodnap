@@ -1,0 +1,38 @@
+--- /tmp/orig-9200315578435833534.java	2025-09-24 22:06:12.850006689 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url696d9a93c9_liaosiwei_bayesnetwork_tgz-pJ8-tutorial_TutorialJ8/src/com/alibaba/Train.java	2025-09-24 22:06:11.229893437 +0000
+@@ -82,14 +82,15 @@
+     }
+ 
+     public static void main(String[] args) {
+-        DataRead reader = new DataRead();
++    com.alibaba.DataRead reader = null;
++    try {
++        reader = new DataRead();
+         createNetwork();
+         if (!reader.read()) {
+             System.out.println("read file error");
+             return;
+         }
+         Map<String, Map<String, Map<Integer, HashSet<Integer>>>> table = reader.getData();
+-
+         long totalSum = 0;
+         for (String key1: table.keySet()) {
+             Set<String> allSet = new HashSet<String>();
+@@ -347,6 +348,16 @@
+             }
+         }
+         System.out.println("total brand numbers is " + totalSum);
+-        reader.close();
++    } finally {
++        if (reader != null) {
++            try {
++                reader.close();
++            } catch (Exception e) {
++                e.printStackTrace();
++            }
++        }
++    }
++
++
+     }
+ }

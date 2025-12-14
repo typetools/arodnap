@@ -1,0 +1,16 @@
+--- /tmp/orig-16796189704694013947.java	2025-09-24 22:56:50.454352171 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlead5353366_Zeldon_BigData_Class_tgz-pJ8-LocalTestsJ8/src/sg/edu/nus/cs5344/spring14/twitter/TwMain.java	2025-09-24 22:56:48.766234122 +0000
+@@ -288,9 +288,10 @@
+ 	}
+ 
+ 	private static void prepOutDir(final Configuration conf, final Path dir) throws IOException {
+-		final FileSystem fs = FileSystem.get(conf);
+-		fs.delete(dir, true);
+-		fs.mkdirs(dir.getParent());
++	    try (final FileSystem fs = FileSystem.get(conf)) {
++	        fs.delete(dir, true);
++	        fs.mkdirs(dir.getParent());
++	    }
+ 	}
+ 
+ }

@@ -1,0 +1,13 @@
+--- /tmp/orig-14914435833108243062.java	2025-09-24 21:57:24.893100291 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url49584c1d41_Arrem_GGS_tgz-pJ8-com_gamezgalaxy_test_console_MainJ8/src/com/gamezgalaxy/GGS/API/plugin/PluginHandler.java	2025-09-24 21:57:22.996967743 +0000
+@@ -66,8 +66,8 @@
+ 							{
+ 								Properties properties = new Properties();
+ 
+-								try {
+-									properties.load(file.getInputStream(fileName));
++								try (java.io.InputStream __arodnap_temp0 = file.getInputStream(fileName)) {
++									properties.load(__arodnap_temp0);
+ 								} catch (IOException e) {
+ 									e.printStackTrace();
+ 								}

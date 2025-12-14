@@ -1,0 +1,32 @@
+--- /tmp/orig-5023967024451730959.java	2025-09-24 22:40:08.540309621 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url9d04094941_petermikitsh_PizzaDeliverySystem_tgz-pJ8-testdrivers_ManagerReportTestDriverJ8/src/model/database/Database.java	2025-09-24 22:40:06.200146024 +0000
+@@ -155,10 +155,12 @@
+ 		
+ 		// Create a decoder that will load the database from a file.
+ 		XMLDecoder decoder;
++		java.io.FileInputStream __arodnap_temp0 = null;
+ 		try {
+-			decoder = new XMLDecoder( 
++		__arodnap_temp0 = new FileInputStream(_name + "_table.xml");
++		decoder = new XMLDecoder( 
+ 						new BufferedInputStream( 
+-							new FileInputStream(_name +"_table.xml") ) );
++							__arodnap_temp0 ) );
+ 			// Read in the counter.
+ 			_counter = (Integer)decoder.readObject();
+ 			// Read in the database.
+@@ -166,6 +168,14 @@
+ 			decoder.close();
+ 		} catch (FileNotFoundException e) {
+ 			// Do nothing.
++		} finally {
++		    if (__arodnap_temp0 != null) {
++		        try {
++		            __arodnap_temp0.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
+ 		}
+ 		
+ 	}

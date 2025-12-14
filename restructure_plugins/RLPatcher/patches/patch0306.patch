@@ -1,0 +1,73 @@
+--- /tmp/orig-8847710294741478086.java	2025-09-24 22:02:15.305401365 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url4c41254592_topskychen_AuthTopk_tgz-pJ8-quickhull3d_QuickHull3DTestJ8/src/utility/CompareFunction.java	2025-09-24 22:02:12.389197510 +0000
+@@ -96,9 +96,10 @@
+ 		}else{
+ 			file = in.nextLine(); 
+ 		}
+-		LineNumberReader lr = new LineNumberReader(new FileReader(file));
+-		String line = lr.readLine();
+-		while (line != null) {
++		try (java.io.FileReader __arodnap_temp0 = new FileReader(file)) {
++		    LineNumberReader lr = new LineNumberReader(__arodnap_temp0);
++		    String line = lr.readLine();
++		    while (line != null) {
+ 			StringTokenizer st = new StringTokenizer(line);
+ 			int id = Integer.parseInt(st.nextToken());
+ 			double x1 = Double.parseDouble(st.nextToken());
+@@ -108,19 +109,18 @@
+ //			datas.add(new data(new MathPoint(x1, y1, Math.sqrt(z1)), id));
+ 			datas.add(new data(new MathPoint(x1, y1, Math.sqrt(z1) * 2), id));
+ 		}
+-		lr.close();
+-		System.out.println("loading finished!");
+-		if(args.length > 1)file = args[1];
++		    System.out.println("loading finished!");
++		    if(args.length > 1)file = args[1];
+ 		else file = in.nextLine();
+-		lr = new LineNumberReader(new FileReader(file));
+-		line = lr.readLine();
+-//		double[] ws = {0.01, 0.03, 0.05, 0.08, 0.1, 0.3, 0.5, 0.7, 0.9};
+-//		double[] ws = {0.01, 0.03, 0.05, 0.08, 0.1, 0.3, 0.5, 0.7, 0.9};
+-		double[] ws = {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9};
+-		double[] ratios = {1, 1.05, 1.1, 1.15, 1.2, 1.25, 1.3, 1.35, 1.4, 1.45, 1.5, 1.55, 1.6, 1.65, 1.7, 1.75, 1.8, 1.85, Double.MAX_VALUE}; int num = 0;
+-		int res[] = new int[ratios.length];
+-		for(int i = 0; i < ratios.length; i ++) res[i] = 0;
+-		while (line != null) {
++		    try (java.io.FileReader __arodnap_temp1 = __arodnap_temp0) {
++		        lr = new LineNumberReader(__arodnap_temp1);
++		        line = lr.readLine();
++		        double[] ws = {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9};
++		        double[] ratios = {1, 1.05, 1.1, 1.15, 1.2, 1.25, 1.3, 1.35, 1.4, 1.45, 1.5, 1.55, 1.6, 1.65, 1.7, 1.75, 1.8, 1.85, Double.MAX_VALUE};
++		        int num = 0;
++		        int res[] = new int[ratios.length];
++		        for(int i = 0; i < ratios.length; i ++) res[i] = 0;
++		        while (line != null) {
+ 			String[] tokens = line.split(" "); num ++; System.out.print(".");
+ //			int k = Integer.parseInt(tokens[0]);
+ 			int k = 16;
+@@ -134,15 +134,20 @@
+ 				//System.out.println("w = " + ws[i] + " ratio = " + 100.0 * ans / k + "%");
+ 			}
+ 			line = lr.readLine();
+-		}System.out.println();
+-		int tot = 0;
+-		for(int i = 0; i < ratios.length - 1; i ++){
++		}
++		        System.out.println();
++		        int tot = 0;
++		        for(int i = 0; i < ratios.length - 1; i ++){
+ 			tot += res[i];
+ 		}
+-		for(int i = 0; i < ratios.length - 1; i ++){
++		        for(int i = 0; i < ratios.length - 1; i ++){
+ 			System.out.println(ratios[i] + " ~ " + ratios[i + 1] + " has " + 100.0 * res[i] / tot);
+ 		}
+-		in.close();
++		    }
++		    in.close();
++		}
++		//		double[] ws = {0.01, 0.03, 0.05, 0.08, 0.1, 0.3, 0.5, 0.7, 0.9};
++
+ 	}	
+ }
+ 

@@ -1,0 +1,35 @@
+--- /tmp/orig-10516530282276265639.java	2025-09-24 21:32:28.656528213 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url00509339cf_tedwon_scribe_log4j_appender_tgz-pJ8-com_realtimecep_scribe_ScribeJavaServerJ8/src/org/apache/thrift/transport/THttpClient.java	2025-09-24 21:32:26.224358263 +0000
+@@ -118,6 +118,7 @@
+         // Extract request and reset buffer
+         byte[] data = requestBuffer_.toByteArray();
+         requestBuffer_.reset();
++        java.io.OutputStream __arodnap_temp0 = null;
+ 
+         try {
+             // Create connection object
+@@ -143,7 +144,8 @@
+             }
+             connection.setDoOutput(true);
+             connection.connect();
+-            connection.getOutputStream().write(data);
++            __arodnap_temp0 = connection.getOutputStream();
++            __arodnap_temp0.write(data);
+ 
+             int responseCode = connection.getResponseCode();
+             if (responseCode != HttpURLConnection.HTTP_OK) {
+@@ -155,6 +157,14 @@
+ 
+         } catch (IOException iox) {
+             throw new TTransportException(iox);
++        } finally {
++            if (__arodnap_temp0 != null) {
++                try {
++                    __arodnap_temp0.close();
++                } catch (Exception e) {
++                    e.printStackTrace();
++                }
++            }
+         }
+     }
+ }

@@ -1,0 +1,30 @@
+--- /tmp/orig-3757011746704519007.java	2025-09-24 22:24:21.766125800 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url80e39b1957_tobikster_IJN_headers_recognition_tgz-pJ8-org_maltparser_examples_CreatePhraseStructureGraphJ8/src/org/maltparser/parser/guide/instance/FeatureDivideModel.java	2025-09-24 22:24:17.937858187 +0000
+@@ -265,8 +265,10 @@
+ 	 * @throws MaltChainedException
+ 	 */
+ 	protected void save() throws MaltChainedException {
+-		try {
+-			final BufferedWriter out = new BufferedWriter(getGuide().getConfiguration().getConfigurationDir().getOutputStreamWriter(getModelName()+".dsm"));
++	org.maltparser.core.config.ConfigurationDir __arodnap_temp0 = null;
++	try {
++	__arodnap_temp0 = getGuide().getConfiguration().getConfigurationDir();
++		final BufferedWriter out = new BufferedWriter(__arodnap_temp0.getOutputStreamWriter(getModelName()+".dsm"));
+ 			out.write(masterModel.getIndex() + "\t" + masterModel.getFrequency() + "\n");
+ 
+ 			if (divideModels != null) {
+@@ -278,6 +280,14 @@
+ 		} catch (IOException e) {
+ 			throw new GuideException("Could not write to the guide model settings file '"+getModelName()+".dsm"+"', when " +
+ 					"saving the guide model settings to file. ", e);
++		} finally {
++		    if (__arodnap_temp0 != null) {
++		        try {
++		            __arodnap_temp0.terminate();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
+ 		}
+ 	}
+ 	

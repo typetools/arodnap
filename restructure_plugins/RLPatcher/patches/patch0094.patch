@@ -1,0 +1,32 @@
+--- /tmp/orig-4528071112028992762.java	2025-09-24 21:41:18.673563511 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url147ce07ebe_JoshuaKissoon_Kademlia_tgz-pJ8-kademlia_simulations_RoutingTableStateTestingJ8/src/kademlia/simulations/RoutingTableSimulation.java	2025-09-24 21:41:17.021448069 +0000
+@@ -15,11 +15,12 @@
+ 
+     public RoutingTableSimulation()
+     {
+-        try
++    kademlia.JKademliaNode kad2 = null;
++    try
+         {
+             /* Setting up 2 Kad networks */
+             JKademliaNode kad1 = new JKademliaNode("JoshuaK", new KademliaId("ASF45678947584567463"), 12049);
+-            JKademliaNode kad2 = new JKademliaNode("Crystal", new KademliaId("ASF45678947584567464"), 4585);
++            kad2 = new JKademliaNode("Crystal", new KademliaId("ASF45678947584567464"), 4585);
+             JKademliaNode kad3 = new JKademliaNode("Shameer", new KademliaId("ASF45678947584567465"), 8104);
+             JKademliaNode kad4 = new JKademliaNode("Lokesh", new KademliaId("ASF45678947584567466"), 8335);
+             JKademliaNode kad5 = new JKademliaNode("Chandu", new KademliaId("ASF45678947584567467"), 13345);
+@@ -47,6 +48,14 @@
+         catch (Exception e)
+         {
+             e.printStackTrace();
++        } finally {
++            if (kad2 != null) {
++                try {
++                    kad2.shutdown(false);
++                } catch (Exception e) {
++                    e.printStackTrace();
++                }
++            }
+         }
+     }
+ 

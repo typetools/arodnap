@@ -1,0 +1,23 @@
+--- /tmp/orig-10348135065921481909.java	2025-09-24 22:26:28.558989173 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url80e39b1957_tobikster_IJN_headers_recognition_tgz-pJ8-org_maltparser_examples_CreatePhraseStructureGraphJ8/src/org/maltparser/ml/lib/Lib.java	2025-09-24 22:26:24.754723237 +0000
+@@ -392,7 +392,19 @@
+ 	}
+ 	
+ 	protected InputStreamReader getInstanceInputStreamReader(String suffix) throws MaltChainedException {
+-		return getConfiguration().getConfigurationDir().getInputStreamReader(owner.getModelName()+getLearningMethodName()+suffix);
++	org.maltparser.core.config.ConfigurationDir __arodnap_temp0 = null;
++	try {
++    __arodnap_temp0 = getConfiguration().getConfigurationDir();
++    return __arodnap_temp0.getInputStreamReader(owner.getModelName()+getLearningMethodName()+suffix);
++} finally {
++    if (__arodnap_temp0 != null) {
++        try {
++            __arodnap_temp0.terminate();
++        } catch (Exception e) {
++            e.printStackTrace();
++        }
++    }
++}
+ 	}
+ 	
+ 	protected InputStreamReader getInstanceInputStreamReaderFromConfigFile(String suffix) throws MaltChainedException {

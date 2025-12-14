@@ -1,0 +1,18 @@
+--- /tmp/orig-6807387491297833121.java	2025-09-24 21:55:37.917622243 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url47af6b1535_rolandotr_db_comparison_tgz-pJ8-methodology_HistoryJ8/src/methodology/History.java	2025-09-24 21:55:36.241505075 +0000
+@@ -72,10 +72,11 @@
+ 
+ 	public static void saveInDiskTheFrontiers(ParetoFrontier[] frontiers,
+ 			String file) throws FileNotFoundException, IOException {
+-		ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(file));
+-		out.writeObject(frontiers);
+-		out.close();
+-	}
++			    try (java.io.FileOutputStream __arodnap_temp0 = new FileOutputStream(file)) {
++			        ObjectOutputStream out = new ObjectOutputStream(__arodnap_temp0);
++			        out.writeObject(frontiers);
++			    }
++			}
+ 
+ 	/*Trujillo- Apr 4, 2014
+ 	 * This method takes MAX_N and builds the history from n = 1 to n = MAX_N. This history is basically how the 

@@ -1,0 +1,27 @@
+--- /tmp/orig-9905952959093020754.java	2025-09-24 21:55:50.442497786 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url47af6b1535_rolandotr_db_comparison_tgz-pJ8-methodology_HistoryJ8/src/mains/Comparison.java	2025-09-24 21:55:48.774381177 +0000
+@@ -37,7 +37,9 @@
+ 
+ 	public static void main(String[] args) throws FileNotFoundException, IOException, ClassNotFoundException {
+ 		int exponent = Integer.parseInt(args[0]);
+-		System.setOut(new PrintStream("evolution-"+exponent+".txt"));
++		try (java.io.PrintStream __arodnap_temp0 = new PrintStream("evolution-" + exponent + ".txt")) {
++		    System.setOut(__arodnap_temp0);
++		}
+ 		System.out.println("Starting");
+ 		double mafiaUpperBound = Math.pow(0.5, exponent);
+ 		//DBProtocol[][] protocols = DBProtocol.loadProtocolsFairly();
+@@ -61,9 +63,10 @@
+ 		InternalState state = null;
+ 		File f = new File(fileName);
+ 		if (f.exists()){
+-			ObjectInputStream in = new ObjectInputStream(new FileInputStream(f));
+-			state = (InternalState)in.readObject();
+-			in.close();
++		    try (java.io.FileInputStream __arodnap_temp1 = new FileInputStream(f)) {
++		        ObjectInputStream in = new ObjectInputStream(__arodnap_temp1);
++		        state = (InternalState)in.readObject();
++		    }
+ 		}
+ 		else{
+ 			state = new InternalState(fileName);

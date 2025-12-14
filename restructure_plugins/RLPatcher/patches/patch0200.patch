@@ -1,0 +1,67 @@
+--- /tmp/orig-11098919490534482873.java	2025-09-24 21:52:18.411675916 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url433bec1e56_sarobe_DifficultyInvestigation_tgz-pJ8-fr_inria_optimization_cmaes_examples_CMAExample1J8/src/gnuplot/Grapher.java	2025-09-24 21:52:16.099514286 +0000
+@@ -69,26 +69,25 @@
+ 
+         // rewrite the best
+         BufferedReader reader = new BufferedReader(new FileReader(directoryName + "/gnuplot-best.txt"));
+-        PrintWriter pw = new PrintWriter(new FileWriter(directoryName + "/gnuplot-bestTEMP.txt", false));
+-        String line = "";
+-        while((line = reader.readLine()) != null) {
++        try (java.io.FileWriter __arodnap_temp1 = new FileWriter(directoryName + "/gnuplot-bestTEMP.txt", false)) {
++            PrintWriter pw = new PrintWriter(__arodnap_temp1);
++            String line = "";
++            while((line = reader.readLine()) != null) {
+             String[] tokens = line.split(" \t ");
+             double gen = Double.parseDouble(tokens[0]);
+             double bestResult = constant - Double.parseDouble(tokens[1]);;
+             pw.format("%f \t %f \n", gen, bestResult);
+         }
+-        reader.close();
+-        pw.close();
+-        File fileA = new File(directoryName + "/gnuplot-best.txt");
+-        File fileB = new File(directoryName + "/gnuplot-bestTEMP.txt");
+-        fileA.delete();
+-        fileB.renameTo(fileA);
+-        fileB.delete();
+-
+-
+-        // rewrite the mean
+-        reader = new BufferedReader(new FileReader(directoryName + "/gnuplot-mean.txt"));
+-        pw = new PrintWriter(new FileWriter(directoryName + "/gnuplot-meanTEMP.txt", false));
++            reader.close();
++            File fileA = new File(directoryName + "/gnuplot-best.txt");
++            File fileB = new File(directoryName + "/gnuplot-bestTEMP.txt");
++            fileA.delete();
++            fileB.renameTo(fileA);
++            fileB.delete();
++            try (java.io.FileReader __arodnap_temp2 = new FileReader(directoryName + "/gnuplot-mean.txt")) {
++    reader = new BufferedReader(__arodnap_temp2);
++    try (java.io.FileWriter __arodnap_temp3 = new FileWriter(directoryName + "/gnuplot-meanTEMP.txt", false)) {
++        pw = new PrintWriter(__arodnap_temp3);
+         line = "";
+         while((line = reader.readLine()) != null) {
+             String[] tokens = line.split(" \t ");
+@@ -96,12 +95,16 @@
+             double bestResult = constant - Double.parseDouble(tokens[1]);;
+             pw.format("%f \t %f \n", gen, bestResult);
+         }
+-        reader.close();
+-        pw.close();
+-        fileA = new File(directoryName + "/gnuplot-mean.txt");
+-        fileB = new File(directoryName + "/gnuplot-meanTEMP.txt");
+-        fileA.delete();
+-        fileB.renameTo(fileA);
+-        fileB.delete();
++    }
++    fileA = new File(directoryName + "/gnuplot-mean.txt");
++}
++            fileB = new File(directoryName + "/gnuplot-meanTEMP.txt");
++            fileA.delete();
++            fileB.renameTo(fileA);
++            fileB.delete();
++        }
++
++
++
+     }
+ }

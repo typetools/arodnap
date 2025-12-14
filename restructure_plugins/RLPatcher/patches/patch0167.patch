@@ -1,0 +1,17 @@
+--- /tmp/orig-14798783419475333408.java	2025-09-24 21:49:24.879545272 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url2a908001cd_malictus_klang_tgz-pJ8-malictus_klang_test_PrimitiveTestJ8/src/malictus/klang/ui/klangeditor/RawEditPanel.java	2025-09-24 21:49:22.595385599 +0000
+@@ -474,6 +474,14 @@
+ 		} catch (Exception err) {
+ 			JOptionPane.showMessageDialog(parent, err.getMessage(), KlangConstants.ERROR_GENERAL_FILE, JOptionPane.ERROR_MESSAGE);
+ 			return;
++		} finally {
++		    if (raf != null) {
++		        try {
++		            raf.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
+ 		}
+ 		//update file itself with the change
+ 		parent.reparseEntireFile(curPrim.getStartBytePosition());

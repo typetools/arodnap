@@ -1,0 +1,16 @@
+--- /tmp/orig-12420489116024721369.java	2025-09-24 22:11:06.510534572 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url7606378bcc_ljy2010a_protobuf2_tgz-pJ8-com_game_gameObj_bufBuilder_ReflectBuilderJ8/src/com/game/gameObj/bufBuilder/BufBuilderMake.java	2025-09-24 22:11:04.498393916 +0000
+@@ -25,9 +25,10 @@
+ 	public static void main(String[] args) throws ClassNotFoundException, IOException {
+ 		// TODO Auto-generated method stub
+ 		for (int i = 0 ;i<typeNames.length;i++){
+-			PrintWriter pw = new PrintWriter( new FileWriter( FilePath+ typeNames[i] + "Builder.java" ) );
+-	        pw.print(makeBuilder(typeNames[i]));
+-	        pw.close();
++		    try (java.io.FileWriter __arodnap_temp0 = new FileWriter(FilePath + typeNames[i] + "Builder.java")) {
++		        PrintWriter pw = new PrintWriter( __arodnap_temp0 );
++		        pw.print(makeBuilder(typeNames[i]));
++		    }
+ 		}
+ 	}
+ 	

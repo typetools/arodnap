@@ -1,0 +1,17 @@
+--- /tmp/orig-5527332252726098887.java	2025-09-24 22:11:20.679525033 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url78eec0e0b6_Orikuro_vic_tgz-pJ8-net_nexon_vindictus_itemcomparer_inport_StaticImportJ8/src/net/nexon/vindictus/itemcomparer/inport/StaticImport.java	2025-09-24 22:11:19.003407866 +0000
+@@ -1949,12 +1949,11 @@
+ 			setnames.add(s.getItemset());
+ 		}
+ 		isets = setnames;
+-		try {
++		try (java.io.FileOutputStream __arodnap_temp0 = new FileOutputStream("data" + File.separator + "_sets.xml")) {
+ 			File outd = new File("data" + File.separator);
+ 			outd.mkdirs();
+ 			BufferedWriter out = new BufferedWriter(
+-					new OutputStreamWriter(new FileOutputStream("data"
+-							+ File.separator + "_sets.xml"), "UTF-8"));
++					new OutputStreamWriter(__arodnap_temp0, "UTF-8"));
+ 
+ 			JAXBContext context = JAXBContext.newInstance(ItemSets.class);
+ 			Marshaller m = context.createMarshaller();

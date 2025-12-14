@@ -1,0 +1,28 @@
+--- /tmp/orig-239222971127887339.java	2025-09-24 22:09:34.296088463 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url71665d7d68_branscha_lib_scripty_tgz-pJ8-com_sdicons_scripty_ScriptyAutoReplJ8/src/com/sdicons/scripty/ScriptyEmbeddedRepl.java	2025-09-24 22:09:31.819915371 +0000
+@@ -82,17 +82,18 @@
+         {
+             try
+             {
+-                // This call will block until a client contacts this server.
+-                Socket socket = server.accept();
+-                // Set the session timeout.
+-                // After 30 min of inactivity the socket will be closed.
+-                socket.setSoTimeout(1000 * 1800);
++                try (Socket socket = server.accept()) {
++                    socket.setSoTimeout(1000 * 1800);
++                    new RequestHandler(socket, scripty, aUid, aPwd);
++                }
++            
++// Set the session timeout.
++
+ 
+                 // We just got a connection from a client.
+                 // We will create a separate handler for this client request (separate thread)
+                 // and we will immediately keep listening for other clients to connect our server port.
+-                // So this call starts the handling process, but it does not wait for it to finish.
+-                new RequestHandler(socket, scripty, aUid, aPwd);
++                
+             }
+             catch (IOException e)
+             {

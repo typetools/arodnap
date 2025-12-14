@@ -1,0 +1,31 @@
+--- /tmp/orig-9501972686267542769.java	2025-09-24 22:04:46.964002955 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url5a01f2c1d9_core9_core_tgz-pJ8-io_core9_core_boot_BootstrapFrameworkJ8/src/net/xeoh/plugins/base/impl/classpath/locator/locations/JARClasspathLocation.java	2025-09-24 22:04:45.035868170 +0000
+@@ -166,11 +166,12 @@
+ 	 */
+ 	public static Collection<String> listAllEntriesFor(URI uri) {
+ 		final Collection<String> rval = new ArrayList<String>();
++		java.util.jar.JarFile jarFile = null;
+ 
+ 		try {
+ 			final JarURLConnection connection = (JarURLConnection) new URI("jar:" + uri + "!/")
+ 			        .toURL().openConnection();
+-			final JarFile jarFile = connection.getJarFile();
++			jarFile = connection.getJarFile();
+ 
+ 			final Enumeration<JarEntry> entries = jarFile.entries();
+ 
+@@ -191,6 +192,14 @@
+ 			e.printStackTrace();
+ 		} catch (URISyntaxException e) {
+ 			e.printStackTrace();
++		} finally {
++		    if (jarFile != null) {
++		        try {
++		            jarFile.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
+ 		}
+ 		return rval;
+ 	}

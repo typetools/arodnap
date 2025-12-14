@@ -1,0 +1,28 @@
+--- /tmp/orig-8283123075498729081.java	2025-09-24 22:37:22.868728275 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url8d1df200a8_gilleain_signatures_tgz-pJ8-signature_chemistry_LargeMoleculeTestJ8/src/signature/chemistry/LargeMoleculeTest.java	2025-09-24 22:37:21.200611666 +0000
+@@ -208,18 +208,19 @@
+     
+     public List<String> readSigs(String filename) throws Exception {
+         File file = new File(filename);
+-        BufferedReader reader = new BufferedReader(new FileReader(file));
+-        String line;
+-        List<String> sigs = new ArrayList<String>();
+-        while ((line = reader.readLine()) != null) {
++        try (java.io.FileReader __arodnap_temp0 = new FileReader(file)) {
++            BufferedReader reader = new BufferedReader(__arodnap_temp0);
++            String line;
++            List<String> sigs = new ArrayList<String>();
++            while ((line = reader.readLine()) != null) {
+             int index = line.indexOf(" ") + 1;
+             int count = Integer.parseInt(line.substring(0, index - 1));
+             String sig = line.substring(index);
+             System.out.println(count);
+             sigs.add(sig);
+         }
+-        reader.close();
+-        return sigs;
++            return sigs;
++        }
+     }
+     
+     public List<String> readSigs2(String filename) throws Exception {

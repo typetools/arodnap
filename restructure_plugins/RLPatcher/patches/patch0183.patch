@@ -1,0 +1,88 @@
+--- /tmp/orig-13575955948793415768.java	2025-09-24 21:50:42.160947575 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url39209c0557_au_research_ANDS_RIFCS_API_tgz-pJ8-org_ands_rifcs_example_SampleRIFCSBuildCollectionV1Dot6Number1J8/src/org/ands/rifcs/base/RIFCSWrapper.java	2025-09-24 21:50:40.644841593 +0000
+@@ -254,49 +254,52 @@
+                 Constants.SCHEMA_ACTIVITY).openStream());
+         Document docCollection = builder.parse(new URL(
+                 Constants.SCHEMA_COLLECTION).openStream());
+-        Document docParty = builder.parse(new URL(
+-                Constants.SCHEMA_PARTY).openStream());
+-        Document docService = builder.parse(new URL(
+-                Constants.SCHEMA_SERVICE).openStream());
+-        Document docTypes = builder.parse(new URL(
+-                Constants.SCHEMA_REGISTRY_TYPES).openStream());
+-
+-        removeElements(docRO, XSD_INCLUDE);
+-        removeElements(docRO, XSD_IMPORT);
+-        // Define XML namespace to support use of xml:lang attributes
+-        Element xmlImport = docRO.createElementNS(
++        try (java.io.InputStream __arodnap_temp4 = new URL(Constants.SCHEMA_PARTY).openStream()) {
++            Document docParty = builder.parse(__arodnap_temp4);
++            try (java.io.InputStream __arodnap_temp5 = new URL(Constants.SCHEMA_SERVICE).openStream()) {
++                Document docService = builder.parse(__arodnap_temp5);
++                try (java.io.InputStream __arodnap_temp6 = new URL(Constants.SCHEMA_REGISTRY_TYPES).openStream()) {
++                    Document docTypes = builder.parse(__arodnap_temp6);
++                    removeElements(docRO, XSD_INCLUDE);
++                    removeElements(docRO, XSD_IMPORT);
++                    Element xmlImport = docRO.createElementNS(
+                 "http://www.w3.org/2001/XMLSchema", XSD_IMPORT);
+-        xmlImport.setAttribute("namespace",
++                    xmlImport.setAttribute("namespace",
+                 "http://www.w3.org/XML/1998/namespace");
+-        xmlImport.setAttribute("schemaLocation",
++                    xmlImport.setAttribute("schemaLocation",
+                 "http://www.w3.org/2001/xml.xsd");
+-        Element root = docRO.getDocumentElement();
+-        root.insertBefore(xmlImport,
++                    Element root = docRO.getDocumentElement();
++                    root.insertBefore(xmlImport,
+                 root.getElementsByTagName("xsd:element").item(0));
+-        // Repeat for extRif namespace
+-        xmlImport = docRO.createElementNS(
++                    xmlImport = docRO.createElementNS(
+                 "http://www.w3.org/2001/XMLSchema", XSD_IMPORT);
+-        xmlImport.setAttribute("namespace",
++                    xmlImport.setAttribute("namespace",
+                 "http://ands.org.au/standards/rif-cs/extendedRegistryObjects");
+-        xmlImport.setAttribute("schemaLocation",
++                    xmlImport.setAttribute("schemaLocation",
+                 Constants.SCHEMA_EXTRIF);
+-        root.insertBefore(xmlImport,
++                    root.insertBefore(xmlImport,
+                 root.getElementsByTagName("xsd:element").item(0));
++                    removeElements(docActivity, XSD_INCLUDE);
++                    removeElements(docCollection, XSD_INCLUDE);
++                    removeElements(docParty, XSD_INCLUDE);
++                    removeElements(docService, XSD_INCLUDE);
++                    removeElements(docTypes, XSD_IMPORT);
++                    addToSchema(docRO, docActivity);
++                    addToSchema(docRO, docCollection);
++                    addToSchema(docRO, docParty);
++                    addToSchema(docRO, docService);
++                    addToSchema(docRO, docTypes);
++                }
++                addToSchema(docRO, docExtRif);
++            }
++            return new DOMSource(docRO);
++        }
++
++
++
++
+ 
+-        removeElements(docActivity, XSD_INCLUDE);
+-        removeElements(docCollection, XSD_INCLUDE);
+-        removeElements(docParty, XSD_INCLUDE);
+-        removeElements(docService, XSD_INCLUDE);
+-        removeElements(docTypes, XSD_IMPORT);
+-
+-        addToSchema(docRO, docActivity);
+-        addToSchema(docRO, docCollection);
+-        addToSchema(docRO, docParty);
+-        addToSchema(docRO, docService);
+-        addToSchema(docRO, docTypes);
+-        addToSchema(docRO, docExtRif);
+ 
+-        return new DOMSource(docRO);
+     }
+ 
+ 

@@ -1,0 +1,12 @@
+--- /tmp/orig-1310545171006244914.java	2025-09-24 21:58:10.120261864 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url4aac7e6f55_simon0191_tetris3d_tgz-pJ8-Tetris3dJ8/src/vsdk/toolkit/io/image/ImagePersistence.java	2025-09-24 21:58:08.140123444 +0000
+@@ -305,8 +305,7 @@
+     */    
+     public static boolean exportJPG(File fd, Image img)
+     {
+-        try {
+-            FileOutputStream fos = new FileOutputStream(fd);
++        try (FileOutputStream fos = new FileOutputStream(fd)) {
+ 
+             exportJPG(fos, img);
+ 

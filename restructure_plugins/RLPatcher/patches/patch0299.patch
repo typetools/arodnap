@@ -1,0 +1,36 @@
+--- /tmp/orig-1444795349541080248.java	2025-09-24 22:01:25.217900033 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url4c41254592_topskychen_AuthTopk_tgz-pJ8-quickhull3d_QuickHull3DTestJ8/src/utility/newDelaunayParser.java	2025-09-24 22:01:22.477708481 +0000
+@@ -50,17 +50,28 @@
+ 			}
+ 		}
+ 		in.close();
+-		in = new Scanner(new BufferedInputStream(new FileInputStream(new File(fileInputPath + ".nm"))));
+-		in.nextLine(); // read 3
+-		len = Integer.parseInt(in.nextLine());
+-		for(int i = 0; i < len; i++){
++		java.io.FileInputStream __arodnap_temp1 = null;
++		try {
++    __arodnap_temp1 = new FileInputStream(new File(fileInputPath + ".nm"));
++    in = new Scanner(new BufferedInputStream(__arodnap_temp1));
++    in.nextLine();
++    len = Integer.parseInt(in.nextLine());
++    for(int i = 0; i < len; i++){
+ 			String[] tks = in.nextLine().split("\t");
+ 			long x = Long.parseLong(tks[0]);
+ 			long y = Long.parseLong(tks[1]);
+ 			long z = Long.parseLong(tks[2]) + (x * x + y * y);
+ 			points.add(new long[]{x, y, z});
+ 		}
+-		in.close();
++} finally {
++    if (__arodnap_temp1 != null) {
++        try {
++            __arodnap_temp1.close();
++        } catch (Exception e) {
++            e.printStackTrace();
++        }
++    }
++}
+ 	}
+ 	
+ 	public static void writeToFile(String fileOutPath) throws FileNotFoundException{

@@ -1,0 +1,28 @@
+--- /tmp/orig-6723314682852133555.java	2025-09-24 22:14:20.104067426 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url7a45f192ca_mfullen_ping_pong_net_tgz-pJ8-ping_pong_net_client_io_TestClientNonPPNServerJ8/src/ping/pong/net/server/io/ServerConnectionManagerTest.java	2025-09-24 22:14:18.383947183 +0000
+@@ -65,12 +65,23 @@
+     @Test
+     public void testShutdownWithNotNulLSockets() throws IOException
+     {
+-        ServerConnectionManager instance = new ServerConnectionManager(ConnectionConfigFactory.createPPNConfig("localhost", 20111, 20112, false), new IoServer());
++    ping.pong.net.server.io.ServerConnectionManager instance = null;
++    try {
++        instance = new ServerConnectionManager(ConnectionConfigFactory.createPPNConfig("localhost", 20111, 20112, false), new IoServer());
+         instance.tcpServerSocket = ServerSocketFactory.getDefault().createServerSocket();
+         instance.udpServerSocket = new DatagramSocket(instance.configuration.getUdpPort());
+         assertNotNull(instance.tcpServerSocket);
+         assertNotNull(instance.udpServerSocket);
+-        instance.shutdown();
++    } finally {
++        if (instance != null) {
++            try {
++                instance.shutdown();
++            } catch (Exception e) {
++                e.printStackTrace();
++            }
++        }
++    }
++
+     }
+ 
+     /**

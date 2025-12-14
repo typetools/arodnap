@@ -1,0 +1,27 @@
+--- /tmp/orig-18118617023582235242.java	2025-09-24 22:21:01.712141214 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url80e39b1957_tobikster_IJN_headers_recognition_tgz-pJ8-org_maltparser_examples_CreatePhraseStructureGraphJ8/src/org/maltparser/core/options/OptionManager.java	2025-09-24 22:20:58.043884790 +0000
+@@ -193,12 +193,22 @@
+ 	 * @throws MaltChainedException
+ 	 */
+ 	public void loadOptions(int containerIndex, String fileName) throws MaltChainedException { 
+-		try {
+-			loadOptions(containerIndex, new InputStreamReader(new FileInputStream(fileName), "UTF-8"));
++	java.io.FileInputStream __arodnap_temp0 = null;
++	try {
++	__arodnap_temp0 = new FileInputStream(fileName);
++		loadOptions(containerIndex, new InputStreamReader(__arodnap_temp0, "UTF-8"));
+ 		} catch (FileNotFoundException e) {
+ 			throw new OptionException("The saved option file '"+fileName+"' cannot be found. ", e);
+ 		} catch (UnsupportedEncodingException e) {
+ 			throw new OptionException("The charset is unsupported. ", e);
++		} finally {
++		    if (__arodnap_temp0 != null) {
++		        try {
++		            __arodnap_temp0.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
+ 		}
+ 	}
+ 	

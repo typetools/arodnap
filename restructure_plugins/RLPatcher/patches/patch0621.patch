@@ -1,0 +1,35 @@
+--- /tmp/orig-16256738672431871365.java	2025-09-24 22:39:03.679775406 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url913d8566d1_AnsBalin_rbn_tgz-pJ8-MainJ8/src/DataOutput.java	2025-09-24 22:39:02.391685363 +0000
+@@ -64,16 +64,16 @@
+   }
+   
+   public void writeToFile(Object obj) throws IOException{
++      try (FileOutputStream fos = new FileOutputStream(path, append)) {
++          ObjectOutputStream oos = new ObjectOutputStream(fos);
++          oos.writeObject(obj);
++          oos.flush();
++      }
+   
+-    FileOutputStream fos = new FileOutputStream(path, append);
+-    ObjectOutputStream oos = new ObjectOutputStream(fos);
+-    
+-    oos.writeObject(obj);
+-    
+-    oos.flush();
+-    oos.close();
+-  
+-  }
++
++
++
++}
+   
+   public Network readFile() throws IOException, ClassNotFoundException{
+     
+@@ -95,4 +95,4 @@
+   }
+ 
+ 
+-}
++}
+\ No newline at end of file

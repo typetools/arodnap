@@ -1,0 +1,29 @@
+--- /tmp/orig-14736433862372798683.java	2025-09-24 21:36:43.434330982 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url0e7d57473a_kyorohiro_HetimaUtil_tgz-pJ8-net_hetimatan_net_http_HttpServer3xxJ8/src/net/hetimatan/util/http/TestForHttpResponse.java	2025-09-24 21:36:41.234177245 +0000
+@@ -58,17 +58,18 @@
+ 
+ 	public void testDecode002() throws IOException {
+ 		String content = "hello world\r\n";
+-		CashKyoroFile base = new CashKyoroFile(512);
+-		base.addChunk(("HTTP/1.1 200 OK\r\nContent-Length: "
++		try (CashKyoroFile base = new CashKyoroFile(512)) {
++		    base.addChunk(("HTTP/1.1 200 OK\r\nContent-Length: "
+ 		+content.getBytes().length
+ 		+"\r\n\r\n"+content).getBytes());
+-		MarkableFileReader reader = new MarkableFileReader(base, 512);
++		    MarkableFileReader reader = new MarkableFileReader(base, 512);
++		    HttpResponse response = HttpResponse.decode(reader, true);
++		    assertEquals("HTTP/1.1", response.getHttpVersion());
++		    assertEquals("200", response.getStatusCode());
++		    assertEquals("OK", response.getReasonPharse());
++		    assertEquals(content.getBytes().length, response.getContent().length());
++		}
+ 
+-		HttpResponse response = HttpResponse.decode(reader, true);
+-		assertEquals("HTTP/1.1", response.getHttpVersion());
+-		assertEquals("200", response.getStatusCode());
+-		assertEquals("OK", response.getReasonPharse());
+-		assertEquals(content.getBytes().length, response.getContent().length());
+ 	}
+ 
+ 

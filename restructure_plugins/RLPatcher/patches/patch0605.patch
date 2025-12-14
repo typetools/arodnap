@@ -1,0 +1,31 @@
+--- /tmp/orig-9524712850429943898.java	2025-09-24 22:37:34.689554602 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url8d3c4d17f5_catseye_JaC64_tgz-pJ8-JaC64J8/src/C64Applet.java	2025-09-24 22:37:32.353391294 +0000
+@@ -325,10 +325,12 @@
+ 
+   private void loadGamesList() {
+     System.out.println("Trying to load games list");
++    java.io.InputStream __arodnap_temp0 = null;
+     try {
+       URL url = getResource("games.txt");
++      __arodnap_temp0 = url.openConnection().getInputStream();
+       LineNumberReader reader =
+-	new LineNumberReader(new InputStreamReader(url.openConnection().getInputStream()));
++	new LineNumberReader(new InputStreamReader(__arodnap_temp0));
+ 
+       // game loop...
+       String games;
+@@ -360,6 +362,14 @@
+       System.out.println("Can not load games..." + e);
+       e.printStackTrace();
+       System.out.println( "No games to load...");
++    } finally {
++        if (__arodnap_temp0 != null) {
++            try {
++                __arodnap_temp0.close();
++            } catch (Exception e) {
++                e.printStackTrace();
++            }
++        }
+     }
+   }
+ 

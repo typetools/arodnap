@@ -1,0 +1,32 @@
+--- /tmp/orig-7482745341275887333.java	2025-09-24 21:37:14.112474639 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url0e7d57473a_kyorohiro_HetimaUtil_tgz-pJ8-net_hetimatan_net_http_HttpServer3xxJ8/src/net/hetimatan/util/http/TestForHttpRequest.java	2025-09-24 21:37:11.928322020 +0000
+@@ -61,17 +61,18 @@
+ 
+ 
+ 	public void testDecode001() throws IOException {
+-		CashKyoroFile base = new CashKyoroFile(512);
+-		base.addChunk("GET /announce HTTP/1.1\r\n\r\n".getBytes());
+-		MarkableFileReader reader = new MarkableFileReader(base, 512);
+-
+-		HttpRequest uri = HttpRequest.decode(reader);
+-		HttpRequestLine line = uri.getLine();
+-		assertEquals("GET", line.getMethod());
+-		assertEquals("/announce", HttpObject.createEncode(line.getRequestURI()));
+-		assertEquals("HTTP/1.1", line.getHttpVersion());
+-		assertEquals(0, uri.getHeader().size());
+-	}
++	    try (CashKyoroFile base = new CashKyoroFile(512)) {
++	        base.addChunk("GET /announce HTTP/1.1\r\n\r\n".getBytes());
++	        MarkableFileReader reader = new MarkableFileReader(base, 512);
++	        HttpRequest uri = HttpRequest.decode(reader);
++	        HttpRequestLine line = uri.getLine();
++	        assertEquals("GET", line.getMethod());
++	        assertEquals("/announce", HttpObject.createEncode(line.getRequestURI()));
++	        assertEquals("HTTP/1.1", line.getHttpVersion());
++	        assertEquals(0, uri.getHeader().size());
++	    }
++	
++}
+ 
+ 	public void testDecode002() throws IOException {
+ 		CashKyoroFile base = new CashKyoroFile(512);

@@ -1,0 +1,15 @@
+--- /tmp/orig-6274257898848546024.java	2025-09-24 21:56:50.050664653 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url47fcfc0133_baliosian_tau_fst_tgz-pJ8-uy_edu_fing_mina_fsa_test_old_TestComposition1J8/src/uy/edu/fing/mina/fsa/tffsr/Tffsr.java	2025-09-24 21:56:47.382478135 +0000
+@@ -163,8 +163,10 @@
+    */
+   public static Tffsr load(URL url) throws IOException, OptionalDataException, ClassCastException,
+       ClassNotFoundException, InvalidClassException {
+-    return load(url.openStream());
+-  }
++          try (java.io.InputStream __arodnap_temp0 = url.openStream()) {
++              return load(__arodnap_temp0);
++          }
++      }
+ 
+   /** Returns new (deterministic) automaton with the empty language. */
+   public static Tffsr makeEmpty() {

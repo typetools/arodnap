@@ -1,0 +1,18 @@
+--- /tmp/orig-16644723166263025727.java	2025-09-24 22:16:44.066130870 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url7a69e77641_benmouh_MySgbd_tgz-pJ8-Demo_CheckRowNumJ8/src/Demo/NextPage.java	2025-09-24 22:16:42.274005594 +0000
+@@ -16,10 +16,11 @@
+ 		JLabel lab = new JLabel("Welcome  " + st + " in MySgbd");
+ 		JTextArea tAout = new JTextArea();
+ 		JTextArea tAin = new JTextArea();
+-		TextAreaOutputStream taos = new TextAreaOutputStream(tAout, "Output");
+-		PrintStream ps = new PrintStream(taos);
+-		System.setOut(ps);
+-		System.setErr(ps);
++		try (TextAreaOutputStream taos = new TextAreaOutputStream(tAout, "Output")) {
++		    PrintStream ps = new PrintStream(taos);
++		    System.setOut(ps);
++		    System.setErr(ps);
++		}
+ 
+ 		lab.setBounds(10, 10, 500, 20);
+ 		tAout.setBounds(500, 100, 400, 400);

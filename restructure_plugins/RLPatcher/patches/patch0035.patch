@@ -1,0 +1,20 @@
+--- /tmp/orig-3291535502570812352.java	2025-09-24 21:35:12.567981638 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url0d38a10ee7_diegopliebana_GEBT_tgz-pJ8-ch_idsia_scenarios_test_EvolveWithChangingSeedsJ8/src/ch/idsia/mario/engine/Art.java	2025-09-24 21:35:09.491766685 +0000
+@@ -55,8 +55,8 @@
+     private static Image getImage(GraphicsConfiguration gc, String imageName) throws IOException
+     {
+         BufferedImage source = null;
+-        try
+-        { source = ImageIO.read(Art.class.getResourceAsStream(imageName));        }
++        try(
++java.io.InputStream __arodnap_temp0 = Art.class.getResourceAsStream(imageName))         { source = ImageIO.read(__arodnap_temp0);        }
+         catch (Exception e) {            e.printStackTrace ();        }
+ 
+         assert source != null;
+@@ -88,4 +88,4 @@
+         return images;
+     }
+ 
+-}
++}
+\ No newline at end of file

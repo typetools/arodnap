@@ -1,0 +1,47 @@
+--- /tmp/orig-1389155459908819969.java	2025-09-24 22:16:48.414434831 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url7a69e77641_benmouh_MySgbd_tgz-pJ8-Demo_CheckRowNumJ8/src/Demo/MDemo.java	2025-09-24 22:16:46.586307038 +0000
+@@ -103,20 +103,12 @@
+ 
+ 		// Retrieve the table name in the FROM clause
+ 		MFromItem table = (MFromItem) from.elementAt(0);
+-
+-		// We suppose the data is in a text file called <tableName>.db
+-		// <tableName> is the table name in the FROM clause
+-		BufferedReader db = new BufferedReader(new FileReader(table.getTable()
+-				+ ".db"));
+-
+-		// Read the column names (the 1st line of the .db file)
+-		MTuple tuple = new MTuple(db.readLine());
+-
+-		MEval evaluator = new MEval();
+-
+-		// Now, each line in the .db file is a tuple
+-		String tpl;
+-		while ((tpl = db.readLine()) != null) {
++		try (java.io.FileReader __arodnap_temp0 = new FileReader(table.getTable() + ".db")) {
++		    BufferedReader db = new BufferedReader(__arodnap_temp0);
++		    MTuple tuple = new MTuple(db.readLine());
++		    MEval evaluator = new MEval();
++		    String tpl;
++		    while ((tpl = db.readLine()) != null) {
+ 
+ 			tuple.setRow(tpl);
+ 
+@@ -128,8 +120,16 @@
+ 			}
+ 
+ 		}
++		}
++
++		// We suppose the data is in a text file called <tableName>.db
++
++
++
++
++
++
+ 
+-		db.close();
+ 	}
+ 
+ 	/**

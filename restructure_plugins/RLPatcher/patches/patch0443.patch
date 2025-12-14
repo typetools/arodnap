@@ -1,0 +1,56 @@
+--- /tmp/orig-918585878345940595.java	2025-09-24 22:15:46.134081220 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url7a45f192ca_mfullen_ping_pong_net_tgz-pJ8-ping_pong_net_client_io_TestClientNonPPNServerJ8/src/ping/pong/net/server/io/IoServerTest.java	2025-09-24 22:15:44.149942522 +0000
+@@ -370,7 +370,9 @@
+     @Test
+     public void testRemoveConnection()
+     {
+-        IoServer instance = new IoServer();
++    ping.pong.net.server.io.IoServer instance = null;
++    try {
++        instance = new IoServer();
+         ServerConnectionListener listener = new ServerConnectionListener()
+         {
+             @Override
+@@ -387,27 +389,37 @@
+                 assertNotNull(conn);
+             }
+         };
+-
+         instance.addConnectionListener(listener);
+         instance.addConnection(connection1);
+         assertEquals(1, instance.getConnections().size());
+         assertNotNull(instance.getConnection(connection1.getConnectionId()));
+-
+         instance.removeConnection(connection1);
+         assertEquals(0, instance.getConnections().size());
+         assertNull(instance.getConnection(connection1.getConnectionId()));
+-
+         instance.removeConnectionListener(listener);
+         instance.addConnection(connection1);
+         assertEquals(1, instance.getConnections().size());
+         assertNotNull(instance.getConnection(connection1.getConnectionId()));
+-
+         instance.removeConnection(connection1.getConnectionId());
+         assertEquals(0, instance.getConnections().size());
+         assertNull(instance.getConnection(connection1.getConnectionId()));
+-
+         instance.removeConnection(null);
+         assertEquals(0, instance.getConnections().size());
+         assertNull(instance.getConnection(connection1.getConnectionId()));
++    } finally {
++        if (instance != null) {
++            try {
++                instance.shutdown();
++            } catch (Exception e) {
++                e.printStackTrace();
++            }
++        }
++    }
++
++
++
++
++
++
+     }
+ }

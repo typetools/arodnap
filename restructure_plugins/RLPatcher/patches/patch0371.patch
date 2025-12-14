@@ -1,0 +1,13 @@
+--- /tmp/orig-12049022962242313898.java	2025-09-24 22:08:13.994475105 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url70ed135da7_ralfbiedert_jcores_tgz-pJ8-sandbox_SimpleFilterTestJ8/src/benchmarks/benchmarks/reversecomplement/ReverseComplement.java	2025-09-24 22:08:10.622239374 +0000
+@@ -65,9 +65,8 @@
+         rval.add(new TaskSolver<Void>("plain.reverse.st", new F1<Void, Object>() {
+             @Override
+             public Object f(Void x) {
+-                InputStream stream = ReverseComplement.class.getResourceAsStream("reverse-input.txt");
+                 String main = null;
+-                try {
++                try (InputStream stream = ReverseComplement.class.getResourceAsStream("reverse-input.txt")) {
+                     main = SolverVanillaST.main(stream);
+                     $("test.plain.txt").file().delete().append(main);
+                 } catch (Exception e) {

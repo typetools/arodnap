@@ -1,0 +1,29 @@
+--- /tmp/orig-15236498956737023706.java	2025-09-24 22:56:12.607706176 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urle381b6cba7_IkarosKappler_ikrs_http_tgz-pJ8-ikrs_json_rpc_JSONRPCHandlerJ8/src/ikrs/io/fileio/inifile/IniFile.java	2025-09-24 22:56:09.995523562 +0000
+@@ -91,13 +91,13 @@
+     public void read( File file,
+ 		      Environment<String,BasicType> mainSection ) 
+ 	throws IOException {
+-
++	    try (FileInputStream fin = new FileInputStream( file )) {
++	        read( new BufferedReader( new InputStreamReader(fin) ),
++	      mainSection );
++	    }
+ 	
+-	FileInputStream fin = new FileInputStream( file );
+-	read( new BufferedReader( new InputStreamReader(fin) ),
+-	      mainSection );	
+-	fin.close();
+-    }
++
++}
+ 
+     public void read( BufferedReader reader,
+ 		      Environment<String,BasicType> mainSection ) 
+@@ -171,4 +171,4 @@
+ 
+     }
+ 
+-}
++}
+\ No newline at end of file

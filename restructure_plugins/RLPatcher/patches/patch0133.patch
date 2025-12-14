@@ -1,0 +1,19 @@
+--- /tmp/orig-12190737223170822946.java	2025-09-24 21:46:00.137233080 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url284ba87ea1_swabhs_forbidden_paths_tgz-pJ8-tagging_hypergraph_TaggingHypergraphGeneratorJ8/src/learning/InputReader.java	2025-09-24 21:45:58.509119271 +0000
+@@ -21,8 +21,7 @@
+ 	 */
+ 	public static Map<String, Double> readWeights(File weightsFile) {
+ 		Map<String, Double> weights = new TreeMap<String, Double>();
+-		try {						
+-			FileInputStream fstream = new FileInputStream(weightsFile);
++		try (FileInputStream fstream = new FileInputStream(weightsFile)) {						
+ 			DataInputStream in = new DataInputStream(fstream);
+ 			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+ 			String strLine;
+@@ -80,4 +79,4 @@
+ 		return examples;
+ 	}
+ 
+-}
++}
+\ No newline at end of file

@@ -1,0 +1,13 @@
+--- /tmp/orig-7126631338743940302.java	2025-09-24 22:03:38.639226758 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url594c007908_hugobraga_College_tgz-pJ8-main_GraphJ8/src/dataStructure/AdjList.java	2025-09-24 22:03:37.459144266 +0000
+@@ -232,8 +232,8 @@
+     public void readFromTopologyFile (String fname, PositionTable pt) {
+ 	String s1, s2;
+ 
+-	try {
+-	    BufferedReader in = new BufferedReader(new FileReader(fname));
++	try (java.io.FileReader __arodnap_temp0 = new FileReader(fname)) {
++	    BufferedReader in = new BufferedReader(__arodnap_temp0);
+ 	    String aLine1, aLine2;
+ 
+ 	    for (int i = 0; i < nv; i++) {

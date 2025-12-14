@@ -1,0 +1,30 @@
+--- /tmp/orig-5299259691437471200.java	2025-09-24 22:07:59.237443537 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url70ed135da7_ralfbiedert_jcores_tgz-pJ8-sandbox_SimpleFilterTestJ8/src/net/jcores/jre/cores/CoreURI.java	2025-09-24 22:07:55.597189071 +0000
+@@ -137,9 +137,10 @@
+ 
+         return new CoreFile(this.commonCore, map(new F1<URI, File>() {
+             public File f(URI x) {
+-                try {
++            java.io.InputStream openStream = null;
++            try {
+                     final URL url = x.toURL();
+-                    final InputStream openStream = url.openStream();
++                    openStream = url.openStream();
+                     final File file = File.createTempFile("jcores.download.", ".tmp");
+ 
+                     Streams.saveTo(openStream, file);
+@@ -151,6 +152,14 @@
+                     cc.report(MessageType.EXCEPTION, "URI " + x + " could not be transformed into an URL.");
+                 } catch (IOException e) {
+                     cc.report(MessageType.EXCEPTION, "URI " + x + " could not be opened for reading.");
++                } finally {
++                    if (openStream != null) {
++                        try {
++                            openStream.close();
++                        } catch (Exception e) {
++                            e.printStackTrace();
++                        }
++                    }
+                 }
+ 
+                 return null;

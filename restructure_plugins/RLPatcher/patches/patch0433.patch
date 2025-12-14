@@ -1,0 +1,43 @@
+--- /tmp/orig-4550598044412623698.java	2025-09-24 22:14:39.425418054 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url7a45f192ca_mfullen_ping_pong_net_tgz-pJ8-ping_pong_net_client_io_TestClientNonPPNServerJ8/src/ping/pong/net/server/io/ServerConnectionManagerTest.java	2025-09-24 22:14:37.505283830 +0000
+@@ -114,20 +114,30 @@
+     public void testRunAcceptedSocket() throws IOException, InterruptedException
+     {
+         ConnectionConfiguration createConnectionConfiguration = ConnectionConfigFactory.createPPNConfig("localhost", 6011, 6012, false);
+-        ServerConnectionManager instance = new ServerConnectionManager(createConnectionConfiguration, new IoServer(createConnectionConfiguration));
+-        Thread th = new Thread(instance);
+-        th.start();
+-
+-        synchronized (this)
++        ping.pong.net.server.io.ServerConnectionManager instance = null;
++        try {
++            instance = new ServerConnectionManager(createConnectionConfiguration, new IoServer(createConnectionConfiguration));
++            Thread th = new Thread(instance);
++            th.start();
++            synchronized (this)
+         {
+             wait(100);
+         }
+-        Socket client = SocketFactory.getDefault().createSocket("localhost", 6011);
++            Socket client = SocketFactory.getDefault().createSocket("localhost", 6011);
++            th.join(1500);
++            assertTrue(instance.isListening());
++            assertFalse(instance.isListening());
++        } finally {
++            if (instance != null) {
++                try {
++                    instance.shutdown();
++                } catch (Exception e) {
++                    e.printStackTrace();
++                }
++            }
++        }
++
+ 
+-        th.join(1500);
+-        assertTrue(instance.isListening());
+-        instance.shutdown();
+-        assertFalse(instance.isListening());
+     }
+ 
+     @Test

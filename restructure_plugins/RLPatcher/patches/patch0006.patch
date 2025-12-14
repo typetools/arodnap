@@ -1,0 +1,14 @@
+--- /tmp/orig-17391171699537214786.java	2025-09-24 21:32:43.433560768 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url026791d51b_dhleong_SeriesTracker_v6_tgz-pJ8-stv6_SeriesTrackerJ8/src/stv6/handlers/FileHandler.java	2025-09-24 21:32:41.545428833 +0000
+@@ -72,9 +72,9 @@
+ 			return true;
+ 		} else {
+ 			// it's just a text file; read it
+-			try {		
++			try (java.io.FileReader __arodnap_temp0 = new FileReader(theFile)) {		
+ 
+-				BufferedReader reader = new BufferedReader(new FileReader(theFile));
++				BufferedReader reader = new BufferedReader(__arodnap_temp0);
+ 				
+ 				String line;
+ 				while ((line=reader.readLine()) != null)

@@ -1,0 +1,25 @@
+--- /tmp/orig-835517884880544953.java	2025-09-24 22:34:04.810883169 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url8417b1b213_Ratchette_Rummikub_tgz-pJ8-rummikub_RummikubJ8/src/rummikub/RAIclient.java	2025-09-24 22:34:03.694805150 +0000
+@@ -67,8 +67,20 @@
+ 			System.out.println("\tport number defaults to " + Server.PORT_NUM);
+ 			System.exit(-1);
+ 		}
+-		
+-		(new RAIclient(serverIP, port)).start();
++		rummikub.RAIclient __arodnap_temp0 = null;
++		try {
++    __arodnap_temp0 = new RAIclient(serverIP, port);
++    (__arodnap_temp0).start();
++} finally {
++    if (__arodnap_temp0 != null) {
++        try {
++            __arodnap_temp0.endGame();
++        } catch (Exception e) {
++            e.printStackTrace();
++        }
++    }
++}
++
+ 	}
+ 	
+ 	/**

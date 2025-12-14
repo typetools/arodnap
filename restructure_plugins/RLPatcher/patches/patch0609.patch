@@ -1,0 +1,13 @@
+--- /tmp/orig-1340281870269659826.java	2025-09-24 22:37:55.959041432 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url8d3c4d17f5_catseye_JaC64_tgz-pJ8-JaC64J8/src/com/dreamfabric/jac64/C64Reader.java	2025-09-24 22:37:53.698883437 +0000
+@@ -710,9 +710,8 @@
+   }
+ 
+   public boolean readTapeFromURL(URL url) {
+-    try {
++    try (InputStream reader = url.openConnection().getInputStream()) {
+       System.out.println("Loading from " + url);
+-      InputStream reader = url.openConnection().getInputStream();
+       return readTape(reader);
+     } catch (Exception e) {
+       System.out.println("readTapeFromURL(url): Error when opening url " + url + ":");

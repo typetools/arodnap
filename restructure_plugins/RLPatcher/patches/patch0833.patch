@@ -1,0 +1,13 @@
+--- /tmp/orig-18178284625170967996.java	2025-09-24 22:57:51.634630460 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlfcc351a1ba_kuntapavankumar_Z_tgz-pJ8-edu_concordia_dpis_ReplicaTestJ8/src/edu/concordia/dpis/stationserver/FaultyStationServerImpl.java	2025-09-24 22:57:50.306537587 +0000
+@@ -166,8 +166,8 @@
+ 		tcpProperties.setProperty("SPB", "localhost 9095");
+ 		tcpProperties.setProperty("SPL", "localhost 9096");
+ 
+-		try {
+-			tcpProperties.store(new FileOutputStream("./tcp.properties"), null);
++		try (java.io.FileOutputStream __arodnap_temp0 = new FileOutputStream("./tcp.properties")) {
++			tcpProperties.store(__arodnap_temp0, null);
+ 			log.debug(this.stationType.getStationCode()
+ 					+ ":Default config properites initialized");
+ 		} catch (IOException e) {

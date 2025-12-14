@@ -1,0 +1,37 @@
+--- /tmp/orig-13573716464409926781.java	2025-09-24 21:49:32.508078539 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url2b9f720f64_jfimbett_QBnB_tgz-pJ8-tests_TestJ8/src/knapSavings/KnapSavings.java	2025-09-24 21:49:31.295993809 +0000
+@@ -148,16 +148,16 @@
+ 	
+ 	public void loadFromFile(String file) throws IOException{
+ 		File f= new File(file);
+-		FileReader fr= new FileReader(f);
+-		BufferedReader bf= new BufferedReader(fr);
+-		String line= bf.readLine();
+-		 K=0;
+-		int vars=Integer.parseInt(line);
+-		line= bf.readLine();
+-		 W= new double[vars];
+-		 P=new double[vars];
+-		int k=0;
+-		while(line!=null){
++		try (FileReader fr= new FileReader(f)) {
++		    BufferedReader bf= new BufferedReader(fr);
++		    String line= bf.readLine();
++		    K=0;
++		    int vars=Integer.parseInt(line);
++		    line= bf.readLine();
++		    W= new double[vars];
++		    P=new double[vars];
++		    int k=0;
++		    while(line!=null){
+ 			if(k==0){
+ 				K=Double.parseDouble(line);
+ 			}
+@@ -179,6 +179,7 @@
+ 			k++;
+ 			line=bf.readLine();
+ 		}
++		}
+ 	}
+ 	public ArrayList<String> delta(){
+ 		ArrayList<String> delta= new ArrayList<String>();

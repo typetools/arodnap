@@ -1,0 +1,40 @@
+--- /tmp/orig-7252977714418129946.java	2025-09-24 22:31:07.950519858 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url80e39b1957_tobikster_IJN_headers_recognition_tgz-pJ8-org_maltparser_examples_CreatePhraseStructureGraphJ8/src/org/maltparser/core/config/ConfigurationDir.java	2025-09-24 22:31:04.178256161 +0000
+@@ -518,9 +518,13 @@
+ 		}
+     	
+     	String destination = configDirectory.getPath()+File.separator+destFileName;
++    	java.io.FileOutputStream __arodnap_temp1 = null;
++    	java.io.InputStream __arodnap_temp0 = null;
+     	try {
+-	    	BufferedInputStream bis = new BufferedInputStream(url.openStream());
+-	        BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(destination), BUFFER);
++	    __arodnap_temp0 = url.openStream();
++	    BufferedInputStream bis = new BufferedInputStream(__arodnap_temp0);
++	     __arodnap_temp1 = new FileOutputStream(destination);
++      BufferedOutputStream bos = new BufferedOutputStream(__arodnap_temp1, BUFFER);
+ 	    
+ 	        int n = 0;
+ 		    while ((n = bis.read(readBuffer, 0, BUFFER)) != -1) {
+@@ -533,6 +537,21 @@
+ 			throw new ConfigurationException("The destination file '"+destination+"' cannot be created when coping the file. ", e);
+ 		} catch (IOException e) {
+ 			throw new ConfigurationException("The URL '"+url+"' cannot be copied to destination '"+destination+"'. ", e);
++		} finally {
++		    if (__arodnap_temp1 != null) {
++		        try {
++		            __arodnap_temp1.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
++		    if (__arodnap_temp0 != null) {
++		        try {
++		            __arodnap_temp0.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
+ 		}
+ 		return destFileName;
+     }

@@ -1,0 +1,32 @@
+--- /tmp/orig-10782126386331020272.java	2025-09-24 22:52:15.327118234 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urld829b80034_wjch111_PTSP2013Wang_tgz-pJ8-controllers_momcts_momctsCore_TestPlannerJ8/src/framework/utils/File2String.java	2025-09-24 22:52:12.750938137 +0000
+@@ -18,17 +18,27 @@
+      * @return a String with the contents of the file
+      */
+     public static String get(String filename) {
+-      try {
++    java.io.FileInputStream __arodnap_temp0 = null;
++    try {
+         File file = new File(filename);
+         byte[] b = new byte[(int) file.length()];
++        __arodnap_temp0 = new FileInputStream(file);
+         DataInputStream dis =
+-          new DataInputStream(new FileInputStream(file));
++          new DataInputStream(__arodnap_temp0);
+         dis.readFully(b);
+         return new String(b);
+       }
+       catch(Exception e) {
+         System.out.println(e);
+         return null;
++      } finally {
++          if (__arodnap_temp0 != null) {
++              try {
++                  __arodnap_temp0.close();
++              } catch (Exception e) {
++                  e.printStackTrace();
++              }
++          }
+       }
+     }
+ 

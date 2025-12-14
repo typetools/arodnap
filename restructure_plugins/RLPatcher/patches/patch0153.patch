@@ -1,0 +1,15 @@
+--- /tmp/orig-15107991903318852699.java	2025-09-24 21:47:52.637097127 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url294e6c45f3_Ecdosis_NMergeNew_tgz-pJ8-TestJ8/src/edu/luc/nmerge/mvd/MVDFile.java	2025-09-24 21:47:50.300933819 +0000
+@@ -209,9 +209,9 @@
+ 		if ( dst.exists() )
+ 			dst.delete();
+ 		dst.createNewFile();
+-		FileWriter fw = new FileWriter( dst );
+-		fw.write( str );
+-		fw.close();
++		try (FileWriter fw = new FileWriter( dst )) {
++		    fw.write( str );
++		}
+ 	}
+ 	/**
+ 	 * Save an MVD to a file

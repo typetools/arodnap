@@ -1,0 +1,30 @@
+--- /tmp/orig-9603186493541627400.java	2025-09-24 22:55:03.862900326 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urle381b6cba7_IkarosKappler_ikrs_http_tgz-pJ8-ikrs_json_rpc_JSONRPCHandlerJ8/src/ikrs/httpd/resource/ProcessableResource.java	2025-09-24 22:55:01.234716593 +0000
+@@ -137,15 +137,17 @@
+ 	    this.getLogger().log( Level.INFO,
+ 				  getClass().getName() + ".open(...)",
+ 				  "HTTP POST data is available. Forwarding POST data to system process ..." );
+-	    long readLength = CustomUtil.transfer( this.postData.getInputStream(),
++	    try (java.io.InputStream __arodnap_temp0 = this.postData.getInputStream()) {
++	        long readLength = CustomUtil.transfer( __arodnap_temp0,
+ 						   process.getOutputStream(),
+ 						   this.postData.getContentLength(),  // max read length
+ 						   256                                // buffer size
+ 						   );
+-	    this.getLogger().log( Level.INFO,
++	        this.getLogger().log( Level.INFO,
+ 				  getClass().getName() + ".open(...)",
+ 				  "" + readLength + " bytes of POST data written to system process." );
+-	    
++	    }
++
+ 	}
+ 
+ 
+@@ -379,4 +381,4 @@
+ 
+     }
+ 
+-}
++}
+\ No newline at end of file

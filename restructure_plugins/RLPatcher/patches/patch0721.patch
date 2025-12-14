@@ -1,0 +1,12 @@
+--- /tmp/orig-462998002338698083.java	2025-09-24 22:48:03.765531929 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlc98c3b97d2_Trimax_venta_tgz-pJ8-com_gesoftware_venta_structures_map_MapTestJ8/src/com/gesoftware/venta/network/Connection.java	2025-09-24 22:48:01.533375882 +0000
+@@ -96,8 +96,7 @@
+ 
+             disconnect();
+ 
+-            try {
+-                final Socket socket = new Socket();
++            try (final Socket socket = new Socket()) {
+                 socket.connect(new InetSocketAddress(m_Host, m_Port), c_NetworkTimeout);
+ 
+                 m_Reader = new ObjectInputStream(socket.getInputStream());

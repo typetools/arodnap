@@ -1,0 +1,26 @@
+--- /tmp/orig-17971277894094572018.java	2025-09-24 22:58:36.973800992 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlfd6bd5edbe_AntonPoznyak_LogFileGenerator_tgz-pJ8-logfilegen_StartMePleaseJ8/src/logfilegen/forFile/Reader.java	2025-09-24 22:58:35.773717071 +0000
+@@ -10,7 +10,7 @@
+ 	}
+ 	
+ 	public String read(){
+-		java.io.FileReader fileR;
++		java.io.FileReader fileR = null;
+ 		try {
+ 			fileR = new java.io.FileReader(file);
+ 		
+@@ -22,6 +22,14 @@
+ 		} catch (IOException e) {
+ 			System.out.println("Ńan not be read the file :( ");
+ 			return null;
++		} finally {
++		    if (fileR != null) {
++		        try {
++		            fileR.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
+ 		}
+ 	}
+ }

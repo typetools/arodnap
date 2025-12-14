@@ -1,0 +1,26 @@
+--- /tmp/orig-1160590319632442352.java	2025-09-24 21:45:56.192957365 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url284ba87ea1_swabhs_forbidden_paths_tgz-pJ8-tagging_hypergraph_TaggingHypergraphGeneratorJ8/src/hypergraph/BaseTest.java	2025-09-24 21:45:54.588845234 +0000
+@@ -134,7 +134,7 @@
+ 			tagStopCounts[i] = 0.0;
+ 		}
+ 		
+-		FileInputStream fstream;
++		FileInputStream fstream = null;
+ 		try {
+ 			fstream = new FileInputStream(counts);
+ 			DataInputStream in = new DataInputStream(fstream);
+@@ -158,6 +158,14 @@
+ 			}
+ 		} catch (Exception e) {
+ 			e.printStackTrace();
++		} finally {
++		    if (fstream != null) {
++		        try {
++		            fstream.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
+ 		}
+ 		
+ 		int firstEndEdge = 100;

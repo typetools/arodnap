@@ -1,0 +1,18 @@
+--- /tmp/orig-15677729760766214707.java	2025-09-24 22:05:21.146392428 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url647b55da7c_Nikhilkumar13_emuSr_tgz-pJ8-MainJ8/src/frontend/handlers.java	2025-09-24 22:05:19.194255967 +0000
+@@ -148,12 +148,12 @@
+             int returnVal = fileChooser.showSaveDialog(new javax.swing.JFrame());
+             if (returnVal == JFileChooser.APPROVE_OPTION)
+             {
+-                try
+-                {
++                try(
++java.io.FileWriter __arodnap_temp0 = new FileWriter(FrontEnd.filepath))                 {
+ 
+                     FrontEnd.filepath = fileChooser.getSelectedFile().getPath() + ".s";
+                     File n = new File(FrontEnd.filepath);
+-                    BufferedWriter out = new BufferedWriter(new FileWriter(FrontEnd.filepath));
++                    BufferedWriter out = new BufferedWriter(__arodnap_temp0);
+                     out.write(FrontEnd.activepane.getText());
+                     String fname = fileChooser.getSelectedFile().getName();
+                     JOptionPane.showMessageDialog(null, "Saved " + ((fileChooser.getSelectedFile() != null) ? fname : "nothing"));

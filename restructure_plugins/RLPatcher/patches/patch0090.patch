@@ -1,0 +1,32 @@
+--- /tmp/orig-3586988196369313344.java	2025-09-24 21:40:56.904042351 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url147ce07ebe_JoshuaKissoon_Kademlia_tgz-pJ8-kademlia_simulations_RoutingTableStateTestingJ8/src/kademlia/simulations/RefreshOperationTest.java	2025-09-24 21:40:55.299930262 +0000
+@@ -18,10 +18,11 @@
+ 
+     public static void main(String[] args)
+     {
+-        try
++    kademlia.JKademliaNode kad1 = null;
++    try
+         {
+-            /* Setting up 2 Kad networks */
+-            JKademliaNode kad1 = new JKademliaNode("JoshuaK", new KademliaId("ASF45678947584567467"), 7574);
++            
++            kad1 = new JKademliaNode("JoshuaK", new KademliaId("ASF45678947584567467"), 7574);
+             JKademliaNode kad2 = new JKademliaNode("Crystal", new KademliaId("ASERTKJDHGVHERJHGFLK"), 7572);
+             kad2.bootstrap(kad1.getNode());
+ 
+@@ -40,6 +41,14 @@
+         catch (IOException | ContentNotFoundException e)
+         {
+             e.printStackTrace();
++        } finally {
++            if (kad1 != null) {
++                try {
++                    kad1.shutdown(false);
++                } catch (Exception e) {
++                    e.printStackTrace();
++                }
++            }
+         }
+     }
+ }

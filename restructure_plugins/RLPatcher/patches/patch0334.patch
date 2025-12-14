@@ -1,0 +1,13 @@
+--- /tmp/orig-4318055526579088864.java	2025-09-24 22:04:34.363122099 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url5a01f2c1d9_core9_core_tgz-pJ8-io_core9_core_boot_BootstrapFrameworkJ8/src/net/xeoh/plugins/base/impl/classpath/loader/AbstractLoader.java	2025-09-24 22:04:32.330980043 +0000
+@@ -169,8 +169,8 @@
+ 				final Properties p = new Properties();
+ 
+ 				// Try to load resource by special classloader
+-				try {
+-					p.load(classPathManager.getResourceAsStream(location, resourcePath));
++				try (java.io.InputStream __arodnap_temp0 = classPathManager.getResourceAsStream(location, resourcePath)) {
++					p.load(__arodnap_temp0);
+ 
+ 					final Set<Object> keys = p.keySet();
+ 

@@ -1,0 +1,14 @@
+--- /tmp/orig-11261208587727279621.java	2025-09-24 22:44:54.380292280 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlb879d9e865_ogotalski_elevator_tgz-pJ8-ElevatorTaskJ8/src/by/epam/lab/controller/Configuration.java	2025-09-24 22:44:53.208210341 +0000
+@@ -50,8 +50,10 @@
+ 
+ 	public void init() throws IOException {
+ 		Properties prop = new Properties();
++		try (java.io.FileInputStream __arodnap_temp0 = new FileInputStream(PROPERTIES_FILENAME)) {
++		    prop.load(__arodnap_temp0);
++		}
+ 
+-		prop.load(new FileInputStream(PROPERTIES_FILENAME));
+ 		setStoriesNumber(Integer.parseInt(prop
+ 				.getProperty(STORIES_NUMBER_PROPERTY_NAME)));
+ 		setElevatorCapacity(Integer.parseInt(prop

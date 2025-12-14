@@ -1,0 +1,15 @@
+--- /tmp/orig-15917211381109461513.java	2025-09-24 21:55:25.044722371 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url47af6b1535_rolandotr_db_comparison_tgz-pJ8-methodology_HistoryJ8/src/methodology/Evolution.java	2025-09-24 21:55:23.264597933 +0000
+@@ -42,8 +42,10 @@
+ 	}
+ 	
+ 	public static void createComparisonTable(String[] args) throws IOException {
+-		System.setOut(new PrintStream("evolution.txt"));
+-		System.out.println("Starting");
++	try (java.io.PrintStream __arodnap_temp0 = new PrintStream("evolution.txt")) {
++	    System.setOut(__arodnap_temp0);
++	}
++	System.out.println("Starting");
+ 		//DBProtocol[][] protocols = DBProtocol.loadProtocolsFairly();
+ 		DBProtocol[][] protocols = new DBProtocol[][]{DBProtocol.loadProtocols()};
+ 		/*Trujillo- Jan 19, 2016

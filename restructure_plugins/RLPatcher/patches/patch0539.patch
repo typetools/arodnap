@@ -1,0 +1,23 @@
+--- /tmp/orig-8282573961867453638.java	2025-09-24 22:30:07.630303213 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url80e39b1957_tobikster_IJN_headers_recognition_tgz-pJ8-org_maltparser_examples_CreatePhraseStructureGraphJ8/src/org/maltparser/ml/liblinear/Liblinear.java	2025-09-24 22:30:03.894042032 +0000
+@@ -659,7 +659,19 @@
+ 	
+ 	
+ 	protected File getFile(String suffix) throws MaltChainedException {
+-		return getConfiguration().getConfigurationDir().getFile(owner.getModelName()+getLearningMethodName()+suffix);
++	org.maltparser.core.config.ConfigurationDir __arodnap_temp0 = null;
++	try {
++    __arodnap_temp0 = getConfiguration().getConfigurationDir();
++    return __arodnap_temp0.getFile(owner.getModelName()+getLearningMethodName()+suffix);
++} finally {
++    if (__arodnap_temp0 != null) {
++        try {
++            __arodnap_temp0.terminate();
++        } catch (Exception e) {
++            e.printStackTrace();
++        }
++    }
++}
+ 	}
+ 	
+ 	protected JarEntry getConfigFileEntry(String suffix) throws MaltChainedException {

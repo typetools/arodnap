@@ -1,0 +1,23 @@
+--- /tmp/orig-1835993678139308883.java	2025-09-24 22:06:35.463587456 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url70997c83aa_Xilaew_risiko_tgz-pJ8-risiko_XMI2XMLtransformerJ8/src/risiko/main/Client.java	2025-09-24 22:06:33.331438411 +0000
+@@ -22,7 +22,19 @@
+ 	private final ByteBuffer buf = ByteBuffer.allocate(256);
+ 
+ 	public static void main(String[] args) {
+-		new Thread(new Client()).start();
++	risiko.main.Client __arodnap_temp0 = null;
++	try {
++    __arodnap_temp0 = new Client();
++    new Thread(__arodnap_temp0).start();
++} finally {
++    if (__arodnap_temp0 != null) {
++        try {
++            __arodnap_temp0.run();
++        } catch (Exception e) {
++            e.printStackTrace();
++        }
++    }
++}
+ 	}
+ 
+ 	public void run() {

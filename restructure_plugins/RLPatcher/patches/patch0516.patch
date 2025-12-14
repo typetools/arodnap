@@ -1,0 +1,23 @@
+--- /tmp/orig-10630328309760724485.java	2025-09-24 22:25:55.624686921 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url80e39b1957_tobikster_IJN_headers_recognition_tgz-pJ8-org_maltparser_examples_CreatePhraseStructureGraphJ8/src/org/maltparser/ml/lib/Lib.java	2025-09-24 22:25:51.528400573 +0000
+@@ -81,7 +81,19 @@
+ 			featureMap = new FeatureMap();
+ 			instanceOutput = new BufferedWriter(getInstanceOutputStreamWriter(".ins"));
+ 		} else if (learnerMode == CLASSIFY) {
+-			featureMap = loadFeatureMap(getInputStreamFromConfigFileEntry(".map"));
++		java.io.InputStream __arodnap_temp0 = null;
++		try {
++    __arodnap_temp0 = getInputStreamFromConfigFileEntry(".map");
++    featureMap = loadFeatureMap(__arodnap_temp0);
++} finally {
++    if (__arodnap_temp0 != null) {
++        try {
++            __arodnap_temp0.close();
++        } catch (Exception e) {
++            e.printStackTrace();
++        }
++    }
++}
+ 		}
+ 	}
+ 	

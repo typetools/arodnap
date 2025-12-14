@@ -1,0 +1,13 @@
+--- /tmp/orig-11983449968238395368.java	2025-09-24 22:46:46.004095738 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlc175f05cb8_mchllbrt_PermCode_tgz-pJ8-permlib_examples_UniversalSeparableJ8/src/permlab/ui/TextFrame.java	2025-09-24 22:46:42.227831745 +0000
+@@ -135,8 +135,8 @@
+         int returnVal = fileChooser.showOpenDialog(this);
+         if (returnVal == JFileChooser.APPROVE_OPTION) {
+             File file = fileChooser.getSelectedFile();
+-            try {
+-                textArea.read(new FileReader(file.getAbsolutePath()), null);
++            try (java.io.FileReader __arodnap_temp0 = new FileReader(file.getAbsolutePath())) {
++                textArea.read(__arodnap_temp0, null);
+             } catch (IOException ex) {
+                 System.out.println("problem accessing file" + file.getAbsolutePath());
+             }

@@ -1,0 +1,14 @@
+--- /tmp/orig-9533193379330057013.java	2025-09-24 21:53:18.771895356 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url43a0865bb0_kevinjdolan_darwin_tgz-pJ8-tui_DriverJ8/src/darwInvest/news/test/NewsTester.java	2025-09-24 21:53:16.615744632 +0000
+@@ -137,9 +137,8 @@
+ 							
+ 							System.out.println("Proportion correct: " + (numRight / numTries));
+ 							String filename = tickers[t] + "_" + trainStart + "_" + year + "_" + l + "_" + f + ".csv";
+-							try {
+-						        BufferedWriter out = new BufferedWriter(new 
+-						        		FileWriter("TestResults/"+testName+"/"+filename));
++							try (java.io.FileWriter __arodnap_temp0 = new FileWriter("TestResults/" + testName + "/" + filename)) {
++						        BufferedWriter out = new BufferedWriter(__arodnap_temp0);
+ 						        out.write(result);
+ 						        out.close();
+ 						    } catch (IOException e) {

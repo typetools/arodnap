@@ -1,0 +1,12 @@
+--- /tmp/orig-14283615566700088610.java	2025-09-24 21:52:23.500031614 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url43a0865bb0_kevinjdolan_darwin_tgz-pJ8-tui_DriverJ8/src/darwInvest/data/FileManager.java	2025-09-24 21:52:21.207871383 +0000
+@@ -29,8 +29,7 @@
+ 		}
+ 		
+ 		String result = "";
+-		try {
+-			BufferedReader input = getReader(page);
++		try (BufferedReader input = getReader(page)) {
+ 			
+ 			String line = null;
+ 			while (( line = input.readLine() ) != null)

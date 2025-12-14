@@ -1,0 +1,31 @@
+--- /tmp/orig-7205034378285119208.java	2025-09-24 21:40:42.079006441 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url146c819f25_jlink_Parse4SJM_tgz-pJ8-sjm_examples_book_robot_ShowRobotRefactoredJ8/src/sjm/examples/book/coffee/ShowCoffee.java	2025-09-24 21:40:39.318813571 +0000
+@@ -26,13 +26,11 @@
+ 	 * Show how to recognize coffees in a file.
+ 	 */
+ 	public static void main(String args[]) throws Exception {
+-
+-		InputStream is = ClassLoader.getSystemResourceAsStream("coffee.txt");
+-		BufferedReader r = new BufferedReader(new InputStreamReader(is));
+-
+-		Tokenizer t = CoffeeParser.tokenizer();
+-		IParser p = CoffeeParser.start();
+-		while (true) {
++	    try (InputStream is = ClassLoader.getSystemResourceAsStream("coffee.txt")) {
++	        BufferedReader r = new BufferedReader(new InputStreamReader(is));
++	        Tokenizer t = CoffeeParser.tokenizer();
++	        IParser p = CoffeeParser.start();
++	        while (true) {
+ 			String s = r.readLine();
+ 			if (s == null) {
+ 				break;
+@@ -42,5 +40,8 @@
+ 			Assembly out = p.bestMatch(in);
+ 			System.out.println(out.getTarget());
+ 		}
+-	}
++	    }
++	
++
++}
+ }

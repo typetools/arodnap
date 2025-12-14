@@ -1,0 +1,13 @@
+--- /tmp/orig-112007569865355124.java	2025-09-24 21:36:09.003925134 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url0e7d57473a_kyorohiro_HetimaUtil_tgz-pJ8-net_hetimatan_net_http_HttpServer3xxJ8/src/net/hetimatan/util/event/net/io/KyoroDatagramImpl.java	2025-09-24 21:36:06.843774192 +0000
+@@ -32,7 +32,9 @@
+ 		InetSocketAddress addrO =
+ 				new InetSocketAddress(
+ 						InetAddress.getByAddress(addr), port);		
+-		mChannel.socket().bind(addrO);
++		try (java.net.DatagramSocket __arodnap_temp0 = mChannel.socket()) {
++		    __arodnap_temp0.bind(addrO);
++		}
+ 	}
+ 
+ 	@Override

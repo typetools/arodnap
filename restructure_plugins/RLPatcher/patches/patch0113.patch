@@ -1,0 +1,32 @@
+--- /tmp/orig-18016879011517957736.java	2025-09-24 21:43:50.060141753 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url20b0f880a5_jgraph_legacy_jgraph5_tgz-pJ8-org_jgraph_example_HelloWorldJ8/src/com/jgraph/layout/JGraphLayoutExample.java	2025-09-24 21:43:45.311809960 +0000
+@@ -275,11 +275,13 @@
+ 		if (returnValue == JFileChooser.APPROVE_OPTION) {
+ 			Container parent = graph.getParent();
+ 			BasicMarqueeHandler marqueeHandler = graph.getMarqueeHandler();
++			java.io.FileInputStream __arodnap_temp0 = null;
+ 			try {
+ 				uninstallListeners(graph);
+ 				parent.remove(graph);
++				__arodnap_temp0 = new FileInputStream(fileChooser.getSelectedFile());
+ 				XMLDecoder decoder = new XMLDecoder(new BufferedInputStream(
+-						new FileInputStream(fileChooser.getSelectedFile())));
++						__arodnap_temp0));
+ 				graph = (JGraph) decoder.readObject();
+ 				// Take the marquee handler from the original graph and
+ 				// use it in the new graph as well.
+@@ -299,6 +301,14 @@
+ 			} catch (FileNotFoundException e) {
+ 				JOptionPane.showMessageDialog(graph, e.getMessage(), "Error",
+ 						JOptionPane.ERROR_MESSAGE);
++			} finally {
++			    if (__arodnap_temp0 != null) {
++			        try {
++			            __arodnap_temp0.close();
++			        } catch (Exception e) {
++			            e.printStackTrace();
++			        }
++			    }
+ 			}
+ 
+ 		}

@@ -1,0 +1,33 @@
+--- /tmp/orig-11759269297043486102.java	2025-09-24 22:48:10.654013493 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlc98c3b97d2_Trimax_venta_tgz-pJ8-com_gesoftware_venta_structures_map_MapTestJ8/src/com/gesoftware/venta/network/SafeNetworkTest.java	2025-09-24 22:48:08.601870030 +0000
+@@ -14,7 +14,9 @@
+     private final static int c_Bits = 2048;
+ 
+     private static void startServer() {
+-        final SafeServer server = new SafeServer(c_Port, c_Bits, new IServerHandler() {
++    com.gesoftware.venta.network.SafeServer server = null;
++    try {
++        server = new SafeServer(c_Port, c_Bits, new IServerHandler() {
+             @Override
+             public boolean onConnect(final String clientID, final InetAddress clientAddress) {
+                 LoggingUtility.info("Client connected: " + clientID);
+@@ -32,8 +34,18 @@
+                 LoggingUtility.info("Client disconnected: " + clientID);
+             }
+         });
+-
+         (new Thread(server)).start();
++    } finally {
++        if (server != null) {
++            try {
++                server.stop();
++            } catch (Exception e) {
++                e.printStackTrace();
++            }
++        }
++    }
++
++
+     }
+ 
+     private static class Task extends TimerTask {

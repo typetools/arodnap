@@ -1,0 +1,19 @@
+--- /tmp/orig-16074700291046388642.java	2025-09-24 21:49:56.409749369 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url2df0f7c811_przemekgalazka_legacycode_tgz-pJ8-pl_cc_core_cmd_CommandJ8/src/pl/cc/utils/IniFile.java	2025-09-24 21:49:54.201595009 +0000
+@@ -317,10 +317,12 @@
+ 	 */
+ 	
+ 	public static void main(String[] args) throws Exception {
+-		IniFile i = new IniFile(Resources.getInputStream("client.ini"));
+-		Hashtable<String, String> server = i.getSection("server");
+-		System.out.println(server.get("ip"));
+-		/*
++	    try (java.io.InputStream __arodnap_temp0 = Resources.getInputStream("client.ini")) {
++	        IniFile i = new IniFile(__arodnap_temp0);
++	        Hashtable<String, String> server = i.getSection("server");
++	        System.out.println(server.get("ip"));
++	    }
++	/*
+ 			IniFile i = new IniFile();
+ 			i.addSection("OPTIONS");
+ 			i.setKeyValue("OPTIONS", "output_directory", "/tmp/");

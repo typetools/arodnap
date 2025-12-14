@@ -1,0 +1,15 @@
+--- /tmp/orig-12895339120437361872.java	2025-09-24 21:56:53.538908496 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url4913e7683c_pusuo_patchca_tgz-pJ8-org_patchca_demo_PatchcaFilterDemoPNGJ8/src/org/patchca/demo/Sample.java	2025-09-24 21:56:52.202815098 +0000
+@@ -19,9 +19,9 @@
+         ConfigurableCaptchaService cs = new ConfigurableCaptchaService();
+         cs.setColorFactory(new SingleColorFactory(new Color(25, 60, 170)));
+         cs.setFilterFactory(new CurvesRippleFilterFactory(cs.getColorFactory()));
++        try (FileOutputStream fos = new FileOutputStream("patcha_demo.png")) {
++            EncoderHelper.getChallangeAndWriteImage(cs, "png", fos);
++        }
+ 
+-        FileOutputStream fos = new FileOutputStream("patcha_demo.png");
+-        EncoderHelper.getChallangeAndWriteImage(cs, "png", fos);
+-        fos.close();
+     }
+ }

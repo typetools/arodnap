@@ -1,0 +1,19 @@
+--- /tmp/orig-11501600336654316182.java	2025-09-24 22:08:59.073626292 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url70ed135da7_ralfbiedert_jcores_tgz-pJ8-sandbox_SimpleFilterTestJ8/src/sandbox/SimpleUnzip.java	2025-09-24 22:08:55.585382451 +0000
+@@ -61,9 +61,13 @@
+ 
+         $("/tmp/uunz").file().delete();
+         CoreZipInputStream zipstream = $("/tmp/torate.zip").file().input().zipstream();
+-        // zipstream.dir().print();
+-        System.out.println(zipstream.get("experiment.9.pageThailand.1282134351569.1282134351928.png"));
+-        System.out.println(zipstream.get("experiment.8.pageHonigbiene.1282131517351.1282131517788.png"));
++        try (java.io.InputStream __arodnap_temp0 = zipstream.get("experiment.9.pageThailand.1282134351569.1282134351928.png")) {
++            System.out.println(__arodnap_temp0);
++        }
++
++        try (java.io.InputStream __arodnap_temp1 = zipstream.get("experiment.8.pageHonigbiene.1282131517351.1282131517788.png")) {
++            System.out.println(__arodnap_temp1);
++        }
+ 
+         /*
+          * experiment.9.pageThailand.1282134341053.1282134341397.png

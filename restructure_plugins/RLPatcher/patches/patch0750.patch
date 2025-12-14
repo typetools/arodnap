@@ -1,0 +1,34 @@
+--- /tmp/orig-2579690753498172140.java	2025-09-24 22:50:34.988103679 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urld0f681c558_farom57_AstroidDriver_tgz-pJ8-laazotea_indi_server_examples_MinimumINDIServerJ8/src/laazotea/indi/driver/examples/INDIElTiempoDriver.java	2025-09-24 22:50:33.083970564 +0000
+@@ -350,13 +350,10 @@
+    */
+   private byte[] readBinaryFile(File file) throws IOException {
+     int fileSize = (int) file.length();
+-    FileInputStream reader = new FileInputStream(file);
+-
+-    byte[] buffer = new byte[fileSize];
+-
+-    int totalRead = 0;
+-
+-    while (totalRead < fileSize) {
++    try (FileInputStream reader = new FileInputStream(file)) {
++        byte[] buffer = new byte[fileSize];
++        int totalRead = 0;
++        while (totalRead < fileSize) {
+       int readed = reader.read(buffer, totalRead, fileSize - totalRead);
+ 
+       if (readed == -1) {
+@@ -365,8 +362,12 @@
+ 
+       totalRead += readed;
+     }
++        return buffer;
++    }
++
++
++
+ 
+-    return buffer;
+   }
+ 
+   /**

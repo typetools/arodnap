@@ -1,0 +1,27 @@
+--- /tmp/orig-12261511665712777568.java	2025-09-24 22:46:53.848644139 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlc175f05cb8_mchllbrt_PermCode_tgz-pJ8-permlib_examples_UniversalSeparableJ8/src/permlab/ui/AnimatedPermFrame.java	2025-09-24 22:46:50.364400561 +0000
+@@ -544,7 +544,7 @@
+         if (returnVal == JFileChooser.APPROVE_OPTION) {
+             savingFile = fileChooser.getSelectedFile();
+             if (FileUtilities.canSaveFileHere(this, savingFile)) {
+-                try {
++                try (javax.imageio.stream.ImageOutputStream __arodnap_temp0 = ImageIO.createImageOutputStream(savingFile)) {
+                     Permutation p = perms[0];
+                     image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+                     g = image.createGraphics();
+@@ -552,7 +552,7 @@
+ 
+                     ImageTypeSpecifier spec = new ImageTypeSpecifier(image);
+                     ImageWriter wr = ImageIO.getImageWriters(spec, "GIF").next();
+-                    wr.setOutput(ImageIO.createImageOutputStream(savingFile));
++                    wr.setOutput(__arodnap_temp0);
+                     ImageWriteParam param = wr.getDefaultWriteParam();
+                     IIOMetadata meta = wr.getDefaultImageMetadata(spec, param);
+                     wr.prepareWriteSequence(meta);
+@@ -666,4 +666,4 @@
+             PaintUtilities.paint(g, p, getWidth(), getHeight(), false);
+         }
+     }
+-}
++}
+\ No newline at end of file

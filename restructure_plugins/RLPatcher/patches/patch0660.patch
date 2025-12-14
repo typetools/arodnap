@@ -1,0 +1,13 @@
+--- /tmp/orig-159024095766925339.java	2025-09-24 22:42:14.277099697 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlb57eb64056_jacadenac_ISI_Othello_UN_tgz-pJ8-othello_OthelloJ8/src/logica/ia/algoritmosGeneticos/Estrategia.java	2025-09-24 22:42:12.925005174 +0000
+@@ -418,8 +418,8 @@
+ 		String nombreFichero = "parametrosIniciales.txt";
+ 		File fichero = new File(directorio.getPath(),nombreFichero);
+ 		fileChooser.setCurrentDirectory(fichero);		
+-		try {
+-			BufferedReader reader = new BufferedReader(new FileReader(fichero));
++		try (java.io.FileReader __arodnap_temp0 = new FileReader(fichero)) {
++			BufferedReader reader = new BufferedReader(__arodnap_temp0);
+ 			String linea = reader.readLine();
+ 			String[] dimensiones = linea.split(",");
+ 			numeroEvolucion=Integer.parseInt(dimensiones[0]);

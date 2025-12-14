@@ -1,0 +1,12 @@
+--- /tmp/orig-15665085588919833054.java	2025-09-24 22:34:50.990111297 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url86e9087e81_JohnPease_557_HW3_tgz-pJ8-uwm_cs557_Sample4J8/src/uwm_cs557/MiniDB.java	2025-09-24 22:34:49.874033278 +0000
+@@ -178,8 +178,7 @@
+ 
+     bufMgr.flushDirty();
+ 
+-    try {
+-      FileOutputStream fout = new FileOutputStream(osFilename());
++    try (FileOutputStream fout = new FileOutputStream(osFilename())) {
+       ObjectOutputStream oos = new ObjectOutputStream(fout);
+       oos.writeObject(dbBlocks);
+       oos.writeObject(dbBlockUsed);

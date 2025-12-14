@@ -1,0 +1,27 @@
+--- /tmp/orig-14528857880704662285.java	2025-09-24 21:53:13.491526235 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url43a0865bb0_kevinjdolan_darwin_tgz-pJ8-tui_DriverJ8/src/darwInvest/Test.java	2025-09-24 21:53:11.383378867 +0000
+@@ -270,12 +270,22 @@
+ 		}
+ 		
+ 		System.out.println("Outputting the file...");
++		java.io.FileWriter __arodnap_temp0 = null;
+ 		try {
+ 			File outFile = new File(FILENAME);
+-			BufferedWriter  out = new BufferedWriter(new FileWriter(outFile));
++			__arodnap_temp0 = new FileWriter(outFile);
++			BufferedWriter  out = new BufferedWriter(__arodnap_temp0);
+ 			out.write(output);
+ 			out.close();
+-		} catch (IOException e) {}
++		} catch (IOException e) {} finally {
++		    if (__arodnap_temp0 != null) {
++		        try {
++		            __arodnap_temp0.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
++		}
+ 		
+ 		System.out.println("All done!");
+ 	

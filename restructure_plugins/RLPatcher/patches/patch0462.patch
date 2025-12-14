@@ -1,0 +1,13 @@
+--- /tmp/orig-2271082508308808036.java	2025-09-24 22:17:29.377298277 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url7f43a4752f_shalynnho_pokemonfactory_tgz-pJ8-Networking_ServerJ8/src/Utils/ReadSaveData.java	2025-09-24 22:17:26.365087713 +0000
+@@ -53,9 +53,8 @@
+      */
+     public static ArrayList<PartType> readPartType() {
+     	ArrayList<PartType> partTypes = null;
+-    	try{
++    	try(InputStream is = new FileInputStream("PartTypesBackup.sav")) {
+     		System.out.println("I'm inside ReadPartType()");
+-    		InputStream is = new FileInputStream("PartTypesBackup.sav");
+     		InputStream buffer = new BufferedInputStream(is);
+     		ObjectInput oi = new ObjectInputStream(buffer);
+     		try {

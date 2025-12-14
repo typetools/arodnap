@@ -1,0 +1,14 @@
+--- /tmp/orig-1042315049505750088.java	2025-09-24 22:02:29.938424277 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url4df616fce9_s3e0n1g1_prototype3_tgz-pJ8-Trading_Engine_MainJ8/src/Trading_Engine/myDatabase.java	2025-09-24 22:02:28.310310464 +0000
+@@ -109,9 +109,9 @@
+ 	public LinkedList<String> insertAll(File f, String dbName) {
+ 		LinkedList<String> overviewResult = new LinkedList<String>();
+ 		deleteAllTables();
+-		try {
++		try (java.io.FileReader __arodnap_temp0 = new FileReader(f)) {
+ 			Statement s = connection.createStatement();
+-			BufferedReader br = new BufferedReader(new FileReader(f));
++			BufferedReader br = new BufferedReader(__arodnap_temp0);
+ 			String head = "";
+ 			if((head=br.readLine())!=null){
+ 				//System.out.println("first character of head: " + head.charAt(0));

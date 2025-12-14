@@ -1,0 +1,39 @@
+--- /tmp/orig-18379868235494007049.java	2025-09-24 22:47:22.686660164 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlc175f05cb8_mchllbrt_PermCode_tgz-pJ8-permlib_examples_UniversalSeparableJ8/src/permlab/utilities/ExportType.java	2025-09-24 22:47:18.874393654 +0000
+@@ -200,10 +200,12 @@
+                     String mimeType = DocFlavor.INPUT_STREAM.POSTSCRIPT.getMimeType();
+                     StreamPrintServiceFactory[] factories = StreamPrintServiceFactory
+                             .lookupStreamPrintServiceFactories(flavor, mimeType);
++                    java.io.FileInputStream fis = null;
++                    java.io.PrintStream fos = null;
+                     try {
+-                        PrintStream fos = new PrintStream(savingFile);
++                        fos = new PrintStream(savingFile);
+                         StreamPrintService sps = factories[0].getPrintService(fos);
+-                        FileInputStream fis = new FileInputStream(infile);
++                        fis = new FileInputStream(infile);
+                         DocPrintJob dpj = sps.createPrintJob();
+                         PrintRequestAttributeSet pras = new HashPrintRequestAttributeSet();
+                         Doc doc = new SimpleDoc(fis, flavor, null);
+@@ -211,6 +213,21 @@
+                         fos.close();
+                     } catch (FileNotFoundException e1) {
+                     } catch (PrintException e2) {
++                    } finally {
++                        if (fis != null) {
++                            try {
++                                fis.close();
++                            } catch (Exception e) {
++                                e.printStackTrace();
++                            }
++                        }
++                        if (fos != null) {
++                            try {
++                                fos.close();
++                            } catch (Exception e) {
++                                e.printStackTrace();
++                            }
++                        }
+                     }
+                     tempFile.delete();
+                 }

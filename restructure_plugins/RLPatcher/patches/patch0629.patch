@@ -1,0 +1,44 @@
+--- /tmp/orig-10473179744941136694.java	2025-09-24 22:39:49.550982104 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url9a01f43c15_poragchowdhury_securitygame_tgz-pJ8-securitygame_GameMasterJ8/src/securitygame/Parser.java	2025-09-24 22:39:48.406902124 +0000
+@@ -21,6 +21,8 @@
+ 	public static Network parseGraph(String filename)
+ 	{
+ 		boolean deleteJunkFile = false;
++		org.apache.commons.csv.CSVParser parseRecords = null;
++		org.apache.commons.csv.CSVParser parser = null;
+ 		try 
+ 		{
+ 			File gFile = new File(filename);
+@@ -28,8 +30,8 @@
+ 				gFile.createNewFile();
+ 				deleteJunkFile = true;
+ 			}
+-			CSVParser parser = CSVParser.parse(gFile, StandardCharsets.US_ASCII, CSVFormat.DEFAULT);
+-			CSVParser parseRecords= CSVParser.parse(gFile, StandardCharsets.US_ASCII, CSVFormat.DEFAULT);
++			parser = CSVParser.parse(gFile, StandardCharsets.US_ASCII, CSVFormat.DEFAULT);
++			parseRecords = CSVParser.parse(gFile, StandardCharsets.US_ASCII, CSVFormat.DEFAULT);
+ 			int neighborsCounter = 0;
+ 			int numNodes = parseRecords.getRecords().size()/2;
+             Network network = new Network(0,numNodes);
+@@ -79,6 +81,21 @@
+ 		catch (IOException e) 
+ 		{
+ 			e.printStackTrace();
++		} finally {
++		    if (parseRecords != null) {
++		        try {
++		            parseRecords.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
++		    if (parser != null) {
++		        try {
++		            parser.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
+ 		}
+ 		return null;
+ 	}

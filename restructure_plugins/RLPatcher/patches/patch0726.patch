@@ -1,0 +1,21 @@
+--- /tmp/orig-11124638663377232830.java	2025-09-24 22:48:35.175727770 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlc98c3b97d2_Trimax_venta_tgz-pJ8-com_gesoftware_venta_structures_map_MapTestJ8/src/com/gesoftware/venta/logging/LoggingUtility.java	2025-09-24 22:48:32.819563054 +0000
+@@ -120,9 +120,8 @@
+         if (m_OutputFile == null)
+             return;
+ 
+-        try {
+-            /* Open file */
+-            final FileWriter fileWriter = new FileWriter(m_OutputFile, true);
++        try (final FileWriter fileWriter = new FileWriter(m_OutputFile, true)) {
++
+             final BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+ 
+             /* Writing data */
+@@ -282,4 +281,4 @@
+     public static void setOutputFile(final String outputFile) {
+         c_Self.setFile(outputFile);
+     } /* End of 'LoggingUtility::setOutputFile' method */
+-} /* End of 'LoggingUtility' class */
++} /* End of 'LoggingUtility' class */
+\ No newline at end of file

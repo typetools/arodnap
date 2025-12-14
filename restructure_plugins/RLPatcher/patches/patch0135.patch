@@ -1,0 +1,12 @@
+--- /tmp/orig-5856292359612804218.java	2025-09-24 21:46:08.669829530 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url28dfd00382_byang223_TurnBAPI_tgz-pJ8-units_upgrades_UpgradeTestJ8/src/input/TBInputEngine.java	2025-09-24 21:46:06.701691952 +0000
+@@ -99,8 +99,7 @@
+ 	 */
+ 	protected void loadKeyBindingsFromFile(TBGameMode g, File file) {
+ 		getEventList().clear();
+-		try{
+-			FileInputStream fstream = new FileInputStream(file);
++		try(FileInputStream fstream = new FileInputStream(file)) {
+ 			DataInputStream in = new DataInputStream(fstream);
+ 			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+ 			String line;

@@ -1,0 +1,32 @@
+--- /tmp/orig-574080243436774019.java	2025-09-24 22:16:28.385034707 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url7a45f192ca_mfullen_ping_pong_net_tgz-pJ8-ping_pong_net_client_io_TestClientNonPPNServerJ8/src/ping/pong/net/client/io/TestClientNonPPNServer.java	2025-09-24 22:16:26.432898246 +0000
+@@ -95,6 +95,14 @@
+         catch (IOException ex)
+         {
+             ex.printStackTrace();
++        } finally {
++            if (tcpServerSocket != null) {
++                try {
++                    tcpServerSocket.close();
++                } catch (Exception e) {
++                    e.printStackTrace();
++                }
++            }
+         }
+ 
+ 
+@@ -106,6 +114,14 @@
+         catch (IOException ex)
+         {
+             ConnectionExceptionHandler.handleException(ex, LoggerFactory.getLogger(TestClientNonPPNServer.class));
++        } finally {
++            if (acceptingSocket != null) {
++                try {
++                    acceptingSocket.close();
++                } catch (Exception e) {
++                    e.printStackTrace();
++                }
++            }
+         }
+         if (acceptingSocket != null)
+         {

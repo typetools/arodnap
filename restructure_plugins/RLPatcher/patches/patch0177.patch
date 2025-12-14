@@ -1,0 +1,66 @@
+--- /tmp/orig-2294217982536999608.java	2025-09-24 21:50:17.543226690 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url2df0f7c811_przemekgalazka_legacycode_tgz-pJ8-pl_cc_core_cmd_CommandJ8/src/ccproxy/AgentConnection.java	2025-09-24 21:50:15.395076525 +0000
+@@ -882,15 +882,23 @@
+ 
+ 	private boolean externAuth(String url, String agentName, String password){
+ 		boolean authorized=false;
++		java.io.InputStream __arodnap_temp3 = null;
++		java.io.OutputStream __arodnap_temp2 = null;
++		java.io.OutputStream __arodnap_temp1 = null;
++		java.io.OutputStream __arodnap_temp0 = null;
+ 		try {
+ 			HttpURLConnection con = (HttpURLConnection) new URL(url).openConnection();
+ 			con.setRequestMethod("POST");
+ 			con.setDoOutput(true);
+-			con.getOutputStream().write(("user="+agentName).getBytes("UTF-8"));
+-			con.getOutputStream().write("&".getBytes("UTF-8"));
+-			con.getOutputStream().write(("pass="+password).getBytes("UTF-8"));
++			__arodnap_temp2 = con.getOutputStream();
++			__arodnap_temp2.write(("user="+agentName).getBytes("UTF-8"));
++			__arodnap_temp1 = con.getOutputStream();
++			__arodnap_temp1.write("&".getBytes("UTF-8"));
++			__arodnap_temp0 = con.getOutputStream();
++			__arodnap_temp0.write(("pass="+password).getBytes("UTF-8"));
++			__arodnap_temp3 = con.getInputStream();
+ 			//con.setRequestMethod("GET");
+-			BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream()));
++			BufferedReader br = new BufferedReader(new InputStreamReader(__arodnap_temp3));
+ 			String inputLine;
+ 			while ((inputLine = br.readLine()) != null){
+ 				if ("OK".equals(inputLine)) 
+@@ -909,6 +917,35 @@
+ 		} catch (IOException e) {
+ 			// TODO Auto-generated catch block
+ 			e.printStackTrace();
++		} finally {
++		    if (__arodnap_temp3 != null) {
++		        try {
++		            __arodnap_temp3.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
++		    if (__arodnap_temp2 != null) {
++		        try {
++		            __arodnap_temp2.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
++		    if (__arodnap_temp1 != null) {
++		        try {
++		            __arodnap_temp1.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
++		    if (__arodnap_temp0 != null) {
++		        try {
++		            __arodnap_temp0.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
+ 		}
+ 		return authorized;
+ 	}

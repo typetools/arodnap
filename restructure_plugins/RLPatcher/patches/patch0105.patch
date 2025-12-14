@@ -1,0 +1,34 @@
+--- /tmp/orig-3668933913243240179.java	2025-09-24 21:42:16.909632797 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url20b0f880a5_jgraph_legacy_jgraph5_tgz-pJ8-org_jgraph_example_HelloWorldJ8/src/com/mxgraph/util/mxUtils.java	2025-09-24 21:42:12.197303521 +0000
+@@ -1704,21 +1704,22 @@
+ 	 */
+ 	public static String readFile(String filename) throws IOException
+ 	{
+-		BufferedReader reader = new BufferedReader(new InputStreamReader(
+-				new FileInputStream(filename)));
+-		StringBuffer result = new StringBuffer();
+-		String tmp = reader.readLine();
+-
+-		while (tmp != null)
++	    try (java.io.FileInputStream __arodnap_temp0 = new FileInputStream(filename)) {
++	        BufferedReader reader = new BufferedReader(new InputStreamReader(
++				__arodnap_temp0));
++	        StringBuffer result = new StringBuffer();
++	        String tmp = reader.readLine();
++	        while (tmp != null)
+ 		{
+ 			result.append(tmp + "\n");
+ 			tmp = reader.readLine();
+ 		}
++	        return result.toString();
++	    }
++	
+ 
+-		reader.close();
+ 
+-		return result.toString();
+-	}
++}
+ 
+ 	/**
+ 	 * Writes the given string into the given file.

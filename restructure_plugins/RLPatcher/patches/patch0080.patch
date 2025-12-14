@@ -1,0 +1,14 @@
+--- /tmp/orig-12214397420929703501.java	2025-09-24 21:39:54.379673419 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url11fb0973cf_raichuman9_Swimmer526_tgz-pJ8-fr_inria_optimization_cmaes_examples_CMAExample1J8/src/ubc/swim/optimization/SwimmerOptimization.java	2025-09-24 21:39:51.519473560 +0000
+@@ -107,9 +107,8 @@
+ 	 * @param fileName name of file (no .csv extension)
+ 	 */
+ 	public static void writeToCSV(double[] x, String filePath, String fileName) {
+-		try
+-		{
+-		    FileWriter writer = new FileWriter(filePath + "/" + fileName + ".csv");
++		try(
++FileWriter writer = new FileWriter(filePath + "/" + fileName + ".csv")) 		{
+ 		    
+ 		    for (double val : x) {
+ 		    	writer.append(Double.toString(val));

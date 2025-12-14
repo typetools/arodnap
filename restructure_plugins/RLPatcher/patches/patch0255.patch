@@ -1,0 +1,13 @@
+--- /tmp/orig-5150258997563170179.java	2025-09-24 21:56:38.521858740 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url47fcfc0133_baliosian_tau_fst_tgz-pJ8-uy_edu_fing_mina_fsa_test_old_TestComposition1J8/src/uy/edu/fing/mina/fsa/utils/Utils.java	2025-09-24 21:56:36.309704101 +0000
+@@ -54,8 +54,8 @@
+ 
+   public static void writeDot(String dot, String filename) {
+ 
+-	try {
+-	  BufferedWriter out = new BufferedWriter(new FileWriter(filename));
++	try (java.io.FileWriter __arodnap_temp0 = new FileWriter(filename)) {
++	  BufferedWriter out = new BufferedWriter(__arodnap_temp0);
+ 	  out.write(dot);
+ 	  out.close();
+ 	} catch (IOException e) {

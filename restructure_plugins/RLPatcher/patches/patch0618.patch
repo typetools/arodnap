@@ -1,0 +1,30 @@
+--- /tmp/orig-9106075996433508981.java	2025-09-24 22:38:50.146829394 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url8f84d8d956_klapaukh_JTuttePoly_tgz-pJ8-BitTutteJ8/src/Tutte.java	2025-09-24 22:38:48.722729844 +0000
+@@ -63,9 +63,10 @@
+ 		long seed = 0;
+ 
+ 		if (s != null) {
+-			try {
++		java.util.Scanner scan = null;
++		try {
+ 				File f = new File(s);
+-				Scanner scan = new Scanner(f);
++				scan = new Scanner(f);
+ 				scan.useDelimiter("[^0-9]+");
+ 				g = new SpanningGraph(30);
+ 				while(scan.hasNext()){
+@@ -78,6 +79,14 @@
+ //				return;
+ 			} catch (FileNotFoundException e) {
+ 				e.printStackTrace();
++			} finally {
++			    if (scan != null) {
++			        try {
++			            scan.close();
++			        } catch (Exception e) {
++			            e.printStackTrace();
++			        }
++			    }
+ 			}
+ 		}
+ 		if (g == null) {

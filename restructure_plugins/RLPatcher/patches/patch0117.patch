@@ -1,0 +1,15 @@
+--- /tmp/orig-363990168751871693.java	2025-09-24 21:44:25.498618039 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url24d793285d_auzll_gengweibo_tgz-pJ8-org_json_TestJ8/src/com/gengweibo/web/GuiceInit.java	2025-09-24 21:44:23.258461508 +0000
+@@ -39,10 +39,8 @@
+                 binder.bind(DataSource.class).toProvider(C3P0Provider.class)
+                         .in(Singleton.class);
+                 Properties properties = new Properties();
+-                try {
+-                    properties.load(Thread.currentThread()
+-                            .getContextClassLoader()
+-                            .getResourceAsStream("database.properties"));
++                try (java.io.InputStream __arodnap_temp0 = Thread.currentThread().getContextClassLoader().getResourceAsStream("database.properties")) {
++                    properties.load(__arodnap_temp0);
+                 } catch (IOException e) {
+                     throw new ExceptionInInitializerError(e);
+                 }

@@ -1,0 +1,16 @@
+--- /tmp/orig-4330174707270907530.java	2025-09-24 22:53:31.056412360 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urldeb33fd2fa_friedemann_distripedia_tgz-pJ8-org_json_TestJ8/src/wikipedia/Main.java	2025-09-24 22:53:28.948264982 +0000
+@@ -102,10 +102,9 @@
+ 	 */
+ 	private static int get_totalArticles()
+ 	{
+-		try
+-		{
+-			FileInputStream propInFile = new FileInputStream(WebSocketServer.path
+-					+ articles_counter_file);
++		try(
++FileInputStream propInFile = new FileInputStream(WebSocketServer.path
++					+ articles_counter_file)) 		{
+ 			articles_prop = new Properties();
+ 
+ 			articles_prop.load(propInFile);

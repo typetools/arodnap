@@ -1,0 +1,110 @@
+--- /tmp/orig-2068744382674680542.java	2025-09-24 22:31:24.255659659 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url80e39b1957_tobikster_IJN_headers_recognition_tgz-pJ8-org_maltparser_examples_CreatePhraseStructureGraphJ8/src/org/maltparser/core/config/ConfigurationDir.java	2025-09-24 22:31:20.695410782 +0000
+@@ -1091,9 +1091,13 @@
+ 					configFiles[i].renameTo(new File(configDirectory.getPath()+File.separator+"symboltables.sym.old"));
+ 				}
+ 			}
++			java.io.FileWriter __arodnap_temp1 = null;
++			java.io.FileReader __arodnap_temp0 = null;
+ 			try {
+-				BufferedReader br = new BufferedReader(new FileReader(configDirectory.getPath()+File.separator+"savedoptions.sop.old"));
+-				BufferedWriter bw = new BufferedWriter(new FileWriter(configDirectory.getPath()+File.separator+"savedoptions.sop"));
++			__arodnap_temp0 = new FileReader(configDirectory.getPath() + File.separator + "savedoptions.sop.old");
++			BufferedReader br = new BufferedReader(__arodnap_temp0);
++				__arodnap_temp1 = new FileWriter(configDirectory.getPath() + File.separator + "savedoptions.sop");
++				BufferedWriter bw = new BufferedWriter(__arodnap_temp1);
+ 				String line;
+ 				while ((line = br.readLine()) != null) {
+ 					if (line.startsWith("0\tguide\tprediction_strategy")) {
+@@ -1111,10 +1115,29 @@
+ 				throw new ConfigurationException("Could convert savedoptions.sop version 1.0.4 to version 1.1. ", e);
+ 			}  catch (IOException e) {
+ 				throw new ConfigurationException("Could convert savedoptions.sop version 1.0.4 to version 1.1. ", e);
++			} finally {
++			    if (__arodnap_temp1 != null) {
++			        try {
++			            __arodnap_temp1.close();
++			        } catch (Exception e) {
++			            e.printStackTrace();
++			        }
++			    }
++			    if (__arodnap_temp0 != null) {
++			        try {
++			            __arodnap_temp0.close();
++			        } catch (Exception e) {
++			            e.printStackTrace();
++			        }
++			    }
+ 			}		
++			java.io.FileWriter __arodnap_temp3 = null;
++			java.io.FileReader __arodnap_temp2 = null;
+ 			try {
+-				BufferedReader br = new BufferedReader(new FileReader(configDirectory.getPath()+File.separator+"symboltables.sym.old"));
+-				BufferedWriter bw = new BufferedWriter(new FileWriter(configDirectory.getPath()+File.separator+"symboltables.sym"));
++			__arodnap_temp2 = new FileReader(configDirectory.getPath() + File.separator + "symboltables.sym.old");
++			BufferedReader br = new BufferedReader(__arodnap_temp2);
++				__arodnap_temp3 = new FileWriter(configDirectory.getPath() + File.separator + "symboltables.sym");
++				BufferedWriter bw = new BufferedWriter(__arodnap_temp3);
+ 				String line;
+ 				while ((line = br.readLine()) != null) {
+ 					if (line.startsWith("AllCombinedClassTable")) {
+@@ -1132,6 +1155,21 @@
+ 				throw new ConfigurationException("Could convert symboltables.sym version 1.0.4 to version 1.1. ", e);
+ 			}  catch (IOException e) {
+ 				throw new ConfigurationException("Could convert symboltables.sym version 1.0.4 to version 1.1. ", e);
++			} finally {
++			    if (__arodnap_temp3 != null) {
++			        try {
++			            __arodnap_temp3.close();
++			        } catch (Exception e) {
++			            e.printStackTrace();
++			        }
++			    }
++			    if (__arodnap_temp2 != null) {
++			        try {
++			            __arodnap_temp2.close();
++			        } catch (Exception e) {
++			            e.printStackTrace();
++			        }
++			    }
+ 			}
+ 		}
+ 		if (!createdByMaltParserVersion.startsWith("1.3")) {
+@@ -1143,9 +1181,13 @@
+ 			
+ 
+ 			new File(configDirectory.getPath()+File.separator+"savedoptions.sop").renameTo(new File(configDirectory.getPath()+File.separator+"savedoptions.sop.old"));
++			java.io.FileWriter __arodnap_temp5 = null;
++			java.io.FileReader __arodnap_temp4 = null;
+ 			try {
+-				BufferedReader br = new BufferedReader(new FileReader(configDirectory.getPath()+File.separator+"savedoptions.sop.old"));
+-				BufferedWriter bw = new BufferedWriter(new FileWriter(configDirectory.getPath()+File.separator+"savedoptions.sop"));
++			__arodnap_temp4 = new FileReader(configDirectory.getPath() + File.separator + "savedoptions.sop.old");
++			BufferedReader br = new BufferedReader(__arodnap_temp4);
++				__arodnap_temp5 = new FileWriter(configDirectory.getPath() + File.separator + "savedoptions.sop");
++				BufferedWriter bw = new BufferedWriter(__arodnap_temp5);
+ 				String line;
+ 				while ((line = br.readLine()) != null) {
+ 					int index = line.indexOf('\t');
+@@ -1190,6 +1232,21 @@
+ 				throw new ConfigurationException("Could convert savedoptions.sop version 1.0.4 to version 1.1. ", e);
+ 			}  catch (IOException e) {
+ 				throw new ConfigurationException("Could convert savedoptions.sop version 1.0.4 to version 1.1. ", e);
++			} finally {
++			    if (__arodnap_temp5 != null) {
++			        try {
++			            __arodnap_temp5.close();
++			        } catch (Exception e) {
++			            e.printStackTrace();
++			        }
++			    }
++			    if (__arodnap_temp4 != null) {
++			        try {
++			            __arodnap_temp4.close();
++			        } catch (Exception e) {
++			            e.printStackTrace();
++			        }
++			    }
+ 			}
+ 		}
+ 	}

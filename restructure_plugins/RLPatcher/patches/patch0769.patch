@@ -1,0 +1,30 @@
+--- /tmp/orig-14976465143630174400.java	2025-09-24 22:52:06.938531799 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urld829b80034_wjch111_PTSP2013Wang_tgz-pJ8-controllers_momcts_momctsCore_TestPlannerJ8/src/framework/core/Exec.java	2025-09-24 22:52:04.038329050 +0000
+@@ -243,17 +243,18 @@
+      * @throws Exception from file handling.
+      */
+     protected static int[] readForces(String a_filename) throws Exception {
+-        BufferedReader in = new BufferedReader(new FileReader(a_filename));
+-        String line = in.readLine().trim();
+-        int n = Integer.parseInt(line);
+-        int[] f = new int[n];
+-        for (int i=0; i<n; i++) {
++        try (java.io.FileReader __arodnap_temp0 = new FileReader(a_filename)) {
++            BufferedReader in = new BufferedReader(__arodnap_temp0);
++            String line = in.readLine().trim();
++            int n = Integer.parseInt(line);
++            int[] f = new int[n];
++            for (int i=0; i<n; i++) {
+             line = in.readLine().trim();
+             f[i] = Integer.parseInt(line);
+         }
+-        in.close();
+-        return f;
++            return f;
++        }
+     }
+ 
+ 
+-}
++}
+\ No newline at end of file

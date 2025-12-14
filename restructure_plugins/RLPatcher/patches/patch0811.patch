@@ -1,0 +1,33 @@
+--- /tmp/orig-9394287148064426013.java	2025-09-24 22:56:18.556122021 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urle381b6cba7_IkarosKappler_ikrs_http_tgz-pJ8-ikrs_json_rpc_JSONRPCHandlerJ8/src/ikrs/io/fileio/htaccess/HypertextPasswordFile.java	2025-09-24 22:56:15.883935213 +0000
+@@ -56,16 +56,16 @@
+ 					  boolean strictMode )
+ 	throws IOException,
+ 	       ParseException {
+-
+-	
+-	FileInputStream in = new FileInputStream(file);
+-	char[] passData = getPasswordData( in,
++	           try (FileInputStream in = new FileInputStream(file)) {
++	               char[] passData = getPasswordData( in,
+ 					   username,
+ 					   strictMode 
+ 					   );
+-	in.close();
+-	return passData;
+-    }    
++	               return passData;
++	           }
++	       
++
++}    
+ 
+ 
+     /**
+@@ -218,4 +218,4 @@
+ 
+ 
+ 
+-}
++}
+\ No newline at end of file

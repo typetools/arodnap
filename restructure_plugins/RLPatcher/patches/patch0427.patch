@@ -1,0 +1,35 @@
+--- /tmp/orig-5098762773998972157.java	2025-09-24 22:14:00.714712042 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url7a45f192ca_mfullen_ping_pong_net_tgz-pJ8-ping_pong_net_client_io_TestClientNonPPNServerJ8/src/ping/pong/net/server/ClientExample.java	2025-09-24 22:13:58.794577819 +0000
+@@ -239,21 +239,22 @@
+                                                              CertificateException,
+                                                              URISyntaxException
+     {
+-
+-        Socket client = new Socket("localhost", 5011);
+-        ObjectInputStream inputStream = new ObjectInputStream(client.getInputStream());
+-        int readInt = inputStream.readInt();
+-        System.out.println("I was assigned Client id: " + readInt);
+-        ObjectOutputStream outputStream = new ObjectOutputStream(client.getOutputStream());
+-        for (int i = 0; i < 5; i++)
++        try (Socket client = new Socket("localhost", 5011)) {
++            ObjectInputStream inputStream = new ObjectInputStream(client.getInputStream());
++            int readInt = inputStream.readInt();
++            System.out.println("I was assigned Client id: " + readInt);
++            ObjectOutputStream outputStream = new ObjectOutputStream(client.getOutputStream());
++            for (int i = 0; i < 5; i++)
+         {
+             outputStream.writeObject("hello world:" + i);
+             Thread.sleep(500);
+         }
+-        outputStream.flush();
+-        outputStream.close();
++            outputStream.flush();
++            outputStream.close();
++        }
++    
+ 
+-    }
++}
+ 
+     public static void main(String[] args) throws IOException,
+                                                   InterruptedException,

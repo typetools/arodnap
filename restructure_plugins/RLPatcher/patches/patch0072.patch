@@ -1,0 +1,22 @@
+--- /tmp/orig-2972749876065115610.java	2025-09-24 21:39:00.147883934 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url0e7d57473a_kyorohiro_HetimaUtil_tgz-pJ8-net_hetimatan_net_http_HttpServer3xxJ8/src/net/hetimatan/io/filen/CashKyoroFileHelper.java	2025-09-24 21:38:57.887726004 +0000
+@@ -53,15 +53,15 @@
+ 
+ 	public static void xcopy(File[] srcs, CashKyoroFile dest) throws IOException {
+ 		for(int i=0;i<srcs.length;i++) {
+-			CashKyoroFile src = new CashKyoroFile(srcs[i], 16*1024, 10);
+-			long fp = dest.getFilePointer();
+-			try {
++		    try (CashKyoroFile src = new CashKyoroFile(srcs[i], 16*1024, 10)) {
++		        long fp = dest.getFilePointer();
++		        try {
+ 				CashKyoroFileHelper.copy(src, dest);
+ 				dest.syncWrite();
+ 			} finally {
+ 				dest.seek(fp+src.length());
+-				src.close();
+ 			}
++		    }
+ 		}
+ 	}
+ 

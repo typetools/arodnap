@@ -1,0 +1,13 @@
+--- /tmp/orig-15203517325082357521.java	2025-09-24 21:51:34.060575583 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url416ee5b4ee_martinmarinov_HonProj_tgz-pJ8-martin_gui_MainJ8/src/martin/gui/quantum/Item.java	2025-09-24 21:51:31.904424859 +0000
+@@ -70,8 +70,8 @@
+ 	 * @return
+ 	 */
+ 	BufferedImage getIcon() {
+-		try {
+-			return icon = ImageIO.read(this.getClass().getResourceAsStream(getIconFileName()));
++		try (java.io.InputStream __arodnap_temp0 = this.getClass().getResourceAsStream(getIconFileName())) {
++			return icon = ImageIO.read(__arodnap_temp0);
+ 		} catch (IOException e) {
+ 			return null;
+ 		}

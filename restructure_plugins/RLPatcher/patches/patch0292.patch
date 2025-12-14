@@ -1,0 +1,27 @@
+--- /tmp/orig-5628826980176773956.java	2025-09-24 22:00:31.766163525 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url4c41254592_topskychen_AuthTopk_tgz-pJ8-quickhull3d_QuickHull3DTestJ8/src/utility/Compare/mergeIndexDP.java	2025-09-24 22:00:28.793955755 +0000
+@@ -73,17 +73,17 @@
+ 	}
+ 	
+ 	public static void runTest(String type, String filePath, long idx[], int machineId) throws IOException{
+-		RandomAccessFile raf = new RandomAccessFile(filePath + "/" + type + "." + machineId + ".dat", "r");
+-		raf.seek(idx[1]);
+-		byte[] data = new byte[(int) idx[2]];
+-		raf.read(data);
+-		DataOfPoint dp = new DataOfPoint(data);
+-		if(dp.getPointId() != idx[0]){
++	    try (RandomAccessFile raf = new RandomAccessFile(filePath + "/" + type + "." + machineId + ".dat", "r")) {
++	        raf.seek(idx[1]);
++	        byte[] data = new byte[(int) idx[2]];
++	        raf.read(data);
++	        DataOfPoint dp = new DataOfPoint(data);
++	        if(dp.getPointId() != idx[0]){
+ 			System.out.println("Fail");
+ 		}else{
+ 			System.out.println("Pass");
+ 		}
+-		raf.close();
++	    }
+ 	}
+ 	
+ 	public static void runTest(String type, String filePath) throws IOException{

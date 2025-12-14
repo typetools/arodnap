@@ -1,0 +1,13 @@
+--- /tmp/orig-11023319130317858.java	2025-09-24 22:42:07.184603872 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlb44e9843ba_QuasimodoNZ_SWEN222_Game_Project_tgz-pJ8-Game_World_GameWorldLevelBuilderJ8/src/Graphics_Renderer/MapEditor.java	2025-09-24 22:42:05.252468799 +0000
+@@ -347,8 +347,8 @@
+ 			File file = fc.getSelectedFile(); // Do anything u want with this
+ 												// file
+ 			BufferedWriter writer;
+-			try {
+-				writer = new BufferedWriter(new FileWriter(file));
++			try (java.io.FileWriter __arodnap_temp0 = new FileWriter(file)) {
++				writer = new BufferedWriter(__arodnap_temp0);
+ 
+ 				for (int i = 0; i < imageLayers.getItemCount(); i++) {
+ 					writer.write(imageLayers.getItemAt(i).toString());

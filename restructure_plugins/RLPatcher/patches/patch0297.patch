@@ -1,0 +1,37 @@
+--- /tmp/orig-8097777036354213559.java	2025-09-24 22:01:09.872827346 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url4c41254592_topskychen_AuthTopk_tgz-pJ8-quickhull3d_QuickHull3DTestJ8/src/utility/gowallaParser.java	2025-09-24 22:01:07.008627125 +0000
+@@ -42,9 +42,12 @@
+ 	}
+ 	
+ 	public static void loadData(String fileInputPath) throws FileNotFoundException{
+-		Scanner in = new Scanner(new BufferedInputStream(new FileInputStream(new File(fileInputPath))));
+-		int lineId = 0;
+-		while(in.hasNext()){
++	java.io.FileInputStream __arodnap_temp0 = null;
++	try {
++    __arodnap_temp0 = new FileInputStream(new File(fileInputPath));
++    Scanner in = new Scanner(new BufferedInputStream(__arodnap_temp0));
++    int lineId = 0;
++    while(in.hasNext()){
+ 			String line = in.nextLine();
+ 			String[] tks = line.split("\t");
+ 			long locId = Long.parseLong(tks[4]);
+@@ -59,8 +62,16 @@
+ 			if(lineId % 9999 == 0)System.out.print(".");
+ 			if(lineId % 999999 == 0)System.out.println("");
+ 		}
+-		in.close();
+-		System.out.println("Load data finished!");
++} finally {
++    if (__arodnap_temp0 != null) {
++        try {
++            __arodnap_temp0.close();
++        } catch (Exception e) {
++            e.printStackTrace();
++        }
++    }
++}
++	System.out.println("Load data finished!");
+ 		System.out.println("Locations:\t" + locations.size());
+ 	}
+ 	

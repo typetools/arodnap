@@ -1,0 +1,46 @@
+--- /tmp/orig-7809752395334360094.java	2025-09-24 22:33:33.948725769 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url80e39b1957_tobikster_IJN_headers_recognition_tgz-pJ8-org_maltparser_examples_CreatePhraseStructureGraphJ8/src/org/maltparser/examples/ParseSentence2.java	2025-09-24 22:33:30.044452843 +0000
+@@ -33,13 +33,17 @@
+ 	 * @param args
+ 	 */
+ 	public static void main(String[] args) {
+-		try {
++	java.io.FileOutputStream __arodnap_temp1 = null;
++	java.io.FileInputStream __arodnap_temp0 = null;
++	try {
+ 			MaltParserService service =  new MaltParserService();
+ 			service.initializeParserModel("-c model0 -m parse -w . -lfi parser.log");
+ 			String testDataFile = ".."+File.separator+"data"+File.separator+"talbanken05_test.conll";
+-			
+-			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(testDataFile), "UTF-8"));
+-			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("out.conll"), "UTF-8"));
++			__arodnap_temp0 = new FileInputStream(testDataFile);
++
++			BufferedReader reader = new BufferedReader(new InputStreamReader(__arodnap_temp0, "UTF-8"));
++			__arodnap_temp1 = new FileOutputStream("out.conll");
++			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(__arodnap_temp1, "UTF-8"));
+ 			String line = null;
+ 			ArrayList<String> lines = new ArrayList<String>();
+ 			while ((line = reader.readLine()) != null) {
+@@ -89,6 +93,21 @@
+ 			System.err.println("MaltAPITest exception: " + e.getMessage());
+ 		} catch (IOException e) {
+ 			System.err.println("MaltAPITest exception: " + e.getMessage());
++		} finally {
++		    if (__arodnap_temp1 != null) {
++		        try {
++		            __arodnap_temp1.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
++		    if (__arodnap_temp0 != null) {
++		        try {
++		            __arodnap_temp0.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
+ 		}
+ 	}
+ 

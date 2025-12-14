@@ -1,0 +1,33 @@
+--- /tmp/orig-14703448155812927403.java	2025-09-24 21:53:35.477063120 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url47087446e9_kellrott_SparqlScape_tgz-pJ8-org_json_TestJ8/src/org/sparql/Client.java	2025-09-24 21:53:33.832948189 +0000
+@@ -26,13 +26,14 @@
+ 
+ 	public Results select(String query) {
+ 		Results outList = null;
++		java.io.InputStream in = null;
+ 
+ 		try {
+ 			String queryURL = endpoint.toString() + "?output=json&query=" + URLEncoder.encode( query, "UTF8" );
+ 			System.out.println(queryURL);
+ 			URLConnection conn = (new URL(queryURL)).openConnection();
+ 
+-			InputStream in = conn.getInputStream();
++			in = conn.getInputStream();
+ 			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+ 			StringBuilder sb = new StringBuilder();
+ 
+@@ -86,6 +87,14 @@
+ 			//} catch (URISyntaxException e) {
+ 			// TODO Auto-generated catch block
+ 			//	e.printStackTrace();
++		} finally {
++		    if (in != null) {
++		        try {
++		            in.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
+ 		}
+ 		return outList;
+ 	}

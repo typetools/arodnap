@@ -1,0 +1,23 @@
+--- /tmp/orig-6270946214448981042.java	2025-09-24 22:23:05.648804868 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url80e39b1957_tobikster_IJN_headers_recognition_tgz-pJ8-org_maltparser_examples_CreatePhraseStructureGraphJ8/src/org/maltparser/core/config/ConfigDirChartItem.java	2025-09-24 22:23:01.996549559 +0000
+@@ -118,7 +118,19 @@
+ 		} else if (taskName.equals("info")) {
+ 			configDir.echoInfoFile();
+ 		} else if (taskName.equals("loadsymboltables")) {
+-			configDir.getSymbolTables().load(configDir.getInputStreamReaderFromConfigFileEntry("symboltables.sym",inCharSet));
++		java.io.InputStreamReader __arodnap_temp0 = null;
++		try {
++    __arodnap_temp0 = configDir.getInputStreamReaderFromConfigFileEntry("symboltables.sym", inCharSet);
++    configDir.getSymbolTables().load(__arodnap_temp0);
++} finally {
++    if (__arodnap_temp0 != null) {
++        try {
++            __arodnap_temp0.close();
++        } catch (Exception e) {
++            e.printStackTrace();
++        }
++    }
++}
+ 		}
+ 		return signal;
+ 	}

@@ -1,0 +1,32 @@
+--- /tmp/orig-10080040226989770976.java	2025-09-24 21:43:25.654436388 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url20b0f880a5_jgraph_legacy_jgraph5_tgz-pJ8-org_jgraph_example_HelloWorldJ8/src/com/jgraph/example/GraphEdX.java	2025-09-24 21:43:21.058115217 +0000
+@@ -414,11 +414,13 @@
+ 		if (returnValue == JFileChooser.APPROVE_OPTION) {
+ 			Container parent = graph.getParent();
+ 			BasicMarqueeHandler marqueeHandler = graph.getMarqueeHandler();
++			java.io.FileInputStream __arodnap_temp0 = null;
+ 			try {
+ 				uninstallListeners(graph);
+ 				parent.remove(graph);
++				__arodnap_temp0 = new FileInputStream(fileChooser.getSelectedFile());
+ 				XMLDecoder decoder = new XMLDecoder(new BufferedInputStream(
+-						new FileInputStream(fileChooser.getSelectedFile())));
++						__arodnap_temp0));
+ 
+ 				// In case you need to debug XML decoding here is how
+ 				// to print a stack trace
+@@ -450,6 +452,14 @@
+ 			} catch (FileNotFoundException e) {
+ 				JOptionPane.showMessageDialog(graph, e.getMessage(), "Error",
+ 						JOptionPane.ERROR_MESSAGE);
++			} finally {
++			    if (__arodnap_temp0 != null) {
++			        try {
++			            __arodnap_temp0.close();
++			        } catch (Exception e) {
++			            e.printStackTrace();
++			        }
++			    }
+ 			}
+ 
+ 		}

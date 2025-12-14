@@ -1,0 +1,21 @@
+--- /tmp/orig-9258177598039717377.java	2025-09-24 22:54:51.982069754 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urle381b6cba7_IkarosKappler_ikrs_http_tgz-pJ8-ikrs_json_rpc_JSONRPCHandlerJ8/src/ikrs/json/parser/JSONBuilder.java	2025-09-24 22:54:49.357886301 +0000
+@@ -208,10 +208,9 @@
+ 	    System.exit( 1 );
+ 	}
+ 
+-	try {
++	try (Reader reader = new java.io.FileReader( argv[0] )) {
+ 
+ 	    System.out.println( "Initialising reader ... " );
+-	    Reader reader = new java.io.FileReader( argv[0] );
+ 	    System.out.println( "Initialising parser/builder ... " );
+ 	    JSONBuilder b  = new JSONBuilder( reader, false );
+ 	    System.out.println( "Starting the parser ..." );
+@@ -231,4 +230,4 @@
+ 	}
+ 
+     }
+-}
++}
+\ No newline at end of file

@@ -1,0 +1,15 @@
+--- /tmp/orig-9415755885771629455.java	2025-09-24 21:56:33.137482349 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url47ebb27197_asirbu_CorrectiveEvolution_tgz-pJ8-eu_fbk_soa_evolution_engine_impl_test_ProblemToSMVFuncTestJ8/src/eu/fbk/soa/evolution/sts/minimizer/TraceEquivalenceMinimizer.java	2025-09-24 21:56:31.117341133 +0000
+@@ -18,10 +18,9 @@
+ 	public void minimizeSTS(STS inputSTS, File outputFile) {
+ 		String input2Dot = inputSTS.toDot();
+ 		
+-		try {
++		try (FileWriter fout = new FileWriter(tempFile)) {
+ 			File tempFile = File.createTempFile("temp", "dot");
+-//			tempFile = new File("temp.dot");
+-			FileWriter fout = new FileWriter(tempFile);
++
+ 	        fout.write(input2Dot);
+ 	        fout.flush();
+ 	        fout.close();

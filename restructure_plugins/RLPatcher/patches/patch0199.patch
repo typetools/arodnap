@@ -1,0 +1,44 @@
+--- /tmp/orig-10186601017575262862.java	2025-09-24 21:52:12.847286942 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url433bec1e56_sarobe_DifficultyInvestigation_tgz-pJ8-fr_inria_optimization_cmaes_examples_CMAExample1J8/src/gnuplot/Grapher.java	2025-09-24 21:52:10.643132861 +0000
+@@ -48,20 +48,22 @@
+         if(genIndex == 1) {
+             append = false;
+         }
+-        // write the best
+-        PrintWriter pw = new PrintWriter(new FileWriter(directoryName + "/gnuplot-best.txt", append));
+-        pw.format("%f \t %f \n", (double)genIndex, bestResult);
+-        pw.close();
++        try (java.io.FileWriter __arodnap_temp0 = new FileWriter(directoryName + "/gnuplot-best.txt", append)) {
++            PrintWriter pw = new PrintWriter(__arodnap_temp0);
++            pw.format("%f \t %f \n", (double)genIndex, bestResult);
++            try (java.io.FileWriter __arodnap_temp1 = new FileWriter(directoryName + "/gnuplot-mean.txt", append)) {
++                pw = new PrintWriter(__arodnap_temp1);
++                pw.format("%f \t %f \n", (double)genIndex, meanResult);
++            }
++            pw = new PrintWriter(new FileWriter(directoryName + "/best-ship.txt", append));
++            pw.print(genIndex + "\t" + bestResult + "\t" + Arrays.toString(bestSolution) + "\n");
++            pw.close();
++        }
++
++    
++
+ 
+-        // write the mean
+-        pw = new PrintWriter(new FileWriter(directoryName + "/gnuplot-mean.txt", append));
+-        pw.format("%f \t %f \n", (double)genIndex, meanResult);
+-        pw.close();
+ 
+-        // write the best ship
+-        pw = new PrintWriter(new FileWriter(directoryName + "/best-ship.txt", append));
+-        pw.print(genIndex + "\t" + bestResult + "\t" + Arrays.toString(bestSolution) + "\n");
+-        pw.close();
+     }
+ 
+     public static void transformData(int runIndex, double constant) throws Exception {
+@@ -104,4 +106,4 @@
+         fileB.renameTo(fileA);
+         fileB.delete();
+     }
+-}
++}
+\ No newline at end of file

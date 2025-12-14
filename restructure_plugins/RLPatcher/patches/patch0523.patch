@@ -1,0 +1,13 @@
+--- /tmp/orig-5692933525492972293.java	2025-09-24 22:27:05.513572459 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url80e39b1957_tobikster_IJN_headers_recognition_tgz-pJ8-org_maltparser_examples_CreatePhraseStructureGraphJ8/src/org/maltparser/ml/lib/LibLinear.java	2025-09-24 22:27:01.933322184 +0000
+@@ -29,8 +29,8 @@
+ 	public LibLinear(InstanceModel owner, Integer learnerMode) throws MaltChainedException {
+ 		super(owner, learnerMode, "liblinear");
+ 		if (learnerMode == CLASSIFY) {
+-			try {
+-			    ObjectInputStream input = new ObjectInputStream(getInputStreamFromConfigFileEntry(".moo"));
++			try (java.io.InputStream __arodnap_temp0 = getInputStreamFromConfigFileEntry(".moo")) {
++			    ObjectInputStream input = new ObjectInputStream(__arodnap_temp0);
+ 			    try {
+ 			    	model = (MaltLibModel)input.readObject();
+ 			    } finally {

@@ -1,0 +1,79 @@
+--- /tmp/orig-11775190680241637766.java	2025-09-24 22:39:53.339246937 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url9a01f43c15_poragchowdhury_securitygame_tgz-pJ8-securitygame_GameMasterJ8/src/securitygame/GameMaster.java	2025-09-24 22:39:52.219168634 +0000
+@@ -47,7 +47,19 @@
+ 					e.printStackTrace();
+ 				}
+ 				defender.kill();
+-				new DefenderHelper(defender.getName(), defender.getGraph());
++				securitygame.DefenderHelper __arodnap_temp1 = null;
++				try {
++				    __arodnap_temp1 = new DefenderHelper(defender.getName(), defender.getGraph());
++				    new DefenderHelper(defender.getName(), defender.getGraph());
++				} finally {
++				    if (__arodnap_temp1 != null) {
++				        try {
++				            __arodnap_temp1.close();
++				        } catch (Exception e) {
++				            e.printStackTrace();
++				        }
++				    }
++				}
+ 			}
+ 		}
+ 
+@@ -73,24 +85,46 @@
+ 				String attackerName = attackerNames[a];
+ 				for (int g = 0; g < numGames; g++) {
+ 					String graphName = g + "";
+-					AttackerMonitor am = new AttackerMonitor(attackerName,
++					securitygame.AttackerMonitor am = null;
++					try {
++    am = new AttackerMonitor(attackerName,
+ 							defenderName, graphName);
+-					while (am.getBudget() > 0) {
+-						Attacker attacker = getAttacker(defenderName,
++    while (am.getBudget() > 0) {
++					securitygame.Attacker attacker = null;
++					try {
++					    attacker = getAttacker(defenderName,
+ 								attackerName, graphName);
+-						new Thread(attacker).start();
+-						try {
++					    new Thread(attacker).start();
++					    try {
+ 							Thread.sleep(500);
+ 						} catch (Exception ex) {
+ 							ex.printStackTrace();
+ 						}
+-						attacker.kill();
+-						am.readMove();
++					    attacker.kill();
++					} finally {
++					    if (attacker != null) {
++					        try {
++					            attacker.run();
++					        } catch (Exception e) {
++					            e.printStackTrace();
++					        }
++					    }
++					}
++
+ 						System.out.println("Budget after move: "+ am.getBudget());
+ 						System.out.println();
+ 					}
+-					am.close();
+-					points[d][a] += am.getPoints();
++    am.close();
++    points[d][a] += am.getPoints();
++} finally {
++    if (am != null) {
++        try {
++            am.readMove();
++        } catch (Exception e) {
++            e.printStackTrace();
++        }
++    }
++}
+ 				}
+ 			}
+ 		}

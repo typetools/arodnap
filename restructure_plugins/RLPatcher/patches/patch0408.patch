@@ -1,0 +1,13 @@
+--- /tmp/orig-14198034130249733561.java	2025-09-24 22:12:13.599224302 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url7a45f192ca_mfullen_ping_pong_net_tgz-pJ8-ping_pong_net_client_io_TestClientNonPPNServerJ8/src/ping/pong/net/connection/ssl/SSLUtils.java	2025-09-24 22:12:11.755095391 +0000
+@@ -122,7 +122,9 @@
+             throws KeyStoreException, IOException, NoSuchAlgorithmException,
+                    CertificateException, UnrecoverableKeyException
+     {
+-        return getKeyManagers(keyStoreType, PPNUtils.getInputStreamFromPath(keyStoreFilePath), keyStorePassword);
++        try (java.io.InputStream __arodnap_temp0 = PPNUtils.getInputStreamFromPath(keyStoreFilePath)) {
++            return getKeyManagers(keyStoreType, __arodnap_temp0, keyStorePassword);
++        }
+     }
+ 
+     /**

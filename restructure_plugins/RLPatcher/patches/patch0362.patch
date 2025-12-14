@@ -1,0 +1,13 @@
+--- /tmp/orig-10743013524343377346.java	2025-09-24 22:07:08.309883525 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url70997c83aa_Xilaew_risiko_tgz-pJ8-risiko_XMI2XMLtransformerJ8/src/risiko/ExecutorTest.java	2025-09-24 22:07:06.285742031 +0000
+@@ -40,7 +40,9 @@
+ 		// Resource stateRes = ress.createResource(URI
+ 		// .createURI("http://Risiko.state"));
+ 		Resource resultRes = ress.createResource(URI.createURI("test"));
+-		boardRes.load(new FileInputStream(boardFile), null);
++		try (java.io.FileInputStream __arodnap_temp0 = new FileInputStream(boardFile)) {
++		    boardRes.load(__arodnap_temp0, null);
++		}
+ 
+ 		State state = sf.createState();
+ 		// state.setState(GameState.ACCEPTING_PLAYERS);

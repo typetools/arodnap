@@ -1,0 +1,31 @@
+--- /tmp/orig-15488599844979717632.java	2025-09-24 22:11:58.794189379 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url7a45f192ca_mfullen_ping_pong_net_tgz-pJ8-ping_pong_net_client_io_TestClientNonPPNServerJ8/src/ping/pong/net/connection/ssl/SSLTestClient.java	2025-09-24 22:11:57.058068018 +0000
+@@ -27,10 +27,11 @@
+ 
+     public static void clientWithoutKeyStore()
+     {
+-        try
++    javax.net.ssl.SSLSocket clientSocket = null;
++    try
+         {
+             SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+-            SSLSocket clientSocket = (SSLSocket) factory.createSocket("localhost", 5011);
++            clientSocket = (SSLSocket) factory.createSocket("localhost", 5011);
+             clientSocket.setSoTimeout(5000);
+             clientSocket.addHandshakeCompletedListener(new HandshakeCompletedListener()
+             {
+@@ -45,6 +46,14 @@
+         catch (Exception e)
+         {
+             e.printStackTrace();
++        } finally {
++            if (clientSocket != null) {
++                try {
++                    clientSocket.close();
++                } catch (Exception e) {
++                    e.printStackTrace();
++                }
++            }
+         }
+     }
+ 

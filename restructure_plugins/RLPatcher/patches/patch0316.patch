@@ -1,0 +1,19 @@
+--- /tmp/orig-14730027994301191176.java	2025-09-24 22:03:08.685132838 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url5583f3dbb2_XOR19_XScript_tgz-pJ8-xscript_interactive_MainJ8/src/xscript/XNativeFunctions.java	2025-09-24 22:03:05.664921713 +0000
+@@ -146,10 +146,12 @@
+ 			@Override
+ 			public XValue invoke(XRuntime runtime, XExec exec, XValue thiz, XValue[] params, List<XValue> list, Map<String, XValue> map) throws Throwable {
+ 				byte[] buffer = new byte[1024];
+-				int num = runtime.getIn().read(buffer);
+-				String in = new String(buffer, 0, num);
+-				XValue ret = runtime.alloc(in);
+-				return ret;
++				try (java.io.InputStream __arodnap_temp0 = runtime.getIn()) {
++				    int num = __arodnap_temp0.read(buffer);
++				    String in = new String(buffer, 0, num);
++				    XValue ret = runtime.alloc(in);
++				    return ret;
++				}
+ 			}
+ 
+ 		}

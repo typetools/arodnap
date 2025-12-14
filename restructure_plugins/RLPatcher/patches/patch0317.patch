@@ -1,0 +1,47 @@
+--- /tmp/orig-13720807056538752004.java	2025-09-24 22:03:17.981782714 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url5583f3dbb2_XOR19_XScript_tgz-pJ8-xscript_interactive_MainJ8/src/xscript/executils/Utils.java	2025-09-24 22:03:14.873565436 +0000
+@@ -39,14 +39,36 @@
+ 		MultiplexOutputStream sysout = new MultiplexOutputStream();
+ 		sysout.addOutputStream(console.getOut());
+ 		sysout.addOutputStream(System.out);
+-		MultiplexOutputStream syserr = new MultiplexOutputStream();
+-		syserr.addOutputStream(console.getErr());
+-		syserr.addOutputStream(System.err);
+-		InputStream sysin = new InputToOutputStream(console.getIn(), System.out);
+-		System.setOut(new PrintStream(sysout));
+-		System.setErr(new PrintStream(syserr));
+-		System.setIn(sysin);
+-		console.setDefaultCloseOperation(Console.EXIT_ON_CLOSE);
++		xscript.executils.MultiplexOutputStream syserr = null;
++		try {
++		    syserr = new MultiplexOutputStream();
++		    syserr.addOutputStream(console.getErr());
++		    syserr.addOutputStream(System.err);
++		    java.io.InputStream sysin = null;
++		    try {
++		        sysin = new InputToOutputStream(console.getIn(), System.out);
++		        System.setOut(new PrintStream(sysout));
++		        System.setErr(new PrintStream(syserr));
++		        System.setIn(sysin);
++		    } finally {
++		        if (sysin != null) {
++		            try {
++		                sysin.close();
++		            } catch (Exception e) {
++		                e.printStackTrace();
++		            }
++		        }
++		    }
++		    console.setDefaultCloseOperation(Console.EXIT_ON_CLOSE);
++		} finally {
++		    if (syserr != null) {
++		        try {
++		            syserr.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
++		}
+ 	}
+ 	
+ 	public static String getCommandLineRebuild(Class<?> mainClass){

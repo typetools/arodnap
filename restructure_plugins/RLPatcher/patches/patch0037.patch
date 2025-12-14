@@ -1,0 +1,16 @@
+--- /tmp/orig-18040157871378546992.java	2025-09-24 21:35:26.200934246 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url0d38a10ee7_diegopliebana_GEBT_tgz-pJ8-ch_idsia_scenarios_test_EvolveWithChangingSeedsJ8/src/ch/idsia/mario/engine/mapedit/LevelEditor.java	2025-09-24 21:35:23.092717061 +0000
+@@ -85,10 +85,10 @@
+                     if (bitmapCheckboxes[id].isSelected()) bm|=(1<<id);
+                     Level.TILE_BEHAVIORS[tilePicker.pickedTile&0xff] = (byte)bm;
+ 
+-                    try
+-                    {
++                    try(
++java.io.FileOutputStream __arodnap_temp0 = new FileOutputStream("SAVEDtiles.dat"))                     {
+                         System.out.println("bm = " + bm);
+-                        Level.saveBehaviors(new DataOutputStream(new FileOutputStream("SAVEDtiles.dat")));
++                        Level.saveBehaviors(new DataOutputStream(__arodnap_temp0));
+                     }
+                     catch (Exception e)
+                     {

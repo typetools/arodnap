@@ -1,0 +1,13 @@
+--- /tmp/orig-10946443944448259797.java	2025-09-24 22:07:13.074216568 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url70997c83aa_Xilaew_risiko_tgz-pJ8-risiko_XMI2XMLtransformerJ8/src/risiko/XMI2XMLtransformer.java	2025-09-24 22:07:10.978070040 +0000
+@@ -23,7 +23,9 @@
+ 		ResourceSet xmiResSet = initializeResourceSet(new XMIResourceFactoryImpl());
+ 		Resource boardIn = xmiResSet.createResource(URI.createURI("boardIn"));
+ 		Resource boardOut = xmlResSet.createResource(URI.createURI("boardOut"));
+-		boardIn.load(new FileInputStream("examples/default.board"),null);
++		try (java.io.FileInputStream __arodnap_temp0 = new FileInputStream("examples/default.board")) {
++		    boardIn.load(__arodnap_temp0,null);
++		}
+ 		boardOut.getContents().add(boardIn.getContents().get(0));
+ 		boardOut.save(System.out, null);
+ 	}

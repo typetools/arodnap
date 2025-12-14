@@ -1,0 +1,14 @@
+--- /tmp/orig-6972642259654286167.java	2025-09-24 22:03:01.864656057 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url542ae48576_tonyheadford_m68k_tgz-pJ8-m68k_MonitorJ8/src/m68k/Monitor.java	2025-09-24 22:02:59.652501418 +0000
+@@ -914,9 +914,8 @@
+ 			writer.println("Need larger memory to load this file at " + tokens[1]);
+ 			return;
+ 		}
+-		try
+-		{
+-			FileInputStream fis = new FileInputStream(f);
++		try(
++FileInputStream fis = new FileInputStream(f)) 		{
+ 			byte[] buffer = new byte[(int)f.length()];
+ 			int len = fis.read(buffer);
+ 			fis.close();

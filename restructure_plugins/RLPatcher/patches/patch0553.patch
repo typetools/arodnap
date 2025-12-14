@@ -1,0 +1,60 @@
+--- /tmp/orig-17935855703242884942.java	2025-09-24 22:32:43.945230307 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url80e39b1957_tobikster_IJN_headers_recognition_tgz-pJ8-org_maltparser_examples_CreatePhraseStructureGraphJ8/src/org/maltparser/ml/lib/LibSvm.java	2025-09-24 22:32:40.308976117 +0000
+@@ -80,10 +80,15 @@
+ 	}
+ 	
+ 	protected void trainExternal(FeatureVector featureVector) throws MaltChainedException {
+-		try {		
+-			binariesInstances2SVMFileFormat(getInstanceInputStreamReader(".ins"), getInstanceOutputStreamWriter(".ins.tmp"));
++	java.io.FileOutputStream __arodnap_temp2 = null;
++	java.io.InputStreamReader __arodnap_temp1 = null;
++	java.io.InputStreamReader __arodnap_temp0 = null;
++	try {		
++	__arodnap_temp1 = getInstanceInputStreamReader(".ins");
++		binariesInstances2SVMFileFormat(__arodnap_temp1, getInstanceOutputStreamWriter(".ins.tmp"));
+ 			owner.getGuide().getConfiguration().getConfigLogger().info("Creating learner model (external) "+getFile(".mod").getName());
+-			final svm_problem prob = readProblem(getInstanceInputStreamReader(".ins"));
++			__arodnap_temp0 = getInstanceInputStreamReader(".ins");
++			final svm_problem prob = readProblem(__arodnap_temp0);
+ 			final String[] params = getLibParamStringArray();
+ 			String[] arrayCommands = new String[params.length+3];
+ 			int i = 0;
+@@ -118,7 +123,8 @@
+ 	        err.close();
+ 	        svm_model model = svm.svm_load_model(getFile(".mod").getAbsolutePath());
+ 	        MaltLibsvmModel xmodel = new MaltLibsvmModel(model, prob);
+-	        ObjectOutputStream output = new ObjectOutputStream (new BufferedOutputStream(new FileOutputStream(getFile(".moo").getAbsolutePath())));
++	        __arodnap_temp2 = new FileOutputStream(getFile(".moo").getAbsolutePath());
++	        ObjectOutputStream output = new ObjectOutputStream (new BufferedOutputStream(__arodnap_temp2));
+ 	        try {
+ 	        	output.writeObject(xmodel);
+ 		    } finally {
+@@ -140,6 +146,28 @@
+ 			throw new LibException("The learner cannot save the model file '"+getFile(".mod").getAbsolutePath()+"'. ", e);
+ 		} catch (OutOfMemoryError e) {
+ 			throw new LibException("Out of memory. Please increase the Java heap size (-Xmx<size>). ", e);
++		} finally {
++		    if (__arodnap_temp2 != null) {
++		        try {
++		            __arodnap_temp2.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
++		    if (__arodnap_temp1 != null) {
++		        try {
++		            __arodnap_temp1.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
++		    if (__arodnap_temp0 != null) {
++		        try {
++		            __arodnap_temp0.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
+ 		}
+ 	}
+ 	

@@ -1,0 +1,36 @@
+--- /tmp/orig-12619993578947450954.java	2025-09-24 21:47:05.021768671 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url294e6c45f3_Ecdosis_NMergeNew_tgz-pJ8-TestJ8/src/Test.java	2025-09-24 21:47:02.617600614 +0000
+@@ -589,7 +589,8 @@
+ 	 */
+ 	private static void doUpdateTest()
+ 	{
+-		try
++	java.io.FileOutputStream fos = null;
++	try
+ 		{
+ 			System.out.print("Testing update command ");
+ 			// make mvd & load it
+@@ -619,7 +620,7 @@
+ 			String vIdStr = new Integer(vId).toString();
+ 			String tempName = TEST_FOLDER+File.separator+"temp.txt";
+ 			File tempFile = new File( tempName );
+-			FileOutputStream fos = new FileOutputStream( tempFile );
++			fos = new FileOutputStream( tempFile );
+             OutputStreamWriter osw = new OutputStreamWriter(fos,"UTF-8");
+ 			osw.write( data1 );
+ 			osw.close();
+@@ -638,6 +639,14 @@
+ 		catch ( Exception e )
+ 		{
+ 			doTestFailed( e );
++		} finally {
++		    if (fos != null) {
++		        try {
++		            fos.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
+ 		}
+ 	}
+ 	/**

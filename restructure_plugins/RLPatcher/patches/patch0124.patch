@@ -1,0 +1,20 @@
+--- /tmp/orig-10046485068053704975.java	2025-09-24 21:45:17.538255305 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url270fc4f5ee_ykcilborw_Joust_tgz-pJ8-fri_patterns_interpreter_parsergenerator_examples_HowToOverrideLexerImplJ8/src/com/wroblicky/andrew/joust/pgn/PGNParser.java	2025-09-24 21:45:14.702057048 +0000
+@@ -24,8 +24,8 @@
+ 		List<String> moves = new ArrayList<String>();
+ 		String next = null;
+ 
+-		try {
+-			BufferedReader in = new BufferedReader(new FileReader(pgnTextFile));
++		try (java.io.FileReader __arodnap_temp0 = new FileReader(pgnTextFile)) {
++			BufferedReader in = new BufferedReader(__arodnap_temp0);
+ 			while ((next = in.readLine()) != null) {
+ 				if (next.length() > 0 && !(next.substring(0, 1).equals("["))) {
+ 					String next2 = next.replaceAll("\\{[^\\}]*\\}", "");
+@@ -94,4 +94,4 @@
+ 	private static String stripQuotes(String s) {
+ 		return s.trim().replaceAll("^\"|\"$", "").replaceAll("^'|'$", "");
+ 	}
+-}
++}
+\ No newline at end of file

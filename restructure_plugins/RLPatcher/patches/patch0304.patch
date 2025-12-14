@@ -1,0 +1,43 @@
+--- /tmp/orig-13516247267006929969.java	2025-09-24 22:02:05.548719331 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url4c41254592_topskychen_AuthTopk_tgz-pJ8-quickhull3d_QuickHull3DTestJ8/src/utility/Compare/mergeIndexDP.java	2025-09-24 22:02:02.580511840 +0000
+@@ -42,15 +42,16 @@
+ 	}
+ 	
+ 	public static void mergeFile(String type, String filePath) throws IOException{
+-		DataOutputStream dos = new DataOutputStream(new FileOutputStream(new File(filePath + "/" + type + ".idx")));
+-		long pos = 0, cnt;
+-		for(int i = 0; i < machineList.length; i++){
++	try (java.io.FileOutputStream __arodnap_temp0 = new FileOutputStream(new File(filePath + "/" + type + ".idx"))) {
++	    DataOutputStream dos = new DataOutputStream(__arodnap_temp0);
++	    long pos = 0, cnt;
++	    for(int i = 0; i < machineList.length; i++){
+ 			String fileName = filePath + "/" + type + "." + machineList[i] + ".idx";
+ 			System.out.println(fileName);
+-			DataInputStream dis = new DataInputStream(new FileInputStream(new File(fileName)));
+-			long id = 0, p, l, num = 0;
+-			
+-			while(dis.available() > 0){
++			try (java.io.FileInputStream __arodnap_temp1 = new FileInputStream(new File(fileName))) {
++			    DataInputStream dis = new DataInputStream(__arodnap_temp1);
++			    long id = 0, p, l, num = 0;
++			    while(dis.available() > 0){
+ 				id = dis.readLong();
+ 				p = dis.readLong();
+ 				l = dis.readLong();
+@@ -65,11 +66,12 @@
+ 				pos += l;
+ 				num ++;
+ 			}
+-			dis.close();
++			}
++
+ 		}
+-		dos.flush();
+-		dos.close();
+-		runTest(type, filePath);
++	    dos.flush();
++	}
++	runTest(type, filePath);
+ 	}
+ 	
+ 	public static void runTest(String type, String filePath, long idx[], int machineId) throws IOException{

@@ -1,0 +1,35 @@
+--- /tmp/orig-16383260676175054195.java	2025-09-24 21:42:41.347340399 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url20b0f880a5_jgraph_legacy_jgraph5_tgz-pJ8-org_jgraph_example_HelloWorldJ8/src/com/mxgraph/util/mxUtils.java	2025-09-24 21:42:36.727017551 +0000
+@@ -2414,7 +2414,8 @@
+ 	 */
+ 	public static String getXml(Node node)
+ 	{
+-		try
++	java.io.Writer __arodnap_temp0 = null;
++	try
+ 		{
+ 			Transformer tf = TransformerFactory.newInstance().newTransformer();
+ 
+@@ -2423,12 +2424,21 @@
+ 
+ 			StreamResult dest = new StreamResult(new StringWriter());
+ 			tf.transform(new DOMSource(node), dest);
++			__arodnap_temp0 = dest.getWriter();
+ 
+-			return dest.getWriter().toString();
++			return __arodnap_temp0.toString();
+ 		}
+ 		catch (Exception e)
+ 		{
+ 			// ignore
++		} finally {
++		    if (__arodnap_temp0 != null) {
++		        try {
++		            __arodnap_temp0.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
+ 		}
+ 
+ 		return "";

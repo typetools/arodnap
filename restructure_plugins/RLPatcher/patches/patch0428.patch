@@ -1,0 +1,41 @@
+--- /tmp/orig-1079648441969196893.java	2025-09-24 22:14:07.195165049 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url7a45f192ca_mfullen_ping_pong_net_tgz-pJ8-ping_pong_net_client_io_TestClientNonPPNServerJ8/src/ping/pong/net/server/io/ServerConnectionManager.java	2025-09-24 22:14:05.415040612 +0000
+@@ -196,17 +196,28 @@
+                 if (acceptingSocket != null)
+                 {
+                     LOGGER.info("Accepting Socket info ip:{} port:{}", acceptingSocket.getInetAddress(), acceptingSocket.getPort());
+-                    final Connection ioServerConnection = new ServerIoConnection<MessageType>(configuration, customDataReader, customDataWriter, acceptingSocket, udpServerSocket);
+-                    ioServerConnection.setConnectionId(this.server.getNextAvailableId());
++                    ping.pong.net.connection.Connection ioServerConnection = null;
++                    try {
++                        ioServerConnection = new ServerIoConnection<MessageType>(configuration, customDataReader, customDataWriter, acceptingSocket, udpServerSocket);
++                        ioServerConnection.setConnectionId(this.server.getNextAvailableId());
++                        ioServerConnection.addConnectionEventListener(new ConnectionEventImpl(ioServerConnection));
++                        ((ServerIoConnection) ioServerConnection).fireOnSocketCreated();
++                        Thread cThread = new Thread(ioServerConnection, "Connection: " + ioServerConnection.getConnectionId());
++                        cThread.setDaemon(true);
++                        cThread.start();
++                        this.server.addConnection(ioServerConnection);
++                        this.udpConnections.put(ioServerConnection.getSocketAddress(), ioServerConnection);
++                        LOGGER.info("Connection {} started...", ioServerConnection.getConnectionId());
++                    } finally {
++                        if (ioServerConnection != null) {
++                            try {
++                                ioServerConnection.close();
++                            } catch (Exception e) {
++                                e.printStackTrace();
++                            }
++                        }
++                    }
+ 
+-                    ioServerConnection.addConnectionEventListener(new ConnectionEventImpl(ioServerConnection));
+-                    ((ServerIoConnection) ioServerConnection).fireOnSocketCreated();
+-                    Thread cThread = new Thread(ioServerConnection, "Connection: " + ioServerConnection.getConnectionId());
+-                    cThread.setDaemon(true);
+-                    cThread.start();
+-                    this.server.addConnection(ioServerConnection);
+-                    this.udpConnections.put(ioServerConnection.getSocketAddress(), ioServerConnection);
+-                    LOGGER.info("Connection {} started...", ioServerConnection.getConnectionId());
+                 }
+             }
+         }

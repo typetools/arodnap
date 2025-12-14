@@ -16,8 +16,7 @@ from utils import (
 )
 from CloseInjector import CloseInjector
 import Constants
-from PatchGenerator import generate_patches
-from PatchApplier import apply_llm_generated_patches
+from RLPatcherRunner import run_rlpatcher_for_project
 
 logging.basicConfig(
     level=logging.INFO,
@@ -84,11 +83,23 @@ def run_arodnap():
         f"Time taken for {source_project_name}: {elapsed_time:.2f} seconds")
     store_patch_and_log_files(
         f"{Constants.PATCH_AND_LOGS_FOLDER}/{source_project_name}")
-    logging.info(
-        f"Invoking LLM for patch generation for {source_project_name}...")
-    generate_patches(source_project_name, Constants.SOURCE_PROJECT_FOLDER)
-    apply_llm_generated_patches(
-        Constants.SOURCE_PROJECT_FOLDER, Constants.PATCH_AND_LOGS_FOLDER)
+    
+    logging.info(f"Invoking RLPatcher for materialization for {source_project_name}...")
+    # Put patches under: tool_results/inference_and_patches/<project>/rlpatcher_patches
+    rlpatcher_out_dir = os.path.join(
+        Constants.PATCH_AND_LOGS_FOLDER,
+        source_project_name,
+        "rlpatcher_patches"
+    )
+    run_rlpatcher_for_project(
+        project_name=source_project_name,
+        rlc_results_folder=results_folder,  # NOTE: may already be *_ReRun
+        rlfixer_results_folder=Constants.RLFIXER_RESULTS_FOLDER,
+        rlpatcher_jar=Constants.RLPATCHER_JAR,
+        out_dir=rlpatcher_out_dir,
+        success_text="Patch applied successfully",
+        keep_temp_json=False,
+    )
     clean_up_current()
     print()
 

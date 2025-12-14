@@ -1,0 +1,13 @@
+--- /tmp/orig-17399201661847766418.java	2025-09-24 22:23:37.147006729 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url80e39b1957_tobikster_IJN_headers_recognition_tgz-pJ8-org_maltparser_examples_CreatePhraseStructureGraphJ8/src/org/maltparser/core/symbol/trie/TrieSymbolTableHandler.java	2025-09-24 22:23:33.474750022 +0000
+@@ -176,8 +176,8 @@
+ 	
+ 	
+ 	public SymbolTable loadTagset(String fileName, String tableName, String charSet, int columnCategory, String nullValueStrategy) throws MaltChainedException {
+-		try {
+-			BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(fileName), charSet));
++		try (java.io.FileInputStream __arodnap_temp0 = new FileInputStream(fileName)) {
++			BufferedReader br = new BufferedReader(new InputStreamReader(__arodnap_temp0, charSet));
+ 			String fileLine;
+ 			TrieSymbolTable table = addSymbolTable(tableName, columnCategory, nullValueStrategy);
+ 

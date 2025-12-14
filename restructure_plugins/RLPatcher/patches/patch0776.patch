@@ -1,0 +1,17 @@
+--- /tmp/orig-7502931092573639750.java	2025-09-24 22:52:54.441852689 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urld856362767_hpdcj_PCJ_tgz-pJ8-org_pcj_test_StorageExampleMainJ8/src/org/pcj/test/PcjMicroBenchmarkBroadcast.java	2025-09-24 22:52:52.169693845 +0000
+@@ -88,6 +88,14 @@
+             nf = new Scanner(new File(nodesDescription));
+         } catch (FileNotFoundException ex) {
+             System.err.println("File not found: " + nodesDescription);
++        } finally {
++            if (nf != null) {
++                try {
++                    nf.close();
++                } catch (Exception e) {
++                    e.printStackTrace();
++                }
++            }
+         }
+ 
+         //        int[] threads = {1, 4, 16};

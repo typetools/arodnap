@@ -1,0 +1,13 @@
+--- /tmp/orig-15624256745879785811.java	2025-09-24 22:47:43.556119117 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlc58f2e0b85_xoriole_CEAC_tgz-pJ8-com_sdm_phr_cpabe_CpabeTestJ8/src/com/sdm/phr/CryptoUtil.java	2025-09-24 22:47:41.691988799 +0000
+@@ -12,9 +12,8 @@
+             return "null";
+         }
+         String checksum = null;
+-        try {
++        try (FileInputStream fis = new FileInputStream(filename)) {
+             MessageDigest md = MessageDigest.getInstance(type);
+-            FileInputStream fis = new FileInputStream(filename);
+             byte[] dataBytes = new byte[1024];
+ 
+             int nread = 0;

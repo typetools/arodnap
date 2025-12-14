@@ -1,0 +1,14 @@
+--- /tmp/orig-11064138733239632462.java	2025-09-24 22:04:20.442148963 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url5a01f2c1d9_core9_core_tgz-pJ8-io_core9_core_boot_BootstrapFrameworkJ8/src/net/xeoh/plugins/base/impl/classpath/cache/JARCache.java	2025-09-24 22:04:18.414007187 +0000
+@@ -107,9 +107,8 @@
+ 
+ 		final String cacheFile = (this.cachePath == null) ? DEFAULT_CACHE_FILE : this.cachePath;
+ 
+-		try {
+-			// lock the lockfile
+-			final FileInputStream fis = new FileInputStream(cacheFile);
++		try (final FileInputStream fis = new FileInputStream(cacheFile)) {
++
+ 			final ObjectInputStream ois = new ObjectInputStream(fis);
+ 			final Object rval = ois.readObject(); // Loading caches can take
+ 												  // very long

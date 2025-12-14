@@ -1,0 +1,21 @@
+--- /tmp/orig-1575751513773425359.java	2025-09-24 22:07:17.850550451 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url70997c83aa_Xilaew_risiko_tgz-pJ8-risiko_XMI2XMLtransformerJ8/src/risiko/main/Main.java	2025-09-24 22:07:15.694399728 +0000
+@@ -29,13 +29,13 @@
+ 	}
+ 
+ 	public static void main(String[] args) throws IOException {
+-		ServerSocket ss = new ServerSocket(8021);
+-		new Main();
+-		Socket cs;
+-		while ((cs=ss.accept()) != null ){
++	    try (ServerSocket ss = new ServerSocket(8021)) {
++	        new Main();
++	        Socket cs;
++	        while ((cs=ss.accept()) != null ){
+ 			new Thread (new MainThread(cs,engine)).start();
+ 		}
+-		ss.close();
++	    }
+ 	}
+ 
+ }

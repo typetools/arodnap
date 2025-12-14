@@ -1,0 +1,35 @@
+--- /tmp/orig-11009147754908373981.java	2025-09-24 21:52:07.506913626 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url433bec1e56_sarobe_DifficultyInvestigation_tgz-pJ8-fr_inria_optimization_cmaes_examples_CMAExample1J8/src/main/ConvertToReadable.java	2025-09-24 21:52:05.262756750 +0000
+@@ -23,12 +23,12 @@
+ 
+             // get best-ship.txt
+             BufferedReader reader = new BufferedReader(new FileReader(directoryName + "/best-ship.txt"));
+-            PrintWriter pw = new PrintWriter(new FileWriter(directoryName + "/readable-results.txt", false));
+-
+-            String label = "\t\t\t\t\t[stdv]\t[thrst]\t[grav]\t[vlos]\t[seed]\t[pads]\t[size]\t[surv]\t[fuel]\t[proxW]\t[velW]\t[fuelW]\t[angW]";
+-            pw.println(label);
+-            String line = "";
+-            while((line = reader.readLine()) != null) {
++            try (java.io.FileWriter __arodnap_temp1 = new FileWriter(directoryName + "/readable-results.txt", false)) {
++                PrintWriter pw = new PrintWriter(__arodnap_temp1);
++                String label = "\t\t\t\t\t[stdv]\t[thrst]\t[grav]\t[vlos]\t[seed]\t[pads]\t[size]\t[surv]\t[fuel]\t[proxW]\t[velW]\t[fuelW]\t[angW]";
++                pw.println(label);
++                String line = "";
++                while((line = reader.readLine()) != null) {
+                 Scanner readLine = new Scanner(line);
+                 int gen = readLine.nextInt();
+                 BigDecimal score = readLine.nextBigDecimal();
+@@ -67,9 +67,10 @@
+ 
+                 pw.format("%d \t\t %.3f \t%s \n", gen, score.negate(), arrayString);
+             }
+-            pw.println(label);
+-            reader.close();
+-            pw.close();
++                pw.println(label);
++                reader.close();
++            }
++
+         }
+     }
+ }

@@ -1,0 +1,32 @@
+--- /tmp/orig-1177405383075721264.java	2025-09-24 22:09:09.826377947 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url70ed135da7_ralfbiedert_jcores_tgz-pJ8-sandbox_SimpleFilterTestJ8/src/benchmarks/benchmarks/regexdna/RegExDNA.java	2025-09-24 22:09:06.530147529 +0000
+@@ -87,6 +87,14 @@
+                 } catch (IOException e) {
+                     // TODO Auto-generated catch block
+                     e.printStackTrace();
++                } finally {
++                    if (stream != null) {
++                        try {
++                            stream.close();
++                        } catch (Exception e) {
++                            e.printStackTrace();
++                        }
++                    }
+                 }
+                 return main;
+             }
+@@ -104,6 +112,14 @@
+                 } catch (IOException e) {
+                     // TODO Auto-generated catch block
+                     e.printStackTrace();
++                } finally {
++                    if (stream != null) {
++                        try {
++                            stream.close();
++                        } catch (Exception e) {
++                            e.printStackTrace();
++                        }
++                    }
+                 }
+                 return main;
+             }

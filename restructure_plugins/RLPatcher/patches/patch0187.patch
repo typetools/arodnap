@@ -1,0 +1,28 @@
+--- /tmp/orig-10600853447811643374.java	2025-09-24 21:51:06.298634904 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url400631cdd0_ludaiqian_appliedxml_tgz-pJ8-test_simples_TestJ8/src/test/fromlist/Test.java	2025-09-24 21:51:04.274493407 +0000
+@@ -34,10 +34,21 @@
+ 				return typeName.substring(0, 1).toLowerCase() + typeName.substring(1);
+ 			}
+ 		});
+-		InputStream in = Test.class.getResourceAsStream("test.xml");
+-		InputStreamReader inReader = new InputStreamReader(in, "UTF-8");
+-		ArrayList<Qw> qws = serializer.fromXml(inReader, type);
+-		System.out.println(qws);
++		java.io.InputStream in = null;
++		try {
++		    in = Test.class.getResourceAsStream("test.xml");
++		    InputStreamReader inReader = new InputStreamReader(in, "UTF-8");
++		    ArrayList<Qw> qws = serializer.fromXml(inReader, type);
++		    System.out.println(qws);
++		} finally {
++		    if (in != null) {
++		        try {
++		            in.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
++		}
+ 	}
+ }
+ 

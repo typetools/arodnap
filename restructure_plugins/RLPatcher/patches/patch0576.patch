@@ -1,0 +1,25 @@
+--- /tmp/orig-7631929187863564185.java	2025-09-24 22:34:59.502706365 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url882f91ec97_WenboCao_Microsoft_Drone_tgz-pJ8-org_ejml_alg_dense_decomposition_qr_StabilityQRDecompositionJ8/src/org/ejml/ops/MatrixIO.java	2025-09-24 22:34:55.550430083 +0000
+@@ -123,15 +123,15 @@
+     public static DenseMatrix64F loadCSV( String fileName )
+         throws IOException
+     {
+-        FileInputStream fileStream = new FileInputStream(fileName);
+-        ReadMatrixCsv csv = new ReadMatrixCsv(fileStream);
++        try (FileInputStream fileStream = new FileInputStream(fileName)) {
++            ReadMatrixCsv csv = new ReadMatrixCsv(fileStream);
++            DenseMatrix64F ret = csv.read();
++            return ret;
++        }
++    
+ 
+-        DenseMatrix64F ret = csv.read();
+ 
+-        fileStream.close();
+-
+-        return ret;
+-    }
++}
+ 
+     /**
+      * Reads a matrix in which has been encoded using a Column Space Value (CSV)

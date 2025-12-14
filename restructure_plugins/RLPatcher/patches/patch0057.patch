@@ -1,0 +1,38 @@
+--- /tmp/orig-10196825942767748002.java	2025-09-24 21:37:30.993654222 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url0e7d57473a_kyorohiro_HetimaUtil_tgz-pJ8-net_hetimatan_net_http_HttpServer3xxJ8/src/net/hetimatan/util/http/TestForHttpRequestLine.java	2025-09-24 21:37:28.997514741 +0000
+@@ -16,15 +16,27 @@
+ 	}
+ 
+ 	public void testEncode001() throws IOException {
+-		HttpRequestLine line = new HttpRequestLine(HttpRequestLine.GET, "/announce?a=b&b=c", HttpRequestLine.HTTP11);
+-		CashKyoroFile output = new CashKyoroFile(512);
+-		line.encode(output.getLastOutput());
++	net.hetimatan.util.http.HttpRequestLine line = null;
++	try {
++	    line = new HttpRequestLine(HttpRequestLine.GET, "/announce?a=b&b=c", HttpRequestLine.HTTP11);
++	    CashKyoroFile output = new CashKyoroFile(512);
++	    line.encode(output.getLastOutput());
++	    output.seek(0);
++	    byte[] buffer = new byte[(int)output.length()];
++	    int len = output.read(buffer);
++	    String tag = new String(buffer, 0, len);
++	    assertEquals("GET /announce?a=b&b=c HTTP/1.1\r\n", tag);
++	} finally {
++	    if (line != null) {
++	        try {
++	            line.createEncode(null);
++	        } catch (Exception e) {
++	            e.printStackTrace();
++	        }
++	    }
++	}
++
+ 
+-		output.seek(0);
+-		byte[] buffer = new byte[(int)output.length()];
+-		int len = output.read(buffer);
+-		String tag = new String(buffer, 0, len);
+-		assertEquals("GET /announce?a=b&b=c HTTP/1.1\r\n", tag);
+ 	}
+ 
+ 	public void testDecode001() throws IOException {

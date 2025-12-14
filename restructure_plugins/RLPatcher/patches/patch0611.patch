@@ -1,0 +1,12 @@
+--- /tmp/orig-14472380781279487877.java	2025-09-24 22:38:06.367769047 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url8d3c4d17f5_catseye_JaC64_tgz-pJ8-JaC64J8/src/com/dreamfabric/jac64/C64Reader.java	2025-09-24 22:38:04.239620280 +0000
+@@ -742,8 +742,7 @@
+ 
+     cr.readDiskFromFile(args[0]);
+     if (args.length > 1) {
+-      try {
+-        FileOutputStream fio = new FileOutputStream(args[2]);
++      try (FileOutputStream fio = new FileOutputStream(args[2])) {
+         cr.readFile(args[1], 0, fio);
+       } catch (Exception e) {
+         e.printStackTrace();

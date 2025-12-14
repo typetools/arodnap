@@ -1,0 +1,17 @@
+--- /tmp/orig-12201597381515929555.java	2025-09-24 22:53:21.555748182 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlddedf61e88_dwendelen_CG2_1_tgz-pJ8-RendProjectJ8/src/ImagePack/RGBEFormat.java	2025-09-24 22:53:20.287659532 +0000
+@@ -25,9 +25,11 @@
+                                         Double exposure, String filename)
+                                         throws IOException {
+     setData(image,gamma,exposure);
+-    OutputStream os = new BufferedOutputStream(new FileOutputStream(filename), 8192);
+-    writeHeader(os);
+-    writePixels(os);
++    try (java.io.FileOutputStream __arodnap_temp0 = new FileOutputStream(filename)) {
++        OutputStream os = new BufferedOutputStream(__arodnap_temp0, 8192);
++        writeHeader(os);
++        writePixels(os);
++    }
+   }
+ 
+   private static void setData(Image image, Double gamma, Double exposure) {

@@ -1,0 +1,25 @@
+--- /tmp/orig-7545799002473552955.java	2025-09-24 22:34:15.159606589 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url85460dd114_a2800276_event_java_tgz-pJ8-event_CloseSemanticsTestJ8/src/event/EchoTest.java	2025-09-24 22:34:13.935521020 +0000
+@@ -144,9 +144,20 @@
+       new EchoTest().minitest();
+       System.exit(0);
+     }
++    event.EchoTest test = null;
++    try {
++        test = new EchoTest();
++        test.runTest();
++    } finally {
++        if (test != null) {
++            try {
++                test.done();
++            } catch (Exception e) {
++                e.printStackTrace();
++            }
++        }
++    }
+ 
+-    EchoTest test = new EchoTest();
+-             test.runTest();
+   }
+   void minitest () throws Throwable{
+     Random r1 = new Random(0L);

@@ -1,0 +1,13 @@
+--- /tmp/orig-10618158381326569823.java	2025-09-24 21:58:31.005721848 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url4aac7e6f55_simon0191_tetris3d_tgz-pJ8-Tetris3dJ8/src/vsdk/toolkit/io/image/ImagePersistence.java	2025-09-24 21:58:28.953578395 +0000
+@@ -506,9 +506,8 @@
+     */
+     public static boolean exportBMP(File fd, Image img)
+     {
+-        try {
++        try (FileOutputStream fos = new FileOutputStream(fd)) {
+             BufferedOutputStream writer;
+-            FileOutputStream fos = new FileOutputStream(fd);
+             writer = new BufferedOutputStream(fos);
+ 
+             int y, x;

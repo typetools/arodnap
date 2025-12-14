@@ -1,0 +1,36 @@
+--- /tmp/orig-11201259976410594600.java	2025-09-24 21:51:45.221355769 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url416ee5b4ee_martinmarinov_HonProj_tgz-pJ8-martin_gui_MainJ8/src/martin/gui/quantum/Visualizer.java	2025-09-24 21:51:43.081206164 +0000
+@@ -509,15 +509,12 @@
+ 	public void loadFromFile(final File f) throws Exception {
+ 		items.clear();
+ 		if (f != null) {
+-
+-			final FileInputStream in = new FileInputStream(f);
+-			final HashSet<String> passed = new HashSet<String>();
+-			p.load(in);
+-			in.close();
+-			int c = 0;
+-
+-			boolean notok = true;
+-			while(notok) {
++		    try (final FileInputStream in = new FileInputStream(f)) {
++		        final HashSet<String> passed = new HashSet<String>();
++		        p.load(in);
++		        int c = 0;
++		        boolean notok = true;
++		        while(notok) {
+ 				c++;
+ 				int items_c = 0;
+ 				notok = false;
+@@ -539,7 +536,10 @@
+ 				}
+ 				if (c > items_c) throw new Exception("Corrupted file! Probably a missing reference!");
+ 			}
+-		}
++		    }
++		
++
++}
+ 
+ 		repaint();
+ 	}

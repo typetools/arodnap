@@ -1,0 +1,13 @@
+--- /tmp/orig-16771920402520726149.java	2025-09-24 22:51:32.212104126 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urld58fd5e7a9_longrm_weibo_robot_tgz-pJ8-weibo4j_org_json_TestJ8/src/com/ufgov/longrm/RobotFrame.java	2025-09-24 22:51:30.295970171 +0000
+@@ -203,9 +203,8 @@
+     settingPanel.add(upPanel, BorderLayout.NORTH);
+     settingPanel.add(downPanel, BorderLayout.SOUTH);
+ 
+-    try {
++    try (FileInputStream inStream = new FileInputStream(settingFile)) {
+       Properties properties = new Properties();
+-      FileInputStream inStream = new FileInputStream(settingFile);
+       properties.load(inStream);
+ 
+       fetchFrequencyTf.setText(properties.getProperty("FETCH_FREQUENCY"));

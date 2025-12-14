@@ -1,0 +1,40 @@
+--- /tmp/orig-11110958588104488861.java	2025-09-24 22:42:29.594170491 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlb57eb64056_jacadenac_ISI_Othello_UN_tgz-pJ8-othello_OthelloJ8/src/logica/Controlador.java	2025-09-24 22:42:28.206073451 +0000
+@@ -234,9 +234,13 @@
+ 		String nombreFichero = "dosMejores.txt";
+ 		File fichero = new File(directorio.getPath(),nombreFichero);
+ 		fileChooser.setCurrentDirectory(fichero);		
++		java.io.FileReader __arodnap_temp1 = null;
++		java.io.FileReader __arodnap_temp0 = null;
+ 		try {
+-			BufferedReader readerPenultimaLinea = new BufferedReader(new FileReader(fichero));
+-			BufferedReader reader = new BufferedReader(new FileReader(fichero));
++		__arodnap_temp1 = new FileReader(fichero);
++		BufferedReader readerPenultimaLinea = new BufferedReader(__arodnap_temp1);
++		__arodnap_temp0 = new FileReader(fichero);
++		BufferedReader reader = new BufferedReader(__arodnap_temp0);
+ 			
+ 			String linea = reader.readLine();
+ 			String lineaFinal = null;
+@@ -258,6 +262,21 @@
+ 			e1.printStackTrace();
+ 		} catch (IOException e) {
+ 			e.printStackTrace();
++		} finally {
++		    if (__arodnap_temp1 != null) {
++		        try {
++		            __arodnap_temp1.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
++		    if (__arodnap_temp0 != null) {
++		        try {
++		            __arodnap_temp0.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
+ 		}
+ 		return estrategias;
+ 	}

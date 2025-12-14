@@ -1,0 +1,12 @@
+--- /tmp/orig-76679504785709873.java	2025-09-24 22:37:40.029927917 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url8d3c4d17f5_catseye_JaC64_tgz-pJ8-JaC64J8/src/com/dreamfabric/jac64/C64Reader.java	2025-09-24 22:37:37.753768804 +0000
+@@ -665,8 +665,7 @@
+   }
+ 
+   public boolean readPGM(URL url, int address) {
+-    try {
+-      InputStream s = url.openStream();
++    try (InputStream s = url.openStream()) {
+       return readPGM(s, address);
+     } catch (Exception e) {
+       System.out.println("readPGM(url): Error when opening url " + url + ":");

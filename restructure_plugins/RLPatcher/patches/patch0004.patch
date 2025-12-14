@@ -1,0 +1,19 @@
+--- /tmp/orig-5345574484370479876.java	2025-09-24 21:32:34.244918705 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url00509339cf_tedwon_scribe_log4j_appender_tgz-pJ8-com_realtimecep_scribe_ScribeJavaServerJ8/src/org/apache/thrift/server/TServlet.java	2025-09-24 21:32:31.752744563 +0000
+@@ -61,7 +61,7 @@
+         TTransport inTransport = null;
+         TTransport outTransport = null;
+ 
+-        try {
++        try (InputStream in = request.getInputStream()) {
+             response.setContentType("application/x-thrift");
+ 
+             if (null != this.customHeaders) {
+@@ -69,7 +69,6 @@
+                     response.addHeader(header.getKey(), header.getValue());
+                 }
+             }
+-            InputStream in = request.getInputStream();
+             OutputStream out = response.getOutputStream();
+ 
+             TTransport transport = new TIOStreamTransport(in, out);

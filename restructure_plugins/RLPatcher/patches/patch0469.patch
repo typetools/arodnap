@@ -1,0 +1,48 @@
+--- /tmp/orig-17490268351761860309.java	2025-09-24 22:18:23.841105485 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url7f43a4752f_shalynnho_pokemonfactory_tgz-pJ8-Networking_ServerJ8/src/Networking/Server.java	2025-09-24 22:18:21.044910021 +0000
+@@ -467,16 +467,18 @@
+ 	}
+ 
+ 	private void saveFCSData() {
+-		try {
+-			// save kit configs to KitConfigBackup.sav
+-			FileOutputStream saveKitConfigs = new FileOutputStream(
++	java.io.FileOutputStream savePartTypes = null;
++	java.io.FileOutputStream saveKitConfigs = null;
++	try {
++			
++			saveKitConfigs = new FileOutputStream(
+ 					"KitConfigBackup.sav");
+ 			ObjectOutputStream outputKC = new ObjectOutputStream(saveKitConfigs);
+ 
+ 			outputKC.writeObject(fcs.getKitConfigs());
+ 
+-			// save part types to PartTypesBackup.sav
+-			FileOutputStream savePartTypes = new FileOutputStream(
++			
++			savePartTypes = new FileOutputStream(
+ 					"PartTypesBackup.sav");
+ 			ObjectOutputStream outputPT = new ObjectOutputStream(savePartTypes);
+ 
+@@ -493,6 +495,21 @@
+ 			exc.printStackTrace();
+ 			System.out
+ 					.println("[Server]: Error saving kitconfigs and parts to file.");
++		} finally {
++		    if (savePartTypes != null) {
++		        try {
++		            savePartTypes.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
++		    if (saveKitConfigs != null) {
++		        try {
++		            saveKitConfigs.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
+ 		}
+ 	}
+ 

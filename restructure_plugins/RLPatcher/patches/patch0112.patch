@@ -1,0 +1,21 @@
+--- /tmp/orig-8258358109971784614.java	2025-09-24 21:43:35.575129603 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url20b0f880a5_jgraph_legacy_jgraph5_tgz-pJ8-org_jgraph_example_HelloWorldJ8/src/com/jgraph/layout/svg/SVGExample.java	2025-09-24 21:43:31.022811507 +0000
+@@ -100,9 +100,8 @@
+ 		returnValue = SVGFileChooser.showSaveDialog(graph);
+ 		if (returnValue == JFileChooser.APPROVE_OPTION) {
+ 			VertexRenderer oldRenderer = VertexView.renderer;
+-			try {
+-				OutputStream out = new BufferedOutputStream(new FileOutputStream(
+-						SVGFileChooser.getSelectedFile()));
++			try (java.io.FileOutputStream __arodnap_temp0 = new FileOutputStream(SVGFileChooser.getSelectedFile())) {
++				OutputStream out = new BufferedOutputStream(__arodnap_temp0);
+ 				// Set all vertices to use the SVG renderer
+ 				VertexView.renderer = new SVGVertexRenderer();
+ 				SVGGraphWriter writer = new SVGGraphWriter();
+@@ -153,4 +152,4 @@
+ 			e.printStackTrace();
+ 		}
+ 	}
+-}
++}
+\ No newline at end of file

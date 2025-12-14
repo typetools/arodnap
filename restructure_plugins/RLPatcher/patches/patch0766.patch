@@ -1,0 +1,18 @@
+--- /tmp/orig-6190563128130275948.java	2025-09-24 22:51:55.989766387 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urld73c47f3e5_lindenb_dataindexer_tgz-pJ8-test_github_lindenb_dataindexer_SimpleIntegerJ8/src/com/github/lindenb/dataindexer/AbstractDatabaseReader.java	2025-09-24 22:51:54.737678856 +0000
+@@ -53,10 +53,11 @@
+ 		{
+ 		if(isOpen()) return;
+ 		validateConfig();
+-		
+-		DataInputStream dis=new DataInputStream(new FileInputStream(getConfig().getSummaryFile()));
+-		this.numberOfItems=dis.readLong();
+-		dis.close();
++		try (java.io.FileInputStream __arodnap_temp0 = new FileInputStream(getConfig().getSummaryFile())) {
++		    DataInputStream dis=new DataInputStream(__arodnap_temp0);
++		    this.numberOfItems=dis.readLong();
++		}
++
+ 
+ 		if(this.numberOfItems<0L) throw new IOException("summary file corrupted.");
+ 		/** not a constant data size, need a index file */

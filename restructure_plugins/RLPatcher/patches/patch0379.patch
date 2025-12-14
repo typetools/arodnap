@@ -1,0 +1,24 @@
+--- /tmp/orig-1653116839152555026.java	2025-09-24 22:09:20.843148057 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url70ed135da7_ralfbiedert_jcores_tgz-pJ8-sandbox_SimpleFilterTestJ8/src/net/jcores/jre/utils/internal/Files.java	2025-09-24 22:09:17.658925469 +0000
+@@ -262,9 +262,8 @@
+         final byte[] buffer = new byte[32 * 1024]; // Create a buffer for copying
+         int bytesRead;
+ 
+-        try {
+-            // Open output zip file
+-            FileOutputStream fos = new FileOutputStream(target);
++        try (FileOutputStream fos = new FileOutputStream(target)) {
++
+             JarOutputStream out = manifest == null ? new JarOutputStream(fos) : new JarOutputStream(fos, manifest);
+             out.setLevel(9);
+ 
+@@ -287,8 +286,7 @@
+                     if (lc.endsWith("meta-inf/eclipsef.rsa")) continue;
+                     if (lc.endsWith("meta-inf/eclipsef.sf")) continue;
+ 
+-                    try {
+-                        final FileInputStream in = new FileInputStream(file2);
++                    try (final FileInputStream in = new FileInputStream(file2)) {
+                         final JarEntry entry = new JarEntry(entryname);
+                         out.putNextEntry(entry);
+                         while ((bytesRead = in.read(buffer)) != -1)

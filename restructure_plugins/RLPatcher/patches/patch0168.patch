@@ -1,0 +1,12 @@
+--- /tmp/orig-9661740015853311826.java	2025-09-24 21:49:29.215848398 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url2b4a2d655b_Yehonal_unisa_prog2_jdm_tgz-pJ8-com_jdeals_tests_TestUserBuyingJ8/src/com/jdeals/main/helper/storage/FileSerialization.java	2025-09-24 21:49:27.247710817 +0000
+@@ -25,8 +25,7 @@
+      */
+     @Override
+     public void storeList(ArrayList<T> list, String filePath) {
+-        try {
+-            FileOutputStream fileOut = new FileOutputStream(filePath);
++        try (FileOutputStream fileOut = new FileOutputStream(filePath)) {
+             ObjectOutputStream out = new ObjectOutputStream(fileOut);
+             for (Serializable elem : list) {
+                 out.writeObject(elem);

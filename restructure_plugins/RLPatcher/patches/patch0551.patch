@@ -1,0 +1,52 @@
+--- /tmp/orig-12776159254499971904.java	2025-09-24 22:32:19.871547452 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url80e39b1957_tobikster_IJN_headers_recognition_tgz-pJ8-org_maltparser_examples_CreatePhraseStructureGraphJ8/src/org/maltparser/ml/lib/LibLinear.java	2025-09-24 22:32:16.207291304 +0000
+@@ -276,12 +276,15 @@
+     }
+     
+ 	protected void trainExternal(FeatureVector featureVector) throws MaltChainedException {
+-		try {		
++	java.io.FileOutputStream __arodnap_temp1 = null;
++	java.io.InputStreamReader __arodnap_temp0 = null;
++	try {		
+ 			
+ 			if (configLogger.isInfoEnabled()) {
+ 				owner.getGuide().getConfiguration().getConfigLogger().info("Creating liblinear model (external) "+getFile(".mod").getName());
+ 			}
+-			binariesInstances2SVMFileFormat(getInstanceInputStreamReader(".ins"), getInstanceOutputStreamWriter(".ins.tmp"));
++			__arodnap_temp0 = getInstanceInputStreamReader(".ins");
++			binariesInstances2SVMFileFormat(__arodnap_temp0, getInstanceOutputStreamWriter(".ins.tmp"));
+ 			final String[] params = getLibParamStringArray();
+ 			String[] arrayCommands = new String[params.length+3];
+ 			int i = 0;
+@@ -318,7 +321,8 @@
+ 				configLogger.info("\nSaving Liblinear model "+getFile(".moo").getName()+"\n");
+ 			}
+ 			MaltLiblinearModel xmodel = new MaltLiblinearModel(getFile(".mod"));
+-		    ObjectOutputStream output = new ObjectOutputStream (new BufferedOutputStream(new FileOutputStream(getFile(".moo").getAbsolutePath())));
++		 __arodnap_temp1 = new FileOutputStream(getFile(".moo").getAbsolutePath());
++   ObjectOutputStream output = new ObjectOutputStream (new BufferedOutputStream(__arodnap_temp1));
+ 	        try{
+ 	          output.writeObject(xmodel);
+ 	        } finally {
+@@ -342,6 +346,21 @@
+ 			throw new LibException("The learner cannot save the model file '"+getFile(".mod").getAbsolutePath()+"'. ", e);
+ 		} catch (OutOfMemoryError e) {
+ 			throw new LibException("Out of memory. Please increase the Java heap size (-Xmx<size>). ", e);
++		} finally {
++		    if (__arodnap_temp1 != null) {
++		        try {
++		            __arodnap_temp1.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
++		    if (__arodnap_temp0 != null) {
++		        try {
++		            __arodnap_temp0.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
+ 		}
+ 	}
+ 	

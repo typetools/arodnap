@@ -1,0 +1,26 @@
+--- /tmp/orig-17146949595924044120.java	2025-09-24 22:47:26.810948487 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlc58f2e0b85_xoriole_CEAC_tgz-pJ8-com_sdm_phr_cpabe_CpabeTestJ8/src/com/sdm/phr/cpabe/Common.java	2025-09-24 22:47:25.126830752 +0000
+@@ -12,15 +12,15 @@
+ 
+     /* read byte[] from inputfile */
+     public static byte[] suckFile(String inputfile) throws IOException {
+-        InputStream is = new FileInputStream(inputfile);
+-        int size = is.available();
+-        byte[] content = new byte[size];
++        try (InputStream is = new FileInputStream(inputfile)) {
++            int size = is.available();
++            byte[] content = new byte[size];
++            is.read(content);
++            return content;
++        }
++    
+ 
+-        is.read(content);
+-
+-        is.close();
+-        return content;
+-    }
++}
+ 
+     /* write byte[] into outputfile */
+     public static void spitFile(String outputfile, byte[] b) throws IOException {

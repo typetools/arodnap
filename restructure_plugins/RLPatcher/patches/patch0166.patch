@@ -1,0 +1,13 @@
+--- /tmp/orig-18112492653345010273.java	2025-09-24 21:49:17.058998582 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url2a908001cd_malictus_klang_tgz-pJ8-malictus_klang_test_PrimitiveTestJ8/src/malictus/klang/test/PrimitiveTest.java	2025-09-24 21:49:14.686832757 +0000
+@@ -21,9 +21,8 @@
+ 	
+ 	public static void main(String[] args) {
+ 		File tempFile = null;
+-		try {
++		try (RandomAccessFile raf = new RandomAccessFile(tempFile, "rw")) {
+ 			tempFile = createTempFile();
+-			RandomAccessFile raf = new RandomAccessFile(tempFile, "rw");
+ 			raf.seek(0);
+ 			
+ 			//ASCII TEST

@@ -1,0 +1,12 @@
+--- /tmp/orig-5854392392520218456.java	2025-09-24 22:19:56.347572005 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url80e39b1957_tobikster_IJN_headers_recognition_tgz-pJ8-org_maltparser_examples_CreatePhraseStructureGraphJ8/src/org/maltparser/core/config/ConfigurationDir.java	2025-09-24 22:19:52.627311946 +0000
+@@ -315,8 +315,7 @@
+ 	
+ 	public JarEntry getConfigFileEntry(String fileName) throws MaltChainedException {
+ 		File mcoPath = new File(workingDirectory.getPath()+File.separator+getName()+".mco");
+-		try {
+-			JarFile mcoFile = new JarFile(mcoPath.getAbsolutePath());
++		try (JarFile mcoFile = new JarFile(mcoPath.getAbsolutePath())) {
+ 			JarEntry entry = mcoFile.getJarEntry(getName()+'/'+fileName);
+ 			if (entry == null) {
+ 				entry = mcoFile.getJarEntry(getName()+'\\'+fileName);

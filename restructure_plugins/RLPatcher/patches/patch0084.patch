@@ -1,0 +1,14 @@
+--- /tmp/orig-1162317973908006023.java	2025-09-24 21:40:23.805729583 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url11fb0973cf_raichuman9_Swimmer526_tgz-pJ8-fr_inria_optimization_cmaes_examples_CMAExample1J8/src/ubc/swim/tests/PaddleTest.java	2025-09-24 21:40:20.813520501 +0000
+@@ -90,8 +90,9 @@
+ 		if (m_joint1 != null) {
+ 			addTextLine("Keys: (f) toggle friction, (m) toggle motor");
+ 			float torque = m_joint1.getMotorTorque();
+-			Formatter f = new Formatter();
+-			addTextLine(f.format("Motor Force = %5.0f, ", torque).toString());
++			try (Formatter f = new Formatter()) {
++			    addTextLine(f.format("Motor Force = %5.0f, ", torque).toString());
++			}
+ 		}
+ 
+ 	}

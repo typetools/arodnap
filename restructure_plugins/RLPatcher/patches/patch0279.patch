@@ -1,0 +1,69 @@
+--- /tmp/orig-12357070801059044537.java	2025-09-24 21:58:51.103126743 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url4c41254592_topskychen_AuthTopk_tgz-pJ8-quickhull3d_QuickHull3DTestJ8/src/quickhull3d/QhullTestCA.java	2025-09-24 21:58:48.430939946 +0000
+@@ -23,38 +23,51 @@
+ 		// x y z coordinates of 6 points
+ 
+ 		long start = System.currentTimeMillis();
+-		Scanner in = new Scanner(new FileInputStream(new File("source/CA.in")));
+-		in.nextInt(); int len = in.nextInt();
+-		Point3d[] points = new Point3d[len];
+-		for(int i = 0; i < len; i++){
++		java.io.FileInputStream __arodnap_temp0 = null;
++		try {
++    __arodnap_temp0 = new FileInputStream(new File("source/CA.in"));
++    Scanner in = new Scanner(__arodnap_temp0);
++    in.nextInt();
++    int len = in.nextInt();
++    Point3d[] points = new Point3d[len];
++    for(int i = 0; i < len; i++){
+ 			int x = in.nextInt(); // x
+ 			int y = in.nextInt(); // y
+ 			int z = in.nextInt(); // z
+ 			//System.out.println(x + "\t" + y + "\t" + z);
+ 			points[i] = new Point3d(x, y, z);
+ 		}
+-		
+-		System.out.println("Load finished!");
++    System.out.println("Load finished!");
++    QuickHull3D hull = new QuickHull3D();
++    hull.build(points);
++    System.out.println("Build finihed!");
++    System.out.println("Vertices:");
++    Point3d[] vertices = hull.getVertices();
++    System.out.println("vertices size:\t" + vertices.length);
++    System.out.println("Faces:");
++    int[][] faceIndices = hull.getFaces();
++    System.out.println("face size:\t" + faceIndices.length);
++} finally {
++    if (__arodnap_temp0 != null) {
++        try {
++            __arodnap_temp0.close();
++        } catch (Exception e) {
++            e.printStackTrace();
++        }
++    }
++}
++
+ //		Point3d[] points = new Point3d[] { new Point3d(0.0, 0.0, 0.0),
+ //				new Point3d(1.0, 0.5, 0.0), new Point3d(2.0, 0.0, 0.0),
+ //				new Point3d(0.5, 0.5, 0.5), new Point3d(0.0, 0.0, 2.0),
+ //				new Point3d(0.1, 0.2, 0.3), new Point3d(0.0, 2.0, 0.0), };
+ 
+-		QuickHull3D hull = new QuickHull3D();
+-		hull.build(points);
+-		System.out.println("Build finihed!");
+ 
+-		System.out.println("Vertices:");
+-		Point3d[] vertices = hull.getVertices();
+-		System.out.println("vertices size:\t" + vertices.length);
+ 		// for (int i=0; i<vertices.length; i++)
+ 		// { Point3d pnt = vertices[i];
+ 		// System.out.println (pnt.x + " " + pnt.y + " " + pnt.z);
+ 		// }
+ 
+-		System.out.println("Faces:");
+-		int[][] faceIndices = hull.getFaces();
+-		System.out.println("face size:\t" + faceIndices.length);
+ 		// for (int i=0; i<vertices.length; i++)
+ 		// { for (int k=0; k<faceIndices[i].length; k++)
+ 		// { System.out.print (faceIndices[i][k] + " ");

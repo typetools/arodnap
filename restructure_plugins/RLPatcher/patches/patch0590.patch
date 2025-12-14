@@ -1,0 +1,29 @@
+--- /tmp/orig-18272397170162368865.java	2025-09-24 22:36:25.700731982 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url8af84d296f_mrcosta_gantt_generator_tgz-pJ8-org_gantt_generator_mrcpsp_RunJ8/src/org/swiftgantt/common/SwingComImageGenerator.java	2025-09-24 22:36:23.968610899 +0000
+@@ -90,9 +90,10 @@
+ 				imageGraphic.copyArea(0, 0, bounds.width, bounds.height, bounds.x, bounds.y);
+ 			}
+ 		}
++		java.io.FileOutputStream fos = null;
+ 		try{
+ 			File imgFile = new File(filePath);
+-			FileOutputStream fos = new FileOutputStream(imgFile);
++			fos = new FileOutputStream(imgFile);
+ 			BufferedOutputStream bos = new BufferedOutputStream(fos);
+ 			JPEGImageEncoder encoder = JPEGCodec.createJPEGEncoder(bos);
+ 			encoder.encode(image);
+@@ -103,6 +104,14 @@
+ 		}catch (Exception ex) {
+ 			logger.error("generateJPEGImage(Dimension, JComponent[], Rectangle[], String)", ex); //$NON-NLS-1$
+ 			throw new IOException(ex.getMessage() + ex.getStackTrace());
++		} finally {
++		    if (fos != null) {
++		        try {
++		            fos.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
+ 		}
+ 	}
+ 	

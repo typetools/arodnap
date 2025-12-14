@@ -1,0 +1,24 @@
+--- /tmp/orig-13590070275797929778.java	2025-09-24 21:56:24.044846735 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url47ebb27197_asirbu_CorrectiveEvolution_tgz-pJ8-eu_fbk_soa_evolution_engine_impl_test_ProblemToSMVFuncTestJ8/src/eu/fbk/soa/util/IOUtils.java	2025-09-24 21:56:22.116711950 +0000
+@@ -193,12 +193,20 @@
+ 	public static void exportProcessModelToDot(ProcessModel model, String dotFilePath) {
+ 			OrderedNodesDOTExporter dotExporter = new OrderedNodesDOTExporter();
+ 			File file = new File(dotFilePath);
+-			FileWriter writer;
++			FileWriter writer = null;
+ 			try {
+ 				writer = new FileWriter(file);
+ 				dotExporter.export(writer, model);	
+ 			} catch (IOException e) {
+ 				e.printStackTrace();
++			} finally {
++			    if (writer != null) {
++			        try {
++			            writer.close();
++			        } catch (Exception e) {
++			            e.printStackTrace();
++			        }
++			    }
+ 			}
+ 	}
+ 

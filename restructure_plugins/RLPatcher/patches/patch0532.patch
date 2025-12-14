@@ -1,0 +1,13 @@
+--- /tmp/orig-17054044870401399580.java	2025-09-24 22:28:41.892309752 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url80e39b1957_tobikster_IJN_headers_recognition_tgz-pJ8-org_maltparser_examples_CreatePhraseStructureGraphJ8/src/org/maltparser/ml/liblinear/Liblinear.java	2025-09-24 22:28:38.128046614 +0000
+@@ -434,8 +434,8 @@
+ 	 */
+ 	public boolean predict(FeatureVector featureVector, SingleDecision decision) throws MaltChainedException {
+ 		if (model == null) {
+-			try {
+-				model = Linear.loadModel(new BufferedReader(getInstanceInputStreamReaderFromConfigFile(".mod")));
++			try (java.io.InputStreamReader __arodnap_temp0 = getInstanceInputStreamReaderFromConfigFile(".mod")) {
++				model = Linear.loadModel(new BufferedReader(__arodnap_temp0));
+ 			} catch (IOException e) {
+ 				throw new LiblinearException("The model cannot be loaded. ", e);
+ 			}

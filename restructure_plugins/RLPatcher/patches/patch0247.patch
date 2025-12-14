@@ -1,0 +1,30 @@
+--- /tmp/orig-15962507127064836096.java	2025-09-24 21:56:00.847225121 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url47e6aca666_pocorall_automaton_tgz-pJ8-net_pocorall_automaton_DatatypesJ8/src/net/pocorall/automaton/Datatypes.java	2025-09-24 21:55:59.231112148 +0000
+@@ -472,15 +472,25 @@
+ 	}
+ 
+ 	private static DefaultAutomaton load(String name) {
+-		try {
++	java.io.InputStream __arodnap_temp0 = null;
++	try {
+ 			URL url = Datatypes.class.getClassLoader().getResource(name + ".aut");
+-			return (DefaultAutomaton) new ObjectInputStream(url.openStream()).readObject();
++			__arodnap_temp0 = url.openStream();
++			return (DefaultAutomaton) new ObjectInputStream(__arodnap_temp0).readObject();
+ 		} catch (IOException e) {
+ 			e.printStackTrace();
+ 			return null;
+ 		} catch (ClassNotFoundException e) {
+ 			e.printStackTrace();
+ 			return null;
++		} finally {
++		    if (__arodnap_temp0 != null) {
++		        try {
++		            __arodnap_temp0.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
+ 		}
+ 	}
+ 

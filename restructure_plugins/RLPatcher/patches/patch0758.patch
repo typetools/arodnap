@@ -1,0 +1,25 @@
+--- /tmp/orig-10044306648806951338.java	2025-09-24 22:51:15.778955308 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urld558a3d988_gao715108023_resourceMonitor_tgz-pJ8-com_sinopec_agent_AgentJ8/src/com/sinopec/cache/InstantMsgCache.java	2025-09-24 22:51:14.494865539 +0000
+@@ -88,8 +88,20 @@
+ 		expiryCache = new ConcurrentHashMap<String, Long>();
+ 		scheduleService = Executors.newScheduledThreadPool(2);
+ 		scheduleService.scheduleAtFixedRate(new CheckOutOfDateSchedule(cache, expiryCache), 0, expiryInterval * 60, TimeUnit.SECONDS);
+-		// storeToDBService = Executors.newScheduledThreadPool(1);
+-		scheduleService.scheduleAtFixedRate(new StoreInstantMsgDataSchedule(cache, jdbcCommon, dbType), 0, storeInterval, TimeUnit.SECONDS);
++		com.sinopec.cache.InstantMsgCache.StoreInstantMsgDataSchedule __arodnap_temp0 = null;
++		try {
++    __arodnap_temp0 = new StoreInstantMsgDataSchedule(cache, jdbcCommon, dbType);
++    scheduleService.scheduleAtFixedRate(__arodnap_temp0, 0, storeInterval, TimeUnit.SECONDS);
++} finally {
++    if (__arodnap_temp0 != null) {
++        try {
++            __arodnap_temp0.closeConn();
++        } catch (Exception e) {
++            e.printStackTrace();
++        }
++    }
++}
++
+ 		if (LOG.isInfoEnabled()) {
+ 			LOG.info("The service of checking Agent timeout has started!");
+ 		}

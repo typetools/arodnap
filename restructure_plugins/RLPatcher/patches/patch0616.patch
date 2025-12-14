@@ -1,0 +1,13 @@
+--- /tmp/orig-2157264250196385818.java	2025-09-24 22:38:37.349934836 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url8d3c4d17f5_catseye_JaC64_tgz-pJ8-JaC64J8/src/C64Test.java	2025-09-24 22:38:35.057774604 +0000
+@@ -358,8 +358,8 @@
+   }
+ 
+   private void saveDisk(String filename) {
+-    try {
+-      reader.writeDisk(new FileOutputStream(filename));
++    try (java.io.FileOutputStream __arodnap_temp0 = new FileOutputStream(filename)) {
++      reader.writeDisk(__arodnap_temp0);
+     } catch (Exception e) {
+       e.printStackTrace();
+     }

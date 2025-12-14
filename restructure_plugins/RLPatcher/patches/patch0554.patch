@@ -1,0 +1,39 @@
+--- /tmp/orig-2794315885078495454.java	2025-09-24 22:32:56.726123747 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url80e39b1957_tobikster_IJN_headers_recognition_tgz-pJ8-org_maltparser_examples_CreatePhraseStructureGraphJ8/src/org/maltparser/ml/libsvm/Libsvm.java	2025-09-24 22:32:52.781848025 +0000
+@@ -322,9 +322,12 @@
+ 		} else if (divideFeature == null) {
+ 			throw new LibsvmException("The divide feature cannot be found. ");
+ 		} 
++		java.io.BufferedWriter out = null;
++		java.io.InputStreamReader __arodnap_temp0 = null;
+ 		try {
+-			final BufferedReader in = new BufferedReader(getInstanceInputStreamReader(".ins"));
+-			final BufferedWriter out = method.getInstanceWriter();
++		__arodnap_temp0 = getInstanceInputStreamReader(".ins");
++		final BufferedReader in = new BufferedReader(__arodnap_temp0);
++			out = method.getInstanceWriter();
+ 			final StringBuilder sb = new StringBuilder(6);
+ 			int l = in.read();
+ 			char c;
+@@ -375,6 +378,21 @@
+ 			throw new LibsvmException("The instance file cannot be found. ", e);
+ 		} catch (IOException e) {
+ 			throw new LibsvmException("The LIBSVM learner read from the instance file. ", e);
++		} finally {
++		    if (out != null) {
++		        try {
++		            out.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
++		    if (__arodnap_temp0 != null) {
++		        try {
++		            __arodnap_temp0.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
+ 		}
+ 	}
+ 	

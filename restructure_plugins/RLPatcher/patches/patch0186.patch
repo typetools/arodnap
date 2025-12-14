@@ -1,0 +1,17 @@
+--- /tmp/orig-12615625447262324399.java	2025-09-24 21:50:59.342148615 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url400631cdd0_ludaiqian_appliedxml_tgz-pJ8-test_simples_TestJ8/src/test/simples/Test.java	2025-09-24 21:50:57.177997332 +0000
+@@ -106,9 +106,10 @@
+ 	}
+ 
+ 	public Service xml2Service() throws IOException {
+-		InputStream in = Test.class.getResourceAsStream("allsubjects.xml");
+-		InputStreamReader reader = new InputStreamReader(in, "utf-8");
+-		Service t = serializer.fromXml(reader, Service.class);
+-		return t;
++	    try (InputStream in = Test.class.getResourceAsStream("allsubjects.xml")) {
++	        InputStreamReader reader = new InputStreamReader(in, "utf-8");
++	        Service t = serializer.fromXml(reader, Service.class);
++	        return t;
++	    }
+ 	}
+ }

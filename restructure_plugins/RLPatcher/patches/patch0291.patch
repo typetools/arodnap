@@ -1,0 +1,29 @@
+--- /tmp/orig-12016654380305231993.java	2025-09-24 22:00:24.889682830 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url4c41254592_topskychen_AuthTopk_tgz-pJ8-quickhull3d_QuickHull3DTestJ8/src/utility/testData.java	2025-09-24 22:00:21.937476458 +0000
+@@ -79,8 +79,10 @@
+ 		ArrayList<Point> points2 = new ArrayList<Point>();
+ 		data(){
+ 			int sx = 1 << 20, sy = 1 << 20, mx = -1, my = -1;
++			java.io.FileInputStream __arodnap_temp0 = null;
+ 			try {
+-				Scanner in = new Scanner(new FileInputStream(new File(filename)));
++			__arodnap_temp0 = new FileInputStream(new File(filename));
++			Scanner in = new Scanner(__arodnap_temp0);
+ 				in.nextInt();// eat 3
+ 				in.nextInt();//eat number
+ 				while(in.hasNext()){
+@@ -120,6 +122,14 @@
+ 			} catch (FileNotFoundException e) {
+ 				// TODO Auto-generated catch block
+ 				e.printStackTrace();
++			} finally {
++			    if (__arodnap_temp0 != null) {
++			        try {
++			            __arodnap_temp0.close();
++			        } catch (Exception e) {
++			            e.printStackTrace();
++			        }
++			    }
+ 			}
+ 		}
+ 		

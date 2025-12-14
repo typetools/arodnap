@@ -1,0 +1,13 @@
+--- /tmp/orig-1457450000334025520.java	2025-09-24 21:56:09.143805088 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url47e6aca666_pocorall_automaton_tgz-pJ8-net_pocorall_automaton_DatatypesJ8/src/net/pocorall/automaton/Datatypes.java	2025-09-24 21:56:07.547693512 +0000
+@@ -801,8 +801,8 @@
+ 
+ 		System.out.println("Building Unicode category automata...");
+ 		Map<String, Set<Integer>> categories = new HashMap<String, Set<Integer>>();
+-		try {
+-			StreamTokenizer st = new StreamTokenizer(new BufferedReader(new FileReader("src/main/java/Unicode.txt")));
++		try (java.io.FileReader __arodnap_temp0 = new FileReader("src/main/java/Unicode.txt")) {
++			StreamTokenizer st = new StreamTokenizer(new BufferedReader(__arodnap_temp0));
+ 			st.resetSyntax();
+ 			st.whitespaceChars(';', ';');
+ 			st.whitespaceChars('\n', ' ');

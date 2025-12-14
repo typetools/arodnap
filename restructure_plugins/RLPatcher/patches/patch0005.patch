@@ -1,0 +1,13 @@
+--- /tmp/orig-3185206417779466771.java	2025-09-24 21:32:38.953247703 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url026791d51b_dhleong_SeriesTracker_v6_tgz-pJ8-stv6_SeriesTrackerJ8/src/stv6/episodes/managers/UpnpManager.java	2025-09-24 21:32:36.905104588 +0000
+@@ -100,8 +100,8 @@
+             upnpPort = -1;
+             
+             // load port and local folders
+-            try {
+-                BufferedReader r = new BufferedReader(new FileReader(pmsConf));
++            try (java.io.FileReader __arodnap_temp0 = new FileReader(pmsConf)) {
++                BufferedReader r = new BufferedReader(__arodnap_temp0);
+                 String line;
+                 while ((line = r.readLine()) != null) {
+                     if (line.startsWith("folders")) {

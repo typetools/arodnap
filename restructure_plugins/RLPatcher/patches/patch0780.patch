@@ -1,0 +1,12 @@
+--- /tmp/orig-17011421917043563277.java	2025-09-24 22:53:15.507325346 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urldae1c57e59_mustafaakin_izuna_mapeditor_tgz-pJ8-in_mustafaak_izuna_actions_ActionTestJ8/src/in/mustafaak/izuna/Shell.java	2025-09-24 22:53:14.383246763 +0000
+@@ -30,8 +30,7 @@
+ 	}
+ 	
+ 	public static void StreamWave(WaveInfo waveInfo){
+-	    try {
+-	    	Socket socket = new Socket();
++	    try (Socket socket = new Socket()) {
+ 	    	socket.connect(new InetSocketAddress("192.168.1.102", 5000), 50000);
+ 			Persister serializer = new Persister();
+ 	    	OutputStream os = socket.getOutputStream();

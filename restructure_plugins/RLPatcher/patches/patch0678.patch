@@ -1,0 +1,31 @@
+--- /tmp/orig-1116715254671391305.java	2025-09-24 22:44:12.377355915 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlb5d5be4365_abmargb_oursim_ext_tgz-pJ8-br_edu_ufcg_lsd_oursim_experiments_RemoteNoFScenarioGeneratorJ8/src/br/edu/ufcg/lsd/oursim/queue/FileEventProxyTest.java	2025-09-24 22:44:10.069194555 +0000
+@@ -12,11 +12,23 @@
+ 
+ 	@Test
+ 	public void testBlankFile() {
+-		FileEventProxy proxy = new FileEventProxy(
+-				getClass().getResourceAsStream("event-blank.conf"));
+-		
+-		Assert.assertFalse(proxy.hasNextEvent());
+-		Assert.assertNull(proxy.nextEventTime());
++	java.io.InputStream __arodnap_temp0 = null;
++	try {
++    __arodnap_temp0 = getClass().getResourceAsStream("event-blank.conf");
++    FileEventProxy proxy = new FileEventProxy(
++				__arodnap_temp0);
++    Assert.assertFalse(proxy.hasNextEvent());
++    Assert.assertNull(proxy.nextEventTime());
++} finally {
++    if (__arodnap_temp0 != null) {
++        try {
++            __arodnap_temp0.close();
++        } catch (Exception e) {
++            e.printStackTrace();
++        }
++    }
++}
++	
+ 	}
+ 	
+ 	@Test

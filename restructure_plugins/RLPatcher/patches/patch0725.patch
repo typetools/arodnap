@@ -1,0 +1,13 @@
+--- /tmp/orig-16731086021781189118.java	2025-09-24 22:48:30.035368415 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlc98c3b97d2_Trimax_venta_tgz-pJ8-com_gesoftware_venta_structures_map_MapTestJ8/src/com/gesoftware/venta/utility/PropertiesUtility.java	2025-09-24 22:48:27.835214605 +0000
+@@ -19,8 +19,8 @@
+      * AUTHOR: Eliseev Dmitry
+      * */
+     public PropertiesUtility(final String configurationFile) {
+-        try {
+-            properties.load(new FileInputStream(configurationFile));
++        try (java.io.FileInputStream __arodnap_temp0 = new FileInputStream(configurationFile)) {
++            properties.load(__arodnap_temp0);
+         } catch (final IOException ignored) {
+             LoggingUtility.core("Can't load " + configurationFile + " file");
+         }

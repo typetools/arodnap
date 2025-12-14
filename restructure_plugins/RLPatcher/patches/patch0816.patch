@@ -1,0 +1,39 @@
+--- /tmp/orig-13194145290078551733.java	2025-09-24 22:56:46.286060685 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urle514e161fe_pericodiaz89_NextGen_tgz-pJ8-lib_json_TestJ8/src/nextgen/dao/FileManager.java	2025-09-24 22:56:44.509936483 +0000
+@@ -118,22 +118,22 @@
+     		}
+  
+     	}else{
+-    		//if file, then copy it
+-    		//Use bytes stream to support all file types
+-    		InputStream in = new FileInputStream(src);
+-    	        OutputStream out = new FileOutputStream(dest); 
+- 
+-    	        byte[] buffer = new byte[1024];
+- 
+-    	        int length;
+-    	        //copy the file content in bytes 
+-    	        while ((length = in.read(buffer)) > 0){
++    	    try (InputStream in = new FileInputStream(src)) {
++    try (OutputStream out = new FileOutputStream(dest)) {
++        byte[] buffer = new byte[1024];
++        int length;
++        while ((length = in.read(buffer)) > 0){
+     	    	   out.write(buffer, 0, length);
+     	        }
++    }
++    System.out.println("File copied from " + src + " to " + dest);
++}
++    	//if file, then copy it
++
++   		
++ 
++
+  
+-    	        in.close();
+-    	        out.close();
+-    	        System.out.println("File copied from " + src + " to " + dest);
+-    	}
++     }
+     }
+ }

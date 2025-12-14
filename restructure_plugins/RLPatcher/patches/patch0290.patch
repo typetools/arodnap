@@ -1,0 +1,29 @@
+--- /tmp/orig-8754056570489480111.java	2025-09-24 22:00:15.821048893 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url4c41254592_topskychen_AuthTopk_tgz-pJ8-quickhull3d_QuickHull3DTestJ8/src/utility/generator.java	2025-09-24 22:00:12.712831614 +0000
+@@ -27,8 +27,10 @@
+ 	
+ 	public static void GeneratePointsofInteger(int sx, int sy, int rangex, int rangey, int num, String filepath){
+ 		Random ramdom = new Random();
++		java.io.FileOutputStream __arodnap_temp0 = null;
+ 		try {
+-			PrintStream out = new PrintStream(new FileOutputStream(filepath));
++		__arodnap_temp0 = new FileOutputStream(filepath);
++		PrintStream out = new PrintStream(__arodnap_temp0);
+ 			for(int i = 0; i < num; i++){
+ 				int x = ramdom.nextInt(rangex), y = ramdom.nextInt(rangey);
+ 				out.println("1 " + (i + 1) + " " + (sx + x) + " " + (sy + y) + " " + (sx + x) + " " + (sy + y));
+@@ -36,6 +38,14 @@
+ 		} catch (FileNotFoundException e) {
+ 			// TODO Auto-generated catch block
+ 			e.printStackTrace();
++		} finally {
++		    if (__arodnap_temp0 != null) {
++		        try {
++		            __arodnap_temp0.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
+ 		}
+ 		
+ 	}

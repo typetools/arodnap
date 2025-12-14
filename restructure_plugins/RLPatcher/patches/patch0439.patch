@@ -1,0 +1,46 @@
+--- /tmp/orig-3458756757390300022.java	2025-09-24 22:15:18.860174680 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url7a45f192ca_mfullen_ping_pong_net_tgz-pJ8-ping_pong_net_client_io_TestClientNonPPNServerJ8/src/ping/pong/net/server/io/IoServerTest.java	2025-09-24 22:15:17.092051082 +0000
+@@ -265,11 +265,12 @@
+     public void testRemoveMessageListener()
+     {
+         MessageListener<? super Connection, Envelope> listener = null;
+-        IoServer instance = new IoServer();
+-        instance.removeMessageListener(listener);
+-        assertEquals(0, instance.messageListeners.size());
+-
+-        listener = new MessageListener<Connection, Envelope>()
++        ping.pong.net.server.io.IoServer instance = null;
++        try {
++            instance = new IoServer();
++            instance.removeMessageListener(listener);
++            assertEquals(0, instance.messageListeners.size());
++            listener = new MessageListener<Connection, Envelope>()
+         {
+             @Override
+             public void messageReceived(Connection source, Envelope message)
+@@ -278,11 +279,21 @@
+                 assertNotNull(message);
+             }
+         };
++            instance.addMessageListener(listener);
++            assertEquals(1, instance.messageListeners.size());
++            instance.removeMessageListener(listener);
++            assertEquals(0, instance.messageListeners.size());
++        } finally {
++            if (instance != null) {
++                try {
++                    instance.shutdown();
++                } catch (Exception e) {
++                    e.printStackTrace();
++                }
++            }
++        }
++
+ 
+-        instance.addMessageListener(listener);
+-        assertEquals(1, instance.messageListeners.size());
+-        instance.removeMessageListener(listener);
+-        assertEquals(0, instance.messageListeners.size());
+     }
+ 
+     /**

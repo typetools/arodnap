@@ -1,0 +1,17 @@
+--- /tmp/orig-10067976083818645256.java	2025-09-24 22:16:57.267053660 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url7f15a160d2_timofei7_old_ai_assignments_tgz-pJ8-org_json_TestJ8/src/hw5/P3bMain.java	2025-09-24 22:16:55.026897065 +0000
+@@ -76,6 +76,14 @@
+ 			sc = new Scanner(new File(file));
+ 		} catch (FileNotFoundException e) {
+ 			e.printStackTrace();
++		} finally {
++		    if (sc != null) {
++		        try {
++		            sc.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
+ 		}
+ 		
+ 		String tinput = "";

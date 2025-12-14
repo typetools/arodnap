@@ -1,0 +1,23 @@
+--- /tmp/orig-15688337015164290286.java	2025-09-24 21:46:50.480752218 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url294e6c45f3_Ecdosis_NMergeNew_tgz-pJ8-TestJ8/src/Test.java	2025-09-24 21:46:48.076584159 +0000
+@@ -356,13 +356,13 @@
+ 		if ( src.exists() )
+ 		{
+ 			int length = (int)src.length();
+-			FileInputStream fis = new FileInputStream( src );
+-			byte[] data = new byte[length];
+-			fis.read( data );
+-			fis.close();
+-			String str = new String( data, "UTF-8" );
+-			int start = rand.nextInt( str.length() - size );
+-			result = str.substring( start, start+size );
++			try (FileInputStream fis = new FileInputStream( src )) {
++			    byte[] data = new byte[length];
++			    fis.read( data );
++			    String str = new String( data, "UTF-8" );
++			    int start = rand.nextInt( str.length() - size );
++			    result = str.substring( start, start+size );
++			}
+ 		}
+ 		return result;
+ 	}

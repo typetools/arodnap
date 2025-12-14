@@ -1,0 +1,42 @@
+--- /tmp/orig-9418944244820082133.java	2025-09-24 21:36:33.557640842 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url0e7d57473a_kyorohiro_HetimaUtil_tgz-pJ8-net_hetimatan_net_http_HttpServer3xxJ8/src/net/hetimatan/util/http/TestForHttpResponse.java	2025-09-24 21:36:31.209476762 +0000
+@@ -30,18 +30,29 @@
+ 		String httpVersion = HttpRequestLine.HTTP11;
+ 		String statusCode = "200";
+ 		String reasonPhrase = "OK";
+-		HttpResponse response = new HttpResponse(httpVersion, statusCode,
++		net.hetimatan.util.http.HttpResponse response = null;
++		try {
++		    response = new HttpResponse(httpVersion, statusCode,
+ 				reasonPhrase);
+-		String content = "hello world\r\n";
+-		response.setContent(content.getBytes());
+-		CashKyoroFile output = new CashKyoroFile(512);
+-		response.encode(output.getLastOutput());
+-		output.seek(0);
+-		byte[] buffer = new byte[(int) output.length()];
+-		int len = output.read(buffer);
+-		String tag = new String(buffer, 0, len);
+-		assertEquals("HTTP/1.1 200 OK\r\nContent-Length: "
++		    String content = "hello world\r\n";
++		    response.setContent(content.getBytes());
++		    CashKyoroFile output = new CashKyoroFile(512);
++		    response.encode(output.getLastOutput());
++		    output.seek(0);
++		    byte[] buffer = new byte[(int) output.length()];
++		    int len = output.read(buffer);
++		    String tag = new String(buffer, 0, len);
++		    assertEquals("HTTP/1.1 200 OK\r\nContent-Length: "
+ 				+ content.getBytes().length + "\r\n\r\nhello world\r\n", tag);
++		} finally {
++		    if (response != null) {
++		        try {
++		            response.createEncode(null);
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
++		}
+ 	}
+ 
+ 	public void testDecode001() throws IOException {

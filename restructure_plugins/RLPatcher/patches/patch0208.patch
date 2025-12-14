@@ -1,0 +1,41 @@
+--- /tmp/orig-4257908974629752404.java	2025-09-24 21:53:06.015003594 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url43a0865bb0_kevinjdolan_darwin_tgz-pJ8-tui_DriverJ8/src/darwInvest/data/gathering/dataSource/ProquestGoogleFinanceNYSE.java	2025-09-24 21:53:03.778847277 +0000
+@@ -208,12 +208,13 @@
+ 					nexturl = "http://proquest.umi.com" + urlstem + ((pagenumber-1)*10);
+ 				}
+ 				URL proquesturl = new URL(nexturl);
+-				BufferedReader proquestsearchreader = new BufferedReader(new InputStreamReader(proquesturl.openStream()));
+-				System.out.println(ticker.getSymbol() + ":" + nexturl);
+-				Scanner s3 = new Scanner(proquestsearchreader);
+-				s3.useDelimiter("[\n\r]+");
+-				Boolean done = false;
+-				while(s3.hasNext() && !done && storycounter < nostories) {
++				try (java.io.InputStream __arodnap_temp0 = proquesturl.openStream()) {
++    BufferedReader proquestsearchreader = new BufferedReader(new InputStreamReader(__arodnap_temp0));
++    System.out.println(ticker.getSymbol() + ":" + nexturl);
++    Scanner s3 = new Scanner(proquestsearchreader);
++    s3.useDelimiter("[\n\r]+");
++    Boolean done = false;
++    while(s3.hasNext() && !done && storycounter < nostories) {
+ 					String next = s3.next();
+ 					if(next.contains("No documents found for: ")) {
+ 						done = true;
+@@ -282,13 +283,13 @@
+ 						//System.out.println(urlstem);
+ 					}
+ 				}
+-				pagenumber++;
+-				if (s3 != null) {
++    pagenumber++;
++    if (s3 != null) {
+ 					s3.close();
+ 				}
+-				if (proquestsearchreader != null) {
+-					proquestsearchreader.close();
+-				}
++    if (proquestsearchreader != null) {
++}
++}
+ 				System.out.println("Running explorer...");
+ 				List<Object> result = runner.dispatch();
+ 				System.out.println("Explorer complete.");

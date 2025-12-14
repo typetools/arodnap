@@ -1,0 +1,14 @@
+--- /tmp/orig-15317239253419864434.java	2025-09-24 22:50:10.698405622 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urld0f681c558_farom57_AstroidDriver_tgz-pJ8-laazotea_indi_server_examples_MinimumINDIServerJ8/src/laazotea/indi/driver/INDINumberElement.java	2025-09-24 22:50:08.762270269 +0000
+@@ -318,8 +318,9 @@
+     if (numberFormat.endsWith("m")) {
+       aux = sFormatter.format(number);
+     } else {
+-      Formatter formatter = new Formatter(Locale.US);
+-      aux = formatter.format(getNumberFormat(), number).toString();
++        try (Formatter formatter = new Formatter(Locale.US)) {
++            aux = formatter.format(getNumberFormat(), number).toString();
++        }
+     }
+ 
+     return aux;

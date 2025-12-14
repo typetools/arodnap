@@ -1,0 +1,15 @@
+--- /tmp/orig-14667757561955522795.java	2025-09-24 21:45:23.886699077 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url270fc4f5ee_ykcilborw_Joust_tgz-pJ8-fri_patterns_interpreter_parsergenerator_examples_HowToOverrideLexerImplJ8/src/com/wroblicky/andrew/joust/game/GameSetup.java	2025-09-24 21:45:21.214512285 +0000
+@@ -335,10 +335,9 @@
+ 		board[7][6] = g8;
+ 		Location h8 = new Location("h8");
+ 		board[7][7] = h8;
+-		try {
++		try (FileInputStream fstream = new FileInputStream(initialConfig)) {
+ 			// Open the file that is the first 
+-			// command line parameter
+-			FileInputStream fstream = new FileInputStream(initialConfig);
++
+ 			// Get the object of DataInputStream
+ 			DataInputStream in = new DataInputStream(fstream);
+ 			BufferedReader br = new BufferedReader(new InputStreamReader(in));

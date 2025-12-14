@@ -1,0 +1,38 @@
+--- /tmp/orig-3508774630051952488.java	2025-09-24 22:05:55.788814053 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url64d634b8f0_agdturner_generic_tgz-pJ8-uk_ac_leeds_ccg_andyt_generic_visualisation_charts_Generic_BarChartJ8/src/uk/ac/leeds/ccg/andyt/generic/io/Generic_ReadCSV.java	2025-09-24 22:05:53.072624181 +0000
+@@ -50,10 +50,18 @@
+             pw = new PrintWriter(test);
+         } catch (FileNotFoundException ex) {
+             Logger.getLogger(Generic_ReadCSV.class.getName()).log(Level.SEVERE, null, ex);
++        } finally {
++            if (pw != null) {
++                try {
++                    pw.close();
++                } catch (Exception e) {
++                    e.printStackTrace();
++                }
++            }
+         }
+         if (f.exists()) {
+-            try {
+-                BufferedReader br;
++        java.io.BufferedReader br = null;
++        try {
+                 StreamTokenizer st;
+                 br = Generic_StaticIO.getBufferedReader(f);
+                 if (br != null) {
+@@ -122,6 +130,14 @@
+                 pw.close();
+             } catch (IOException e) {
+                 System.err.println(e.getMessage());
++            } finally {
++                if (br != null) {
++                    try {
++                        br.close();
++                    } catch (Exception e) {
++                        e.printStackTrace();
++                    }
++                }
+             }
+         }
+ 

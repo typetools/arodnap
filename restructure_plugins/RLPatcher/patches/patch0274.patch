@@ -1,0 +1,19 @@
+--- /tmp/orig-16403188056777102929.java	2025-09-24 21:58:20.777006817 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url4aac7e6f55_simon0191_tetris3d_tgz-pJ8-Tetris3dJ8/src/vsdk/toolkit/io/image/ImagePersistence.java	2025-09-24 21:58:18.812869515 +0000
+@@ -413,7 +413,7 @@
+     */    
+     public static boolean exportGIF(File fd, Image img)
+     {
+-        try {
++        try (FileOutputStream fos = new FileOutputStream(fd)) {
+             BufferedImage bimg;
+             int x, y, xSize, ySize;
+             RGBPixel p;
+@@ -432,7 +432,6 @@
+                 }
+             }
+ 
+-            FileOutputStream fos = new FileOutputStream(fd);
+ 
+             ImageIO.write(bimg, "gif", fos);
+ 

@@ -1,0 +1,56 @@
+--- /tmp/orig-1616695924321918868.java	2025-09-24 21:53:25.484364586 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url47087446e9_kellrott_SparqlScape_tgz-pJ8-org_json_TestJ8/src/org/sparqlscape/ConnectTest.java	2025-09-24 21:53:23.752243503 +0000
+@@ -46,15 +46,12 @@
+ */
+ 	
+ 	public static void main(String args[]) throws IOException {	
+-		
+-		CSVParser p = new CSVParser( new InputStreamReader( new FileInputStream(new File(args[0])) ), new CSVStrategy('\t', '"',	'#'));
+-		
+-		String[] head = p.getLine();
+-
+-		List< Map<String,Object> > editList = new LinkedList<Map<String,Object>>();
+-
+-		String []curRead = null;
+-		do {
++	    try (java.io.FileInputStream __arodnap_temp0 = new FileInputStream(new File(args[0]))) {
++	        CSVParser p = new CSVParser( new InputStreamReader( __arodnap_temp0 ), new CSVStrategy('\t', '"',	'#'));
++	        String[] head = p.getLine();
++	        List< Map<String,Object> > editList = new LinkedList<Map<String,Object>>();
++	        String []curRead = null;
++	        do {
+ 			curRead = p.getLine();
+ 			if ( curRead != null ) {
+ 				Map<String, Object> features = new HashMap<String,Object>();
+@@ -64,17 +61,22 @@
+ 				editList.add(features);
+ 			}			
+ 		} while ( curRead != null );
+-		
+-		Map<String,String> nsMap = new HashMap<String,String>();
+-		nsMap.put("BLAST_UniProt_AC", "http://purl.uniprot.org/uniprot/");
+-		
+-		SparqlInterface iSparql = new SparqlInterface( "http://proteins:8890/sparql" );
+-		iSparql.SetNamespaces(nsMap);
+-		
+-		for ( LinkTriple link :	iSparql.ConnectionFinder( editList, "BLAST_UniProt_AC", "ID" ) ) {
++	        Map<String,String> nsMap = new HashMap<String,String>();
++	        nsMap.put("BLAST_UniProt_AC", "http://purl.uniprot.org/uniprot/");
++	        SparqlInterface iSparql = new SparqlInterface( "http://proteins:8890/sparql" );
++	        iSparql.SetNamespaces(nsMap);
++	        for ( LinkTriple link :	iSparql.ConnectionFinder( editList, "BLAST_UniProt_AC", "ID" ) ) {
+ 			System.out.println( link );
+ 		}
+-		//System.exit(0);		
++	    }
++	
++
++
++
++
++
++
++//System.exit(0);		
+ 	}
+ 	
+ }

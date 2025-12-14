@@ -1,0 +1,14 @@
+--- /tmp/orig-13960195346681110897.java	2025-09-24 22:04:15.749820949 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url5a01f2c1d9_core9_core_tgz-pJ8-io_core9_core_boot_BootstrapFrameworkJ8/src/net/xeoh/plugins/diagnosis/local/impl/serialization/java/LogFileReader.java	2025-09-24 22:04:13.753681410 +0000
+@@ -52,9 +52,9 @@
+      * @param callback
+      */
+     public void replay(EntryCallback callback) {
+-        try {
++        try (java.io.FileInputStream __arodnap_temp0 = new FileInputStream(this.file)) {
+             @SuppressWarnings("resource")
+-			final ObjectInputStream stream = new ObjectInputStream(new FileInputStream(this.file));
++			final ObjectInputStream stream = new ObjectInputStream(__arodnap_temp0);
+             while (true) {
+                 try {
+                     callback.nextEntry((Entry) stream.readObject());

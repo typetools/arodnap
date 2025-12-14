@@ -1,0 +1,14 @@
+--- /tmp/orig-6629469315460422459.java	2025-09-24 22:57:17.860268645 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlfc1c29991b_nil_mish_InJava_tgz-pJ8-edu_usc_cs_nsl_indexing_test_TestTrieProtoJ8/src/edu/usc/cs/nsl/indexing/TrieGenerator.java	2025-09-24 22:57:16.408167101 +0000
+@@ -58,8 +58,9 @@
+ 		}
+ 		br.close();
+ 		TrieGenerator tg = new TrieGenerator(the_list);
+-		FileOutputStream out = new FileOutputStream(args[1]);
+-		tg.writeTriePB(out);		
++		try (FileOutputStream out = new FileOutputStream(args[1])) {
++		    tg.writeTriePB(out);
++		}
+ 	}
+ 
+ }

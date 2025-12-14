@@ -1,0 +1,22 @@
+--- /tmp/orig-17077773548087661914.java	2025-09-24 22:45:16.673850791 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlbd77b745af_KokaKiwi_MCLauncher_tgz-pJ8-net_contrapunctus_lzma_BenchmarkJ8/src/com/kokakiwi/mclauncher/core/Loginer.java	2025-09-24 22:45:14.885725785 +0000
+@@ -123,12 +123,13 @@
+         {
+             final Cipher cipher = getCipher(Cipher.DECRYPT_MODE, main
+                     .getConfig().getString("login.encryptionKey"));
+-            final DataInputStream in = new DataInputStream(
+-                    new CipherInputStream(new FileInputStream(file), cipher));
+-            storedUsername = in.readUTF();
+-            storedPassword = in.readUTF();
+-            
+-            in.close();
++            try (javax.crypto.CipherInputStream __arodnap_temp0 = new CipherInputStream(new FileInputStream(file), cipher)) {
++                final DataInputStream in = new DataInputStream(
++                    __arodnap_temp0);
++                storedUsername = in.readUTF();
++                storedPassword = in.readUTF();
++            }
++
+         }
+     }
+     

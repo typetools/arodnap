@@ -1,0 +1,34 @@
+--- /tmp/orig-4950966079145384488.java	2025-09-24 22:56:41.977759409 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urle514e161fe_pericodiaz89_NextGen_tgz-pJ8-lib_json_TestJ8/src/nextgen/dao/FileManager.java	2025-09-24 22:56:40.057625160 +0000
+@@ -58,7 +58,8 @@
+     }
+     
+     public static void generateFile(String directory, String content){
+-        try {
++    java.io.FileWriter fw = null;
++    try {
+  
+ 			File file = new File(directory);
+  
+@@ -66,12 +67,20 @@
+ 			if (!file.exists()) {
+ 				file.createNewFile();
+ 			}
+-			FileWriter fw = new FileWriter(file.getAbsoluteFile());
++			fw = new FileWriter(file.getAbsoluteFile());
+ 			BufferedWriter bw = new BufferedWriter(fw);
+ 			bw.write(content);
+ 			bw.close();
+              //writer.print(content);
+         } catch (Exception e) {
++        } finally {
++            if (fw != null) {
++                try {
++                    fw.close();
++                } catch (Exception e) {
++                    e.printStackTrace();
++                }
++            }
+         }
+     }
+     

@@ -1,0 +1,30 @@
+--- /tmp/orig-5346078289100923582.java	2025-09-24 21:47:24.299116205 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url294e6c45f3_Ecdosis_NMergeNew_tgz-pJ8-TestJ8/src/edu/luc/nmerge/mvd/MVDError.java	2025-09-24 21:47:21.810942276 +0000
+@@ -10,16 +10,25 @@
+ {
+ 	public static void log( String message )
+ 	{
+-		try
++	java.io.FileWriter fw = null;
++	try
+ 		{
+ 			File tmpDir = new File( System.getProperty("java.io.tmpdir"));
+ 			File tmpFile = new File( tmpDir,"mvderror.log" );
+-			FileWriter fw = new FileWriter(tmpFile,true);
++			fw = new FileWriter(tmpFile,true);
+ 			fw.write( message+"\n" );
+ 			fw.close();
+ 		}
+ 		catch ( Exception e )
+ 		{
++		} finally {
++		    if (fw != null) {
++		        try {
++		            fw.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
+ 		}
+ 	}
+ }

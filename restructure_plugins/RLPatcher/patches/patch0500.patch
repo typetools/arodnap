@@ -1,0 +1,23 @@
+--- /tmp/orig-12934884455711444945.java	2025-09-24 22:22:54.087996717 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url80e39b1957_tobikster_IJN_headers_recognition_tgz-pJ8-org_maltparser_examples_CreatePhraseStructureGraphJ8/src/org/maltparser/core/config/ConfigDirChartItem.java	2025-09-24 22:22:50.487745044 +0000
+@@ -99,7 +99,19 @@
+ 				SystemLogger.logger().error("You have to re-train the parser model to be able to parse with current version of MaltParser.\n");
+ 				System.exit(1);
+ 			}
+-			OptionManager.instance().loadOptions(getOptionContainerIndex(), configDir.getInputStreamReaderFromConfigFile("savedoptions.sop"));
++			java.io.InputStreamReader __arodnap_temp0 = null;
++			try {
++    __arodnap_temp0 = configDir.getInputStreamReaderFromConfigFile("savedoptions.sop");
++    OptionManager.instance().loadOptions(getOptionContainerIndex(), __arodnap_temp0);
++} finally {
++    if (__arodnap_temp0 != null) {
++        try {
++            __arodnap_temp0.close();
++        } catch (Exception e) {
++            e.printStackTrace();
++        }
++    }
++}
+ 			configDir.initDataFormat();
+ 		} else if (taskName.equals("createdir")) {
+ 			configDir.setCreatedByMaltParserVersion(SystemInfo.getVersion());

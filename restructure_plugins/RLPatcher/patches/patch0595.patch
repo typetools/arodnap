@@ -1,0 +1,14 @@
+--- /tmp/orig-10096847008150911394.java	2025-09-24 22:36:49.250378205 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url8c14fd53ee_luca89_itaco_tgz-pJ8-main_RunnerJ8/src/main/FileItaco.java	2025-09-24 22:36:47.558259919 +0000
+@@ -216,9 +216,9 @@
+ 	 * @return stringa contenente il sorgente aperto, stringa vuota altrimenti
+ 	 */
+ 	public String getContenuto() {
+-		try {
++		try (java.io.FileInputStream __arodnap_temp0 = new FileInputStream(getPercorsoFile())) {
+ 			java.util.Scanner scanner = new java.util.Scanner(
+-					new FileInputStream(getPercorsoFile()));
++					__arodnap_temp0);
+ 			StringBuilder sb = new StringBuilder();
+ 			while (scanner.hasNextLine()) {
+ 				sb.append(scanner.nextLine());

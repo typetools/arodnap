@@ -1,0 +1,29 @@
+--- /tmp/orig-5326255617047730965.java	2025-09-24 21:54:32.577054655 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url47af6b1535_rolandotr_db_comparison_tgz-pJ8-methodology_HistoryJ8/src/utils/Report.java	2025-09-24 21:54:30.928939445 +0000
+@@ -351,11 +351,12 @@
+ 
+ 	private static List<DBProtocol> getBransAndChaum(File f) throws IOException {
+ 		List<DBProtocol> protocols = new LinkedList<>();
+-		BufferedReader reader = new BufferedReader(new FileReader(f));
+-		String regex = "BC-\\{(\\d+)\\}";
+-		Pattern pattern = Pattern.compile(regex);
+-		String retrievedText = null;
+-		for (String line = reader.readLine(); line  != null; line = reader.readLine()){
++		try (java.io.FileReader __arodnap_temp0 = new FileReader(f)) {
++		    BufferedReader reader = new BufferedReader(__arodnap_temp0);
++		    String regex = "BC-\\{(\\d+)\\}";
++		    Pattern pattern = Pattern.compile(regex);
++		    String retrievedText = null;
++		    for (String line = reader.readLine(); line  != null; line = reader.readLine()){
+ 			Matcher m = pattern.matcher(line);
+ 			while (m.find()) {
+ 				retrievedText = m.group(1);
+@@ -364,7 +365,7 @@
+ 				protocols.add(p);
+ 			}
+ 		}
+-		reader.close();
++		}
+ 		return protocols;
+ 	}
+ 

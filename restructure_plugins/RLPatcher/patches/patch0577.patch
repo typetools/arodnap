@@ -1,0 +1,25 @@
+--- /tmp/orig-18040277800317989031.java	2025-09-24 22:35:07.819287730 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url882f91ec97_WenboCao_Microsoft_Drone_tgz-pJ8-org_ejml_alg_dense_decomposition_qr_StabilityQRDecompositionJ8/src/org/ejml/ops/MatrixIO.java	2025-09-24 22:35:04.171032701 +0000
+@@ -146,15 +146,15 @@
+     public static DenseMatrix64F loadCSV( String fileName , int numRows , int numCols )
+         throws IOException
+     {
+-        FileInputStream fileStream = new FileInputStream(fileName);
+-        ReadMatrixCsv csv = new ReadMatrixCsv(fileStream);
++        try (FileInputStream fileStream = new FileInputStream(fileName)) {
++            ReadMatrixCsv csv = new ReadMatrixCsv(fileStream);
++            DenseMatrix64F ret = csv.read(numRows,numCols);
++            return ret;
++        }
++    
+ 
+-        DenseMatrix64F ret = csv.read(numRows,numCols);
+ 
+-        fileStream.close();
+-
+-        return ret;
+-    }
++}
+ 
+     public static void print( PrintStream out , Matrix64F mat ) {
+         print(out,mat,6,3);

@@ -1,0 +1,39 @@
+--- /tmp/orig-14977863699431233724.java	2025-09-24 22:07:24.403008490 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url70997c83aa_Xilaew_risiko_tgz-pJ8-risiko_XMI2XMLtransformerJ8/src/risiko/tcp/ClientTcp.java	2025-09-24 22:07:22.506875944 +0000
+@@ -88,9 +88,11 @@
+ 
+ 	@Override
+ 	public void run() {
+-		try {
+-			Selector selector = Selector.open();
+-			SocketChannel s = SocketChannel.open(serverAdress);
++	java.nio.channels.SocketChannel s = null;
++	java.nio.channels.Selector selector = null;
++	try {
++			selector = Selector.open();
++			s = SocketChannel.open(serverAdress);
+ 			s.configureBlocking(false);
+ 			ClientState cs = new ClientState(serverAdress.toString());
+ 			s.register(selector, SelectionKey.OP_READ, cs);
+@@ -115,6 +117,21 @@
+ 			LOG.log(Level.WARNING,
+ 					"IOException, connection to " + serverAdress.toString()
+ 							+ " could not be established.", e);
++		} finally {
++		    if (s != null) {
++		        try {
++		            s.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
++		    if (selector != null) {
++		        try {
++		            selector.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
+ 		}
+ 	}
+ 

@@ -1,0 +1,31 @@
+--- /tmp/orig-3147727683600059214.java	2025-09-24 22:07:48.372684053 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url70ed135da7_ralfbiedert_jcores_tgz-pJ8-sandbox_SimpleFilterTestJ8/src/net/jcores/jre/cores/CoreFile.java	2025-09-24 22:07:44.952444966 +0000
+@@ -350,10 +350,12 @@
+ 
+         if (size() > 1)
+             this.commonCore.report(MessageType.MISUSE, "deserialize() should not be used on cores with more than one class!");
++        java.io.FileInputStream __arodnap_temp0 = null;
+ 
+         // Try to restore the core, and don't forget to set the commonCore
+         try {
+-            final CoreObject<T> core = Streams.deserializeCore(type, new FileInputStream(get(0)), this.commonCore);
++        __arodnap_temp0 = new FileInputStream(get(0));
++        final CoreObject<T> core = Streams.deserializeCore(type, __arodnap_temp0, this.commonCore);
+             if (core != null) return core;
+         } catch (FileNotFoundException e) {
+             e.printStackTrace();
+@@ -361,6 +363,14 @@
+             e.printStackTrace();
+         } catch (IllegalArgumentException e) {
+             e.printStackTrace();
++        } finally {
++            if (__arodnap_temp0 != null) {
++                try {
++                    __arodnap_temp0.close();
++                } catch (Exception e) {
++                    e.printStackTrace();
++                }
++            }
+         }
+ 
+         return new CoreObject<T>(this.commonCore, type, null);

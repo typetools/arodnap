@@ -1,0 +1,34 @@
+--- /tmp/orig-1607702581752653475.java	2025-09-24 22:56:06.651289771 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urle381b6cba7_IkarosKappler_ikrs_http_tgz-pJ8-ikrs_json_rpc_JSONRPCHandlerJ8/src/ikrs/io/MultipartMIMETokenizer.java	2025-09-24 22:56:03.995104081 +0000
+@@ -161,6 +161,7 @@
+ 
+ 
+     public static void main( String[] argv  ) {
++    java.io.FileInputStream fin = null;
+ 
+ 	try {
+ 
+@@ -175,7 +176,7 @@
+ 
+ 	    System.out.println( "Using stopMark: " + stopMark  );
+ 	    System.out.println( "Reading file until stopMark will be found ... ");
+-	    java.io.FileInputStream fin = new java.io.FileInputStream( new java.io.File(filename) );
++	    fin = new java.io.FileInputStream( new java.io.File(filename) );
+ 	    MultipartMIMETokenizer tokenizer = new MultipartMIMETokenizer( fin, 
+ 									   stopMark );
+ 	    
+@@ -206,6 +207,14 @@
+ 
+ 	    e.printStackTrace();
+ 
++	} finally {
++	    if (fin != null) {
++	        try {
++	            fin.close();
++	        } catch (Exception e) {
++	            e.printStackTrace();
++	        }
++	    }
+ 	}
+ 
+     }

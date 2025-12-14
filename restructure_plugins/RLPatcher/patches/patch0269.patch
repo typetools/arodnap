@@ -1,0 +1,17 @@
+--- /tmp/orig-707613510352074223.java	2025-09-24 21:57:53.651110599 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url49584c1d41_Arrem_GGS_tgz-pJ8-com_gamezgalaxy_test_console_MainJ8/src/com/gamezgalaxy/GGS/world/convert/DatToGGS.java	2025-09-24 21:57:51.746977492 +0000
+@@ -83,6 +83,14 @@
+ 			System.out.println("Saving level "+filename+" successful");
+ 		} catch(IOException ex) {
+ 			ex.printStackTrace();
++		} finally {
++		    if (fos != null) {
++		        try {
++		            fos.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
+ 		}
+ 	}
+ 

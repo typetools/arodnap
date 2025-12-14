@@ -1,0 +1,19 @@
+--- /tmp/orig-9654077664963039552.java	2025-09-24 22:09:54.161477123 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url73e3057d61_empeeoh_BACnet4J_tgz-pJ8-com_serotonin_bacnet4j_test_OverflowTestJ8/src/com/serotonin/bacnet4j/rs485/PortTest.java	2025-09-24 22:09:50.393213709 +0000
+@@ -13,11 +13,12 @@
+         params.setPortOwnerName("Testing");
+ 
+         SerialPort serialPort = SerialUtils.openSerialPort(params);
+-        InputStream in = serialPort.getInputStream();
+-        //OutputStream out = serialPort.getOutputStream();
+-
+-        while (true) {
++        try (InputStream in = serialPort.getInputStream()) {
++            while (true) {
+             System.out.print(Integer.toString(in.read(), 16));
+         }
++        }
++        //OutputStream out = serialPort.getOutputStream();
++
+     }
+ }

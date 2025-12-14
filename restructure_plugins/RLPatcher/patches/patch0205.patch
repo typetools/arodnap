@@ -1,0 +1,17 @@
+--- /tmp/orig-11055340684069402710.java	2025-09-24 21:52:50.225899867 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url43a0865bb0_kevinjdolan_darwin_tgz-pJ8-tui_DriverJ8/src/darwInvest/data/utility/DefaultSerializer.java	2025-09-24 21:52:47.849733763 +0000
+@@ -37,6 +37,14 @@
+ 			out.close();
+ 		} catch (IOException e) {
+ 			e.printStackTrace();
++		} finally {
++		    if (fos != null) {
++		        try {
++		            fos.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
+ 		}
+ 	}
+ 

@@ -1,0 +1,35 @@
+--- /tmp/orig-4488519457076721884.java	2025-09-24 22:40:00.855772406 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url9d04094941_petermikitsh_PizzaDeliverySystem_tgz-pJ8-testdrivers_ManagerReportTestDriverJ8/src/model/database/Database.java	2025-09-24 22:39:58.415601817 +0000
+@@ -128,12 +128,14 @@
+ 	 * Writes this database's information to an XML file.
+ 	 */
+ 	public void save() {
+-		
++	java.io.FileOutputStream __arodnap_temp0 = null;
++	
+ 		// Create an encoder and use it to write the database.
+ 		try {
+-		    // Serialize object into XML
++		__arodnap_temp0 = new FileOutputStream(_name + "_table.xml");
++    // Serialize object into XML
+ 		    XMLEncoder encoder = new XMLEncoder(new BufferedOutputStream(
+-		        new FileOutputStream(_name +"_table.xml")));
++		        __arodnap_temp0));
+ 		    
+ 		    // Write the counter.
+ 		    encoder.writeObject(_counter);
+@@ -143,6 +145,14 @@
+ 		    encoder.close();
+ 		} catch (FileNotFoundException e) {
+ 			// Do nothing.
++		} finally {
++		    if (__arodnap_temp0 != null) {
++		        try {
++		            __arodnap_temp0.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
+ 		}
+ 		
+ 	}

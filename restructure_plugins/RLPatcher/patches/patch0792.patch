@@ -1,0 +1,64 @@
+--- /tmp/orig-15269504916113108942.java	2025-09-24 22:54:08.523031596 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urldeb33fd2fa_friedemann_distripedia_tgz-pJ8-org_json_TestJ8/src/trash/DavidTesting.java	2025-09-24 22:54:06.450886736 +0000
+@@ -36,9 +36,21 @@
+ 
+ 	private static void distriClient()
+ 	{
+-		// start websocket server
+-		Thread wsServer = new Thread(new WebSocketServer("/"), "websocket-server");
+-		wsServer.start();
++	websocket.server.WebSocketServer __arodnap_temp0 = null;
++	try {
++    __arodnap_temp0 = new WebSocketServer("/");
++    Thread wsServer = new Thread(__arodnap_temp0, "websocket-server");
++    wsServer.start();
++} finally {
++    if (__arodnap_temp0 != null) {
++        try {
++            __arodnap_temp0.stop();
++        } catch (Exception e) {
++            e.printStackTrace();
++        }
++    }
++}
++
+ 		
+ 		LocalStorage ls = new LocalStorage();
+ 		
+@@ -46,10 +58,11 @@
+ 		{
+ 			for (int i = 0; i < 1; i++)
+ 			{
+-				final DistripediaClient client = new DistripediaClient(new URI("ws://localhost:8383/"), ls);
+-				client.setCachedArticlesPreferred(true);
+-				
+-				client.addArticleReceivedHandler(new ArticleReceivedHandler()
++			websocket.client.DistripediaClient client = null;
++			try {
++			    client = new DistripediaClient(new URI("ws://localhost:8383/"), ls);
++			    client.setCachedArticlesPreferred(true);
++			    client.addArticleReceivedHandler(new ArticleReceivedHandler()
+ 				{
+ 					@Override
+ 					public void onArticleReceived(ArticleReceivedEvent e)
+@@ -58,8 +71,19 @@
+ 						System.out.println(e.isArticleFromCache());
+ 					}
+ 				});
++			    client.getArticle("article1");
++			} finally {
++			    if (client != null) {
++			        try {
++			            client.disconnect();
++			        } catch (Exception e) {
++			            e.printStackTrace();
++			        }
++			    }
++			}
++
++				
+ 				
+-				client.getArticle("article1");
+ 			}
+ 		
+ 	

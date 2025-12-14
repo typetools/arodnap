@@ -1,0 +1,13 @@
+--- /tmp/orig-10971688568427688381.java	2025-09-24 21:51:50.013690775 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url416ee5b4ee_martinmarinov_HonProj_tgz-pJ8-martin_gui_MainJ8/src/martin/gui/CircuitSimulatorGUI.java	2025-09-24 21:51:47.961547321 +0000
+@@ -98,8 +98,8 @@
+ 			public void actionPerformed(ActionEvent paramActionEvent) {
+ 				if (fcQC.showOpenDialog(frmQuantumCircuitEvaluator) == JFileChooser.APPROVE_OPTION) {
+ 					final File file = fcQC.getSelectedFile();
+-					try {
+-						txtInputCirc.setText(new Scanner(file).useDelimiter("\\Z").next());
++					try (java.util.Scanner __arodnap_temp0 = new Scanner(file)) {
++						txtInputCirc.setText(__arodnap_temp0.useDelimiter("\\Z").next());
+ 					} catch (Throwable e) {
+ 						throwException(e);
+ 					}

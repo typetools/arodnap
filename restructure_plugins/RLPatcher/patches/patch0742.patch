@@ -1,0 +1,21 @@
+--- /tmp/orig-3074634031130901440.java	2025-09-24 22:49:57.085453960 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlcf7851e92b_Triploblastic_CSCD350_FinalProject_tgz-pJ8-MazeGame_MazeJ8/src/TriviaQuestions/DataBaseBuilder.java	2025-09-24 22:49:55.685356081 +0000
+@@ -54,8 +54,8 @@
+ 	private static void insertQuoteAndMovie() throws Exception{
+ 		String sql, quote, movie;
+ 		File fin = new File("MovieQuoteTrivia.txt");
+-		Scanner sc = new Scanner(fin);
+-		while(sc.hasNextLine()) {
++		try (Scanner sc = new Scanner(fin)) {
++		    while(sc.hasNextLine()) {
+ 			quote = sc.nextLine();
+ 			movie = sc.nextLine();
+ 			sql = 	"INSERT INTO MovieTrivia (quote, answer)" +
+@@ -63,6 +63,7 @@
+ 			s.executeUpdate(sql);
+ 			movies.add(movie);
+ 		}
++		}
+ 		System.out.println("Quote & Movie inserted");
+ 	}//insertQuoteAndMovie()
+ 	

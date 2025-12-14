@@ -1,0 +1,24 @@
+--- /tmp/orig-18313776288926661264.java	2025-09-24 22:22:17.829462087 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url80e39b1957_tobikster_IJN_headers_recognition_tgz-pJ8-org_maltparser_examples_CreatePhraseStructureGraphJ8/src/org/maltparser/core/syntaxgraph/reader/TigerXMLReader.java	2025-09-24 22:22:14.221209855 +0000
+@@ -78,10 +78,20 @@
+ 	public void open(String fileName, String charsetName) throws MaltChainedException {
+ 		setFileName(fileName);
+ 		setCharsetName(charsetName);
++		java.io.FileInputStream __arodnap_temp0 = null;
+ 		try {
+-			open(new FileInputStream(fileName), charsetName);
++		__arodnap_temp0 = new FileInputStream(fileName);
++		open(__arodnap_temp0, charsetName);
+ 		}catch (FileNotFoundException e) {
+ 			throw new DataFormatException("The input file '"+fileName+"' cannot be found. ", e);
++		} finally {
++		    if (__arodnap_temp0 != null) {
++		        try {
++		            __arodnap_temp0.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
+ 		}
+ 	}
+ 	public void open(URL url, String charsetName) throws MaltChainedException {

@@ -1,0 +1,13 @@
+--- /tmp/orig-13915164318850254767.java	2025-09-24 21:57:35.981875444 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url49584c1d41_Arrem_GGS_tgz-pJ8-com_gamezgalaxy_test_console_MainJ8/src/com/gamezgalaxy/GGS/system/BanHandler.java	2025-09-24 21:57:33.941732829 +0000
+@@ -29,9 +29,8 @@
+ 	public static void init() {
+ 		banned.clear();
+ 
+-		try {
++		try (FileInputStream fstream = new FileInputStream(FileUtils.PROPS_DIR + FileUtils.BANNED_FILE)) {
+ 			FileUtils.CreateIfNotExist(FileUtils.PROPS_DIR , FileUtils.BANNED_FILE);
+-			FileInputStream fstream = new FileInputStream(FileUtils.PROPS_DIR + FileUtils.BANNED_FILE);
+ 			DataInputStream in = new DataInputStream(fstream);
+ 			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+ 

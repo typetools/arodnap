@@ -1,0 +1,28 @@
+--- /tmp/orig-7641111619979850532.java	2025-09-24 22:09:28.779702849 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url71665d7d68_branscha_lib_scripty_tgz-pJ8-com_sdicons_scripty_ScriptyAutoReplJ8/src/com/sdicons/scripty/parser/TestParser.java	2025-09-24 22:09:26.179521088 +0000
+@@ -198,12 +198,24 @@
+     @Test
+     public void parseFile()
+     {
+-        InputStream lIn = TestParser.class.getResourceAsStream("/com/sdicons/repl/cmds.lsp");
++    java.io.InputStream lIn = null;
++    try {
++        lIn = TestParser.class.getResourceAsStream("/com/sdicons/repl/cmds.lsp");
+         StreamBuffer lBuf = new StreamBuffer(lIn);
+         while(!lBuf.eof())
+         {
+             Object lResult = parser.parseExpression(lBuf);
+             Assert.assertTrue(lResult != null);
+         }
++    } finally {
++        if (lIn != null) {
++            try {
++                lIn.close();
++            } catch (Exception e) {
++                e.printStackTrace();
++            }
++        }
++    }
++
+     }
+ }

@@ -1,0 +1,57 @@
+--- /tmp/orig-5000745624137707829.java	2025-09-24 22:43:18.493588979 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlb5d5be4365_abmargb_oursim_ext_tgz-pJ8-br_edu_ufcg_lsd_oursim_experiments_RemoteNoFScenarioGeneratorJ8/src/br/edu/ufcg/lsd/oursim/factories/JsonGridFactoryTest.java	2025-09-24 22:43:16.169426500 +0000
+@@ -17,27 +17,39 @@
+ 
+ 	@Test
+ 	public void testParseGrid() {
+-		JsonGridFactory factory = new JsonGridFactory(
++	java.io.InputStream __arodnap_temp0 = null;
++	try {
++    __arodnap_temp0 = getClass().getResourceAsStream("grid-example.conf");
++    JsonGridFactory factory = new JsonGridFactory(
+ 				Configuration.createDefaults(), 
+-				getClass().getResourceAsStream("grid-example.conf"));
+-		
+-		Grid grid = factory.createGrid();
++				__arodnap_temp0);
++    Grid grid = factory.createGrid();
++    Assert.assertEquals(DiscoveryService.class, grid.getObject("ds").getClass());
++    Assert.assertEquals(Worker.class, grid.getObject("worker1A").getClass());
++    Assert.assertEquals(Broker.class, grid.getObject("broker1A").getClass());
++    Assert.assertEquals(Peer.class, grid.getObject("peerA").getClass());
++    Peer peerA = grid.getObject("peerA");
++    Peer peerB = grid.getObject("peerB");
++    Assert.assertTrue(peerA.getWorkersIds().contains("worker1A"));
++    Assert.assertTrue(peerB.getWorkersIds().contains("worker1B"));
++    Broker broker1A = grid.getObject("broker1A");
++    Assert.assertEquals("peerA", broker1A.getPeerId());
++    Assert.assertEquals("ds", peerA.getDiscoveryServiceId());
++} finally {
++    if (__arodnap_temp0 != null) {
++        try {
++            __arodnap_temp0.close();
++        } catch (Exception e) {
++            e.printStackTrace();
++        }
++    }
++}
++	
+ 		
+-		Assert.assertEquals(DiscoveryService.class, grid.getObject("ds").getClass());
+-		Assert.assertEquals(Worker.class, grid.getObject("worker1A").getClass());
+-		Assert.assertEquals(Broker.class, grid.getObject("broker1A").getClass());
+-		Assert.assertEquals(Peer.class, grid.getObject("peerA").getClass());
+ 		
+-		Peer peerA = grid.getObject("peerA");
+-		Peer peerB = grid.getObject("peerB");
+ 		
+-		Assert.assertTrue(peerA.getWorkersIds().contains("worker1A"));
+-		Assert.assertTrue(peerB.getWorkersIds().contains("worker1B"));
+ 		
+-		Broker broker1A = grid.getObject("broker1A");
+ 		
+-		Assert.assertEquals("peerA", broker1A.getPeerId());
+-		Assert.assertEquals("ds", peerA.getDiscoveryServiceId());
+ 	}
+ 	
+ 	@Test(expected=IllegalArgumentException.class)

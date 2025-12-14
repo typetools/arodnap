@@ -1,0 +1,17 @@
+--- /tmp/orig-6619868765590857855.java	2025-09-24 21:43:01.056717605 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url20b0f880a5_jgraph_legacy_jgraph5_tgz-pJ8-org_jgraph_example_HelloWorldJ8/src/com/jgraph/example/GraphEdX.java	2025-09-24 21:42:56.756417119 +0000
+@@ -345,12 +345,11 @@
+ 		if (returnValue == JFileChooser.APPROVE_OPTION) {
+ 			Container parent = graph.getParent();
+ 			BasicMarqueeHandler marqueeHandler = graph.getMarqueeHandler();
+-			try {
++			try (java.io.FileInputStream __arodnap_temp0 = new FileInputStream(fileChooser.getSelectedFile())) {
+ 				uninstallListeners(graph);
+ 				parent.remove(graph);
+ 				ObjectInputStream in = new ObjectInputStream(
+-						new BufferedInputStream(new FileInputStream(fileChooser
+-								.getSelectedFile())));
++						new BufferedInputStream(__arodnap_temp0));
+ 				graph = (JGraph) in.readObject();
+ 				// Take the marquee handler from the original graph and
+ 				// use it in the new graph as well.

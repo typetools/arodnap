@@ -1,0 +1,13 @@
+--- /tmp/orig-759192871067102394.java	2025-09-24 22:08:40.452324599 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url70ed135da7_ralfbiedert_jcores_tgz-pJ8-sandbox_SimpleFilterTestJ8/src/net/jcores/jre/utils/internal/Sound.java	2025-09-24 22:08:37.032085512 +0000
+@@ -93,8 +93,8 @@
+     
+     
+     public static AudioInputStream getStream(File file) {
+-        try {
+-            return getStream(new BufferedInputStream(new FileInputStream(file)));
++        try (java.io.FileInputStream __arodnap_temp0 = new FileInputStream(file)) {
++            return getStream(new BufferedInputStream(__arodnap_temp0));
+         } catch (final IOException e1) {
+             e1.printStackTrace();
+             return null;

@@ -1,0 +1,28 @@
+--- /tmp/orig-660761742961455472.java	2025-09-24 22:14:26.724530219 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url7a45f192ca_mfullen_ping_pong_net_tgz-pJ8-ping_pong_net_client_io_TestClientNonPPNServerJ8/src/ping/pong/net/server/io/ServerConnectionManagerTest.java	2025-09-24 22:14:24.844398791 +0000
+@@ -79,10 +79,21 @@
+     @Test
+     public void testIsListening()
+     {
+-        ServerConnectionManager instance = new ServerConnectionManager(ConnectionConfigFactory.createConnectionConfiguration(), new IoServer());
+-        assertTrue(instance.isListening());
+-        instance.shutdown();
+-        assertFalse(instance.isListening());
++    ping.pong.net.server.io.IoServer __arodnap_temp0 = null;
++    try {
++    __arodnap_temp0 = new IoServer();
++    ServerConnectionManager instance = new ServerConnectionManager(ConnectionConfigFactory.createConnectionConfiguration(), __arodnap_temp0);
++    assertTrue(instance.isListening());
++    assertFalse(instance.isListening());
++} finally {
++    if (__arodnap_temp0 != null) {
++        try {
++            __arodnap_temp0.shutdown();
++        } catch (Exception e) {
++            e.printStackTrace();
++        }
++    }
++}
+     }
+ 
+     @Test

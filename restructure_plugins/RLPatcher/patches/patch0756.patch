@@ -1,0 +1,35 @@
+--- /tmp/orig-11867249934502035766.java	2025-09-24 22:51:07.782396280 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urld0f681c558_farom57_AstroidDriver_tgz-pJ8-laazotea_indi_server_examples_MinimumINDIServerJ8/src/laazotea/indi/server/INDIDevice.java	2025-09-24 22:51:06.082277427 +0000
+@@ -283,11 +283,30 @@
+   @Override
+   protected void sendXMLMessage(String xml) {
+ //    System.err.println(xml);
++java.io.OutputStream __arodnap_temp1 = null;
++java.io.OutputStream __arodnap_temp0 = null;
+     try {
+-      getOutputStream().write(xml.getBytes());
+-      getOutputStream().flush();
++    __arodnap_temp1 = getOutputStream();
++    __arodnap_temp1.write(xml.getBytes());
++    __arodnap_temp0 = getOutputStream();
++    __arodnap_temp0.flush();
+     } catch (IOException e) {
+       destroy();
++    } finally {
++        if (__arodnap_temp1 != null) {
++            try {
++                __arodnap_temp1.close();
++            } catch (Exception e) {
++                e.printStackTrace();
++            }
++        }
++        if (__arodnap_temp0 != null) {
++            try {
++                __arodnap_temp0.close();
++            } catch (Exception e) {
++                e.printStackTrace();
++            }
++        }
+     }
+   }
+ 

@@ -1,0 +1,16 @@
+--- /tmp/orig-2659804701266237499.java	2025-09-24 22:53:59.538403494 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urldeb33fd2fa_friedemann_distripedia_tgz-pJ8-org_json_TestJ8/src/grinder/client/user/Browser.java	2025-09-24 22:53:57.558265065 +0000
+@@ -195,10 +195,9 @@
+ 		}
+ 		String html = "";
+ 
+-		try
+-		{
+-			final BufferedReader br = new BufferedReader(new InputStreamReader(url
+-					.openStream()));
++		try(
++java.io.InputStream __arodnap_temp0 = url.openStream()) 		{
++			final BufferedReader br = new BufferedReader(new InputStreamReader(__arodnap_temp0));
+ 			String line = br.readLine();
+ 
+ 			while (line != null)

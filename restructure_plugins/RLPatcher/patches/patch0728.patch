@@ -1,0 +1,33 @@
+--- /tmp/orig-17155429740662352062.java	2025-09-24 22:48:49.064698728 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlc98c3b97d2_Trimax_venta_tgz-pJ8-com_gesoftware_venta_structures_map_MapTestJ8/src/com/gesoftware/venta/actors/ActorsTest.java	2025-09-24 22:48:47.040557223 +0000
+@@ -70,7 +70,9 @@
+     }
+ 
+     private static void startPuppeteer() {
+-        final Puppeteer puppeteer = new Puppeteer("localhost", c_Port);
++    com.gesoftware.venta.actors.Puppeteer puppeteer = null;
++    try {
++        puppeteer = new Puppeteer("localhost", c_Port);
+         puppeteer.registerDispatcher(C.class, new IDispatcher<C>() {
+ 
+             @Override
+@@ -86,8 +88,18 @@
+                 return null;
+             }
+         });
+-
+         (new java.util.Timer("Puppeteer")).schedule(new Task(puppeteer), 0, 1000);
++    } finally {
++        if (puppeteer != null) {
++            try {
++                puppeteer.finish();
++            } catch (Exception e) {
++                e.printStackTrace();
++            }
++        }
++    }
++
++
+     }
+ 
+     public static void main(final String args[]) {

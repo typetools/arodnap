@@ -1,0 +1,12 @@
+--- /tmp/orig-16305410982815788950.java	2025-09-24 21:46:22.650806834 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url28dfd00382_byang223_TurnBAPI_tgz-pJ8-units_upgrades_UpgradeTestJ8/src/serialization/SBufferedImage.java	2025-09-24 21:46:20.598663385 +0000
+@@ -45,6 +45,8 @@
+  
+   private void readObject(java.io.ObjectInputStream in)throws IOException, ClassNotFoundException{
+     name=(String)in.readObject();
+-    image=ImageIO.read(ImageIO.createImageInputStream(in));
++    try (javax.imageio.stream.ImageInputStream __arodnap_temp0 = ImageIO.createImageInputStream(in)) {
++        image=ImageIO.read(__arodnap_temp0);
++    }
+   }
+ }

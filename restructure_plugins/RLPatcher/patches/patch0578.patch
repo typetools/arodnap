@@ -1,0 +1,39 @@
+--- /tmp/orig-14292967145001922640.java	2025-09-24 22:35:18.976067637 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url882f91ec97_WenboCao_Microsoft_Drone_tgz-pJ8-org_ejml_alg_dense_decomposition_qr_StabilityQRDecompositionJ8/src/Data_Compression.java	2025-09-24 22:35:15.303810931 +0000
+@@ -4,9 +4,11 @@
+ public class Data_Compression {
+    static final int BUFFER = 2048;
+    public static void main (String argv[]) {
+-      try {
+-         BufferedInputStream origin = null;
+-         FileOutputStream dest = new FileOutputStream("/Users/orangemr/Desktop/Compression/gps_folder2");//an onput stream that write bytes to a file
++   java.io.BufferedInputStream origin = null;
++   java.io.FileOutputStream dest = null;
++   try {
++         origin = null;
++         dest = new FileOutputStream("/Users/orangemr/Desktop/Compression/gps_folder2");
+          ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(dest));//an output stream to write in the zip file
+          
+          byte data[] = new byte[BUFFER];
+@@ -29,6 +31,21 @@
+          out.close();
+       } catch(Exception e) {
+          e.printStackTrace();
++      } finally {
++          if (origin != null) {
++              try {
++                  origin.close();
++              } catch (Exception e) {
++                  e.printStackTrace();
++              }
++          }
++          if (dest != null) {
++              try {
++                  dest.close();
++              } catch (Exception e) {
++                  e.printStackTrace();
++              }
++          }
+       }
+    }
+ } 

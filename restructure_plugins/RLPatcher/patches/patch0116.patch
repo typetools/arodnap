@@ -1,0 +1,39 @@
+--- /tmp/orig-16831715438885810074.java	2025-09-24 21:44:20.266252424 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url20b0f880a5_jgraph_legacy_jgraph5_tgz-pJ8-org_jgraph_example_HelloWorldJ8/src/com/jgraph/layout/JGraphWordBrowser.java	2025-09-24 21:44:15.169896313 +0000
+@@ -316,22 +316,23 @@
+ 		urlConn.setUseCaches(false);
+ 		urlConn.setRequestProperty("Content-Type",
+ 				"application/x-www-form-urlencoded");
+-		DataOutputStream printout = new DataOutputStream(urlConn
+-				.getOutputStream());
+-		String content = "s=" + URLEncoder.encode(word, "UTF-8")
++		try (java.io.OutputStream __arodnap_temp0 = urlConn.getOutputStream()) {
++		    DataOutputStream printout = new DataOutputStream(__arodnap_temp0);
++		    String content = "s=" + URLEncoder.encode(word, "UTF-8")
+ 				+ "&o2=&o0=1&o6=&o1=1&o5=&o4=&o3=&h=";
+-		printout.writeBytes(content);
+-		printout.flush();
+-		printout.close();
+-		BufferedReader ireader = new BufferedReader(new InputStreamReader(
+-				urlConn.getInputStream()));
+-		ArrayList webpage = new ArrayList(100);
+-		String line;
+-		while ((line = ireader.readLine()) != null) {
++		    printout.writeBytes(content);
++		    printout.flush();
++		}
++		try (java.io.InputStream __arodnap_temp1 = urlConn.getInputStream()) {
++		    BufferedReader ireader = new BufferedReader(new InputStreamReader(
++				__arodnap_temp1));
++		    ArrayList webpage = new ArrayList(100);
++		    String line;
++		    while ((line = ireader.readLine()) != null) {
+ 			webpage.add(line);
+ 		}
+-		ireader.close();
+-		return webpage;
++		    return webpage;
++		}
+ 	}
+ 
+ 	public static void layout(JGraph graph, boolean organic, boolean horizontal) {

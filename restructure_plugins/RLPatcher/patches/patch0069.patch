@@ -1,0 +1,27 @@
+--- /tmp/orig-4717839100061959053.java	2025-09-24 21:38:41.018547258 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url0e7d57473a_kyorohiro_HetimaUtil_tgz-pJ8-net_hetimatan_net_http_HttpServer3xxJ8/src/net/hetimatan/tool/WGet.java	2025-09-24 21:38:38.926401068 +0000
+@@ -16,8 +16,9 @@
+ 			return;
+ 		}
+ 		System.out.println("start args[0]=" + args[0]);		
++		net.hetimatan.net.http.HttpGet getter = null;
+ 		try {
+-			HttpGet getter = new HttpGet( new HttpGetListener() {
++			getter = new HttpGet( new HttpGetListener() {
+ 				@Override
+ 				public boolean onReceiveHeader(HttpGet httpGet) throws IOException {return false;}
+ 				@Override
+@@ -36,6 +37,13 @@
+ 			e.printStackTrace();			
+ 		} finally {
+ 			System.out.println("end");
++			if (getter != null) {
++			    try {
++			        getter.dispose();
++			    } catch (Exception e) {
++			        e.printStackTrace();
++			    }
++			}
+ 		}
+ 	}
+ }

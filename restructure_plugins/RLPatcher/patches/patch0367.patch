@@ -1,0 +1,13 @@
+--- /tmp/orig-7441098066229798037.java	2025-09-24 22:07:37.319911426 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url70ed135da7_ralfbiedert_jcores_tgz-pJ8-sandbox_SimpleFilterTestJ8/src/net/jcores/jre/cores/CoreFile.java	2025-09-24 22:07:33.915673458 +0000
+@@ -256,8 +256,8 @@
+         final CommonCore cc = this.commonCore;
+         return new CoreByteBuffer(this.commonCore, map(new F1<File, ByteBuffer>() {
+             public ByteBuffer f(File x) {
+-                try {
+-                    final FileChannel channel = new FileInputStream(x).getChannel();
++                try (java.io.FileInputStream __arodnap_temp0 = new FileInputStream(x)) {
++                    final FileChannel channel = __arodnap_temp0.getChannel();
+                     final long size = channel.size();
+ 
+                     final ByteBuffer buffer = ByteBuffer.allocate((int) size);

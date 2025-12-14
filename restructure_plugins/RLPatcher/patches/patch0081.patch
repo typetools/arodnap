@@ -1,0 +1,15 @@
+--- /tmp/orig-3047998976159129737.java	2025-09-24 21:40:01.196149725 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url11fb0973cf_raichuman9_Swimmer526_tgz-pJ8-fr_inria_optimization_cmaes_examples_CMAExample1J8/src/ubc/swim/optimization/SwimmerOptimization.java	2025-09-24 21:39:57.963923870 +0000
+@@ -138,9 +138,9 @@
+ 	public static double[] readFromCSV(String filePath, String fileName) {
+ 		List<Double> loadedVals = new ArrayList<Double>();
+ 		
+-		try
+-		{
+-			BufferedReader reader  = new BufferedReader(new FileReader(filePath + "/" + fileName + ".csv"));
++		try(
++java.io.FileReader __arodnap_temp0 = new FileReader(filePath + "/" + fileName + ".csv")) 		{
++			BufferedReader reader  = new BufferedReader(__arodnap_temp0);
+ 			String line = null;
+ 			
+ 			//Each line contains 1 control param (mainly for human readability)

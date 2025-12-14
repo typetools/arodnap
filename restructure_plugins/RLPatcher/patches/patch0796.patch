@@ -1,0 +1,35 @@
+--- /tmp/orig-12659607607434367109.java	2025-09-24 22:54:33.388769923 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urle381b6cba7_IkarosKappler_ikrs_http_tgz-pJ8-ikrs_json_rpc_JSONRPCHandlerJ8/src/ikrs/yuccasrv/socketmngr/ServerSocketThread.java	2025-09-24 22:54:30.796588708 +0000
+@@ -297,20 +297,21 @@
+ 	
+ 	try {
+ 	    while( !this.isInterrupted() && !this.serverSocket.isClosed() ) {
+-
+-		Socket sock = this.serverSocket.accept();
+-		    
+-		// Increase connection counter
+-		BasicType count = this.bindSettings.get(Constants.KEY_CONNECTION_COUNT);
+-		if( count == null )
++	        try (Socket sock = this.serverSocket.accept()) {
++	            BasicType count = this.bindSettings.get(Constants.KEY_CONNECTION_COUNT);
++	            if( count == null )
+ 		    count = new BasicNumberType( 1 );
+ 		else
+ 		    count = new BasicNumberType( count.getInt() + 1 );
+-		this.bindSettings.put( Constants.KEY_CONNECTION_COUNT, count );
+-		    
+-		//System.out.println( getClass().getName() + ".run() Telling observer about incoming TCP connection ..." );
+-		this.observer.incomingTCPConnection( this, sock );
+-		//System.out.println( getClass().getName() + ".run() Done." );
++	            this.bindSettings.put( Constants.KEY_CONNECTION_COUNT, count );
++	            this.observer.incomingTCPConnection( this, sock );
++	        }
++	    
++
++
++
++//System.out.println( getClass().getName() + ".run() Telling observer about incoming TCP connection ..." );
++//System.out.println( getClass().getName() + ".run() Done." );
+ 		
+ 		
+ 	    }

@@ -1,0 +1,28 @@
+--- /tmp/orig-11284885421399612789.java	2025-09-24 22:33:56.954333961 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url835a90ed59_aschi_regularLanguages_tgz-pJ8-ch_zhaw_regularLanguages_evolution_runners_EvolvingLocalDivisable5LanguageJ8/src/fr/loria/graphViz/GraphViz.java	2025-09-24 22:33:55.366222945 +0000
+@@ -227,15 +227,24 @@
+    private File writeDotSourceToFile(String str) throws java.io.IOException
+    {
+       File temp;
++      java.io.FileWriter fout = null;
+       try {
+          temp = File.createTempFile("graph_", ".dot.tmp", new File(GraphViz.TEMP_DIR));
+-         FileWriter fout = new FileWriter(temp);
++         fout = new FileWriter(temp);
+          fout.write(str);
+          fout.close();
+       }
+       catch (Exception e) {
+          System.err.println("Error: I/O error while writing the dot source to temp file!");
+          return null;
++      } finally {
++          if (fout != null) {
++              try {
++                  fout.close();
++              } catch (Exception e) {
++                  e.printStackTrace();
++              }
++          }
+       }
+       return temp;
+    }

@@ -1,0 +1,20 @@
+--- /tmp/orig-5418777103367223183.java	2025-09-24 22:45:25.638477495 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlbd77b745af_KokaKiwi_MCLauncher_tgz-pJ8-net_contrapunctus_lzma_BenchmarkJ8/src/com/kokakiwi/mclauncher/core/updater/VersionChecker.java	2025-09-24 22:45:23.686341024 +0000
+@@ -80,11 +80,12 @@
+         }
+         
+         String version = null;
+-        
+-        final DataInputStream in = new DataInputStream(
+-                new FileInputStream(file));
+-        version = in.readUTF();
+-        in.close();
++        try (java.io.FileInputStream __arodnap_temp0 = new FileInputStream(file)) {
++            final DataInputStream in = new DataInputStream(
++                __arodnap_temp0);
++            version = in.readUTF();
++        }
++
+         
+         return version;
+     }

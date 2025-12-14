@@ -1,0 +1,20 @@
+--- /tmp/orig-13737813789592781901.java	2025-09-24 22:42:10.736852203 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlb57eb64056_jacadenac_ISI_Othello_UN_tgz-pJ8-othello_OthelloJ8/src/logica/ia/algoritmosGeneticos/Estrategia.java	2025-09-24 22:42:09.448762155 +0000
+@@ -228,8 +228,8 @@
+ 			String nombreFichero = "ultimaGeneracion.txt";
+ 			File fichero = new File(directorio.getPath(),nombreFichero);
+ 			fileChooser.setCurrentDirectory(fichero);		
+-			try {
+-				BufferedReader reader = new BufferedReader(new FileReader(fichero));
++			try (java.io.FileReader __arodnap_temp0 = new FileReader(fichero)) {
++				BufferedReader reader = new BufferedReader(__arodnap_temp0);
+ 				String linea = reader.readLine();
+ 				int i = 0;
+ 				while (linea != null) {
+@@ -432,4 +432,4 @@
+ 		}
+ 	}
+ 
+-}
++}
+\ No newline at end of file

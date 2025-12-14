@@ -1,0 +1,14 @@
+--- /tmp/orig-9581798450809442963.java	2025-09-24 22:53:40.565077096 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urldeb33fd2fa_friedemann_distripedia_tgz-pJ8-org_json_TestJ8/src/grinder/controller/Controller.java	2025-09-24 22:53:38.528934753 +0000
+@@ -69,9 +69,8 @@
+ 
+ 		final Properties p = new Properties();
+ 
+-		try
+-		{
+-			final FileInputStream stream = new FileInputStream(propFileName);
++		try(
++final FileInputStream stream = new FileInputStream(propFileName)) 		{
+ 			p.load(stream);
+ 			stream.close();
+ 

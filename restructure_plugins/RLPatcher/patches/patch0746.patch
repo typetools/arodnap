@@ -1,0 +1,18 @@
+--- /tmp/orig-11626005241954385635.java	2025-09-24 22:50:15.106713800 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urld0f681c558_farom57_AstroidDriver_tgz-pJ8-laazotea_indi_server_examples_MinimumINDIServerJ8/src/laazotea/indi/INDIBLOBValue.java	2025-09-24 22:50:13.274585719 +0000
+@@ -158,10 +158,10 @@
+    * @throws IOException if there is some problem writting the file.
+    */
+   public void saveBLOBData(File file) throws IOException {
+-    FileOutputStream fos = new FileOutputStream(file);
++      try (FileOutputStream fos = new FileOutputStream(file)) {
++          fos.write(BLOBData);
++      }
++  
+ 
+-    fos.write(BLOBData);
+-
+-    fos.close();
+-  }  
++}  
+ }

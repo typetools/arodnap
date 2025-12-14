@@ -1,0 +1,36 @@
+--- /tmp/orig-11025252153833968808.java	2025-09-24 22:55:16.483782633 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urle381b6cba7_IkarosKappler_ikrs_http_tgz-pJ8-ikrs_json_rpc_JSONRPCHandlerJ8/src/ikrs/httpd/DefaultPostDataWrapper.java	2025-09-24 22:55:13.791594426 +0000
+@@ -240,7 +240,7 @@
+ 	// Content-Type: multipart/form-data; boundary=----WebKitFormBoundaryeANQMKoBwsmwQrYZ
+ 
+ 
+-	try {
++	try (java.io.InputStream __arodnap_temp0 = this.getInputStream()) {
+ 	    // System.out.println( "xxxxxxxxx" + getClass().getName() + ": params=" + headerParams );
+ 	    /*String boundary = headerParams.getTokenByPrefix( 0,           // on first level
+ 							     "boundary=", // the token name - so to say
+@@ -318,7 +318,7 @@
+ 	    // This can only be done using a pushback input stream.
+ 	    //
+ 	    
+-	    MultipartMIMETokenizer mmt = new MultipartMIMETokenizer( this.getInputStream(),   
++	    MultipartMIMETokenizer mmt = new MultipartMIMETokenizer( __arodnap_temp0,   
+ 								     boundary   // Use the raw boundary from the headers here!
+ 								     );
+ 	    ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream( 128 );
+@@ -334,7 +334,7 @@
+ 
+ 		this.getLogger().log( Level.INFO,
+ 				      getClass().getName() + ".readFormData_multiPartFormData()",
+-				      "Processing multiform part " + tokenIndex + " by reading from token/input: " + token.toString() + ", globalInputStream=" + this.getInputStream() );
++				      "Processing multiform part " + tokenIndex + " by reading from token/input: " + token.toString() + ", globalInputStream=" + __arodnap_temp0 );
+ 
+ 
+ 
+@@ -408,4 +408,4 @@
+ 
+     }
+ 
+-}
++}
+\ No newline at end of file

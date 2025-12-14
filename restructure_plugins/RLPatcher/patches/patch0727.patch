@@ -1,0 +1,44 @@
+--- /tmp/orig-12504740151430860938.java	2025-09-24 22:48:42.060209054 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlc98c3b97d2_Trimax_venta_tgz-pJ8-com_gesoftware_venta_structures_map_MapTestJ8/src/com/gesoftware/venta/actors/ActorsTest.java	2025-09-24 22:48:39.968062795 +0000
+@@ -29,7 +29,9 @@
+     }
+ 
+     private static void startTheater() {
+-        Theater theater = new Theater(c_Port);
++    com.gesoftware.venta.actors.Theater theater = null;
++    try {
++        theater = new Theater(c_Port);
+         theater.registerActor(A.class, new IActor<A>() {
+             @Override
+             public Serializable react(String clientID, A object) {
+@@ -37,7 +39,6 @@
+                 return new C();
+             }
+         });
+-
+         theater.registerActor(B.class, new IActor<B>() {
+             @Override
+             public Serializable react(String clientID, B object) {
+@@ -45,9 +46,20 @@
+                 return new D();
+             }
+         });
+-
+-        /* Starting theater*/
+         (new Thread(theater)).start();
++    } finally {
++        if (theater != null) {
++            try {
++                theater.finish();
++            } catch (Exception e) {
++                e.printStackTrace();
++            }
++        }
++    }
++
++
++
++
+     }
+ 
+     private static class Task extends TimerTask {

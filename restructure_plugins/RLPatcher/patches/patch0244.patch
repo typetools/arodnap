@@ -1,0 +1,24 @@
+--- /tmp/orig-11994978464333192524.java	2025-09-24 21:55:46.418216471 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url47af6b1535_rolandotr_db_comparison_tgz-pJ8-methodology_HistoryJ8/src/protocols/specifications/PoulidorProtocol.java	2025-09-24 21:55:44.702096507 +0000
+@@ -166,8 +166,8 @@
+ 		String newLine = System.getProperty("line.separator");
+ 		PoulidorProtocol p = new PoulidorProtocol();
+ 		FileWriter writerMafia = new FileWriter(new File(p.getMafiaFileNameOfValues()));
+-		FileWriter writerDistance = new FileWriter(new File(p.getDistanceFileNameOfValues()));		
+-		for (int i = 0; i <= 257; i++){
++		try (FileWriter writerDistance = new FileWriter(new File(p.getDistanceFileNameOfValues()))) {
++		    for (int i = 0; i <= 257; i++){
+ 			p.setNumberOfRounds(i);
+ 			BigDecimal mafia = p.getMafiaFraudProbability();
+ 			BigDecimal distance = p.getDistanceFraudProbability();
+@@ -178,8 +178,8 @@
+ 			writerMafia.flush();
+ 			writerDistance.flush();
+ 		}
+-		writerMafia.close();
+-		writerDistance.close();
++		    writerMafia.close();
++		}
+ 	}
+ 	
+ 	

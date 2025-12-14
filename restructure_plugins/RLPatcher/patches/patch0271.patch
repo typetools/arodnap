@@ -1,0 +1,33 @@
+--- /tmp/orig-15490260321494396034.java	2025-09-24 21:58:05.103911199 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url4aac7e6f55_simon0191_tetris3d_tgz-pJ8-Tetris3dJ8/src/vsdk/toolkit/io/image/ImagePersistence.java	2025-09-24 21:58:02.891756560 +0000
+@@ -82,6 +82,7 @@
+         else if( type.equals("jpg") || type.equals("jpeg") ||
+                  type.equals("gif") || type.equals("png") )  {
+             BufferedImage bi = null;
++            java.io.FileInputStream fis = null;
+ 
+             // OLD SLOW METHOD, DO NOT USE!
+             //java.awt.Toolkit awtTools = java.awt.Toolkit.getDefaultToolkit();
+@@ -91,7 +92,6 @@
+ 
+             try {
+                 BufferedInputStream bis;
+-                FileInputStream fis;
+ 
+                 fis = new FileInputStream(inImageFd);
+                 bis = new BufferedInputStream(fis);
+@@ -103,6 +103,14 @@
+                   VSDK.reportMessage(null, VSDK.ERROR, "importRGBA",
+                                      "Cannot import image file \"" + inImageFd.getAbsolutePath() + "\"");
+                 return null;
++            } finally {
++                if (fis != null) {
++                    try {
++                        fis.close();
++                    } catch (Exception e) {
++                        e.printStackTrace();
++                    }
++                }
+             }
+             AwtRGBAImageRenderer.importFromAwtBufferedImage(bi, retImage);
+ 

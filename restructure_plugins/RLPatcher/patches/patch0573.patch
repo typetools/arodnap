@@ -1,0 +1,27 @@
+--- /tmp/orig-1347211343453270981.java	2025-09-24 22:34:44.949689045 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url85940d3d8e_ccp999_Expr4j_tgz-pJ8-org_boris_expr_util_ExprEvaluatorJ8/src/org/boris/expr/TestGen.java	2025-09-24 22:34:42.545520984 +0000
+@@ -17,10 +17,11 @@
+ public class TestGen
+ {
+     public static void main(String[] args) throws Exception {
+-        BufferedReader br = new BufferedReader(new InputStreamReader(
+-                ZTEST.class.getResourceAsStream("flist.txt")));
+-        String line = null;
+-        while ((line = br.readLine()) != null) {
++        try (java.io.InputStream __arodnap_temp0 = ZTEST.class.getResourceAsStream("flist.txt")) {
++            BufferedReader br = new BufferedReader(new InputStreamReader(
++                __arodnap_temp0));
++            String line = null;
++            while ((line = br.readLine()) != null) {
+             System.out.println("public void test" + line +
+                     "() throws Exception {");
+             System.out.println("    " + line + " " +
+@@ -30,5 +31,6 @@
+             System.out.println("    fail(\"" + line + " not implemented\");");
+             System.out.println("}");
+         }
++        }
+     }
+-}
++}
+\ No newline at end of file

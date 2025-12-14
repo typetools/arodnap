@@ -1,0 +1,25 @@
+--- /tmp/orig-6123707867526698297.java	2025-09-24 22:12:52.489942897 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url7a45f192ca_mfullen_ping_pong_net_tgz-pJ8-ping_pong_net_client_io_TestClientNonPPNServerJ8/src/ping/pong/net/connection/io/AbstractIoConnectionTest.java	2025-09-24 22:12:50.805825171 +0000
+@@ -230,9 +230,21 @@
+     @Test
+     public void testGetConnectionName()
+     {
+-        AbstractIoConnection instance = new AbstractIoConnectionImpl();
++    ping.pong.net.connection.io.AbstractIoConnection instance = null;
++    try {
++        instance = new AbstractIoConnectionImpl();
+         String expectedName = "Connection (" + instance.getConnectionId() + "):";
+         assertEquals(expectedName, instance.getConnectionName());
++    } finally {
++        if (instance != null) {
++            try {
++                instance.close();
++            } catch (Exception e) {
++                e.printStackTrace();
++            }
++        }
++    }
++
+     }
+ 
+     /**

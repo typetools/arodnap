@@ -1,0 +1,79 @@
+--- /tmp/orig-2959561622658829942.java	2025-09-24 21:57:58.955481398 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url4aac7e6f55_simon0191_tetris3d_tgz-pJ8-Tetris3dJ8/src/vsdk/toolkit/io/image/TargaImage.java	2025-09-24 21:57:56.555313616 +0000
+@@ -60,24 +60,21 @@
+         byte blue = 0;
+         byte alpha = FULL_TRANSPARENCY;
+         int srcLine = 0;
+-        
+-        FileInputStream fis = new FileInputStream(srcFile);
+-        BufferedInputStream bis = new BufferedInputStream(fis, 8192);
+-        DataInputStream dis = new DataInputStream(bis);
+-        
+-        idLength = (short) dis.read();
+-        colorMapType = (short) dis.read();
+-        imageType = (short) dis.read();
+-        cMapStart = (int) flipEndian(dis.readShort());
+-        cMapLength = (int) flipEndian(dis.readShort());
+-        cMapDepth = (short) dis.read();
+-        xOffset = (int) flipEndian(dis.readShort());
+-        yOffset = (int) flipEndian(dis.readShort());
+-        xSize = (int) flipEndian(dis.readShort());
+-        ySize = (int) flipEndian(dis.readShort());
+-        pixelDepth = (short) dis.read();
+-        
+-        if (pixelDepth == 24) 
++        try (FileInputStream fis = new FileInputStream(srcFile)) {
++            BufferedInputStream bis = new BufferedInputStream(fis, 8192);
++            DataInputStream dis = new DataInputStream(bis);
++            idLength = (short) dis.read();
++            colorMapType = (short) dis.read();
++            imageType = (short) dis.read();
++            cMapStart = (int) flipEndian(dis.readShort());
++            cMapLength = (int) flipEndian(dis.readShort());
++            cMapDepth = (short) dis.read();
++            xOffset = (int) flipEndian(dis.readShort());
++            yOffset = (int) flipEndian(dis.readShort());
++            xSize = (int) flipEndian(dis.readShort());
++            ySize = (int) flipEndian(dis.readShort());
++            pixelDepth = (short) dis.read();
++            if (pixelDepth == 24) 
+         {
+             cm = new DirectColorModel(24, 0xFF0000, 0xFF00, 0xFF);
+             pixels = new byte[xSize * ySize*3];
+@@ -91,16 +88,11 @@
+                 System.err.println("TargaImage - cannot read file!");       
+             }
+         }
+-        
+-        imageDescriptor = (short) dis.read();
+-        
+-        if ( idLength > 0 ) {
++            imageDescriptor = (short) dis.read();
++            if ( idLength > 0 ) {
+             bis.skip(idLength);
+         }
+-
+-        //printInfo();
+-        
+-        switch ( imageType ) {
++            switch ( imageType ) {
+         case 1:
+             throw new ImageNotRecognizedException("Cannot load color indexed uncompressed images", srcFile);
+         case 2: //descomprimidas, true type
+@@ -209,7 +201,15 @@
+         default:
+             throw new ImageNotRecognizedException("No se reconoce el tipo de imagen en el archivo.", srcFile);
+         }
+-        fis.close();
++        }
++
++        
++        
++        
++        
++
++        //printInfo();
++        
+     }
+ 
+     /**

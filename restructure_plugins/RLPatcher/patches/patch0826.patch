@@ -1,0 +1,69 @@
+--- /tmp/orig-6141946725659451111.java	2025-09-24 22:57:25.088774129 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlfc1c29991b_nil_mish_InJava_tgz-pJ8-edu_usc_cs_nsl_indexing_test_TestTrieProtoJ8/src/edu/usc/cs/nsl/counting/CountingUtil.java	2025-09-24 22:57:23.712677899 +0000
+@@ -246,12 +246,13 @@
+ 		int chunk_size = closestPrime(max_ram/(max_string_size + 8));
+ 		System.out.println("Big array size: "+big_array_size+"\t chunk size: "+chunk_size);
+ 		BufferedReader chunk_list_file = null;
+-		chunk_list_file = new BufferedReader(new FileReader(getTmpChunkListFileName(max_string_size)));
+-		String the_line = chunk_list_file.readLine();		
+-		int chunk_index[][] = new int[num_chunks][2];
+-		int index = 0;
+-		int num_collision = 0;
+-		while(the_line != null){
++		try (java.io.FileReader __arodnap_temp0 = new FileReader(getTmpChunkListFileName(max_string_size))) {
++		    chunk_list_file = new BufferedReader(__arodnap_temp0);
++		    String the_line = chunk_list_file.readLine();
++		    int chunk_index[][] = new int[num_chunks][2];
++		    int index = 0;
++		    int num_collision = 0;
++		    while(the_line != null){
+ 			the_line.replace("\n","").replace("\r", "");
+ 			if(the_line.equals("")){
+ 				the_line = chunk_list_file.readLine();
+@@ -265,11 +266,9 @@
+ 			index++;
+ 			the_line = chunk_list_file.readLine();
+ 		}
+-		chunk_list_file.close();
+-		
+-		BufferedWriter bw_collision = new BufferedWriter(new FileWriter(getCollisionTmpFileName(max_string_size),true));
+-
+-		for (int this_chunk_index = 0; this_chunk_index < chunk_index.length; this_chunk_index++) {			
++		    try (java.io.FileWriter __arodnap_temp1 = new FileWriter(getCollisionTmpFileName(max_string_size), true)) {
++		        BufferedWriter bw_collision = new BufferedWriter(__arodnap_temp1);
++		        for (int this_chunk_index = 0; this_chunk_index < chunk_index.length; this_chunk_index++) {			
+ 			String word_array[] = new String[chunk_size];
+ 			long count_array[] = new long[chunk_size];
+ 			int start_index = chunk_index[this_chunk_index][0];
+@@ -340,8 +339,9 @@
+ 				the_line = br.readLine();
+ 			}
+ 			int written_this_chunk = 0;
+-			BufferedWriter bw_output = new BufferedWriter(new FileWriter(output_file,true));
+-			for(int i=0; i < chunk_size; i++){
++			try (java.io.FileWriter __arodnap_temp3 = new FileWriter(output_file, true)) {
++			    BufferedWriter bw_output = new BufferedWriter(__arodnap_temp3);
++			    for(int i=0; i < chunk_size; i++){
+ 				if(count_array[i] > 0){
+ 					bw_output.write(word_array[i]+"\t"+count_array[i]+"\n");
+ 					written_this_chunk++;
+@@ -352,11 +352,15 @@
+ 					}
+ 				}
+ 			}
+-			System.out.println("Processed this chunk: "+processed_this_chunk+"\tWritten this chunk: "+written_this_chunk+"\t Collisions: "+num_collision);
+-			bw_output.close();
++			    System.out.println("Processed this chunk: "+processed_this_chunk+"\tWritten this chunk: "+written_this_chunk+"\t Collisions: "+num_collision);
++			}
++		}
++		    }
++		    processCollision(max_string_size,output_file,num_collision,0,num_collision);
+ 		}
+-		bw_collision.close();
+-		processCollision(max_string_size,output_file,num_collision,0,num_collision);
++
++
++
+ 		//processCollisionSimple(max_string_size,output_file,num_collision);
+ 	}
+ 	

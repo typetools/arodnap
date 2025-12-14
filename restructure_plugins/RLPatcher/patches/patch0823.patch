@@ -1,0 +1,29 @@
+--- /tmp/orig-3572972869031219314.java	2025-09-24 22:57:14.452030309 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlfc1c29991b_nil_mish_InJava_tgz-pJ8-edu_usc_cs_nsl_indexing_test_TestTrieProtoJ8/src/edu/usc/cs/nsl/counting/InputGenerator.java	2025-09-24 22:57:13.183941633 +0000
+@@ -26,10 +26,11 @@
+ 	public static void main(String[] args) throws IOException, NoSuchAlgorithmException {
+ 		MessageDigest md = MessageDigest.getInstance("sha1");
+ 		int end_value = Integer.parseInt(args[0]);
+-		BufferedWriter bw = new BufferedWriter(new FileWriter(args[1]));
+-		Random num_splits = new Random();
+-		Random split_where = new Random();
+-		for(int i=0; i < end_value; i++){			
++		try (java.io.FileWriter __arodnap_temp0 = new FileWriter(args[1])) {
++		    BufferedWriter bw = new BufferedWriter(__arodnap_temp0);
++		    Random num_splits = new Random();
++		    Random split_where = new Random();
++		    for(int i=0; i < end_value; i++){			
+ 			md.update(toBytes(i));
+ 			String str = new BigInteger(1,md.digest()).toString(16);
+ 			bw.write(str+"\n");
+@@ -38,8 +39,8 @@
+ 				bw.write(each_split+"\n");
+ 			}
+ 		}
+-		bw.close();
+-		
++		}
++
+ 	}
+ 	
+ 	private static String[] splitHash(String str, Random num_splits_ran, Random split_where_ran) {

@@ -1,0 +1,58 @@
+--- /tmp/orig-11967797740736441639.java	2025-09-24 21:42:06.140880324 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url147ce07ebe_JoshuaKissoon_Kademlia_tgz-pJ8-kademlia_simulations_RoutingTableStateTestingJ8/src/kademlia/JKademliaNode.java	2025-09-24 21:42:04.632774945 +0000
+@@ -337,32 +337,30 @@
+     public void saveKadState() throws IOException
+     {
+         DataOutputStream dout;
++        try (java.io.FileOutputStream __arodnap_temp0 = new FileOutputStream(getStateStorageFolderName(this.ownerId, this.config) + File.separator + "kad.kns")) {
++            dout = new DataOutputStream(__arodnap_temp0);
++            new JsonSerializer<JKademliaNode>().write(this, dout);
++        }
++
++
++        try (java.io.FileOutputStream __arodnap_temp1 = new FileOutputStream(getStateStorageFolderName(this.ownerId, this.config) + File.separator + "node.kns")) {
++            dout = new DataOutputStream(__arodnap_temp1);
++            new JsonSerializer<Node>().write(this.localNode, dout);
++        }
++
++
++        try (java.io.FileOutputStream __arodnap_temp2 = new FileOutputStream(getStateStorageFolderName(this.ownerId, this.config) + File.separator + "routingtable.kns")) {
++            dout = new DataOutputStream(__arodnap_temp2);
++            new JsonRoutingTableSerializer(this.config).write(this.getRoutingTable(), dout);
++        }
++
++
++        try (java.io.FileOutputStream __arodnap_temp3 = new FileOutputStream(getStateStorageFolderName(this.ownerId, this.config) + File.separator + "dht.kns")) {
++            dout = new DataOutputStream(__arodnap_temp3);
++            new JsonDHTSerializer().write(this.dht, dout);
++        }
++
+ 
+-        /**
+-         * @section Store Basic Kad data
+-         */
+-        dout = new DataOutputStream(new FileOutputStream(getStateStorageFolderName(this.ownerId, this.config) + File.separator + "kad.kns"));
+-        new JsonSerializer<JKademliaNode>().write(this, dout);
+-
+-        /**
+-         * @section Save the node state
+-         */
+-        dout = new DataOutputStream(new FileOutputStream(getStateStorageFolderName(this.ownerId, this.config) + File.separator + "node.kns"));
+-        new JsonSerializer<Node>().write(this.localNode, dout);
+-
+-        /**
+-         * @section Save the routing table
+-         * We need to save the routing table separate from the node since the routing table will contain the node and the node will contain the routing table
+-         * This will cause a serialization recursion, and in turn a Stack Overflow
+-         */
+-        dout = new DataOutputStream(new FileOutputStream(getStateStorageFolderName(this.ownerId, this.config) + File.separator + "routingtable.kns"));
+-        new JsonRoutingTableSerializer(this.config).write(this.getRoutingTable(), dout);
+-
+-        /**
+-         * @section Save the DHT
+-         */
+-        dout = new DataOutputStream(new FileOutputStream(getStateStorageFolderName(this.ownerId, this.config) + File.separator + "dht.kns"));
+-        new JsonDHTSerializer().write(this.dht, dout);
+ 
+     }
+ 

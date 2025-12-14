@@ -1,0 +1,47 @@
+--- /tmp/orig-12101210418247666492.java	2025-09-24 22:45:36.679249339 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlbd77b745af_KokaKiwi_MCLauncher_tgz-pJ8-net_contrapunctus_lzma_BenchmarkJ8/src/com/kokakiwi/mclauncher/core/updater/FileExtractor.java	2025-09-24 22:45:34.835120419 +0000
+@@ -68,23 +68,33 @@
+         final FileInputStream fileInput = new FileInputStream(file);
+         
+         InputStream in = new LzmaInputStream(fileInput);
+-        
+-        OutputStream out = new FileOutputStream(uncompressed);
+-        
+-        final byte[] buffer = new byte[16384];
+-        
+-        int ret = in.read(buffer);
+-        while (ret >= 1)
++        java.io.OutputStream out = null;
++        try {
++            out = new FileOutputStream(uncompressed);
++            final byte[] buffer = new byte[16384];
++            int ret = in.read(buffer);
++            while (ret >= 1)
+         {
+             out.write(buffer, 0, ret);
+             ret = in.read(buffer);
+         }
++            in.close();
++            in = null;
++            out = null;
++        } finally {
++            if (out != null) {
++                try {
++                    out.close();
++                } catch (Exception e) {
++                    e.printStackTrace();
++                }
++            }
++        }
++
++            
++        
+         
+-        in.close();
+-        out.close();
+         
+-        in = null;
+-        out = null;
+         
+         return uncompressed;
+     }

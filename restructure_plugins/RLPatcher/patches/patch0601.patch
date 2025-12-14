@@ -1,0 +1,30 @@
+--- /tmp/orig-8363541904446181916.java	2025-09-24 22:37:12.968036173 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url8d1df200a8_gilleain_signatures_tgz-pJ8-signature_chemistry_LargeMoleculeTestJ8/src/signature/chemistry/MoleculeReader.java	2025-09-24 22:37:11.143908659 +0000
+@@ -17,9 +17,11 @@
+ 
+     public static Molecule readMolfile(String filename) {
+         Molecule molecule = null;
++        java.io.FileReader __arodnap_temp0 = null;
+         try {
+             File file = new File(filename);
+-            BufferedReader reader = new BufferedReader(new FileReader(file));
++            __arodnap_temp0 = new FileReader(file);
++            BufferedReader reader = new BufferedReader(__arodnap_temp0);
+             String line;
+             List<String> block = new ArrayList<String>();
+             while ((line = reader.readLine()) != null) {
+@@ -31,6 +33,14 @@
+             System.err.println(ioe.toString());
+         } catch (Exception e) {
+             System.err.println(e.toString());
++        } finally {
++            if (__arodnap_temp0 != null) {
++                try {
++                    __arodnap_temp0.close();
++                } catch (Exception e) {
++                    e.printStackTrace();
++                }
++            }
+         }
+         return molecule;
+     }

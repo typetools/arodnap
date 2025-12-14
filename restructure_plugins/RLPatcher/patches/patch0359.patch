@@ -1,0 +1,28 @@
+--- /tmp/orig-6047080953148623414.java	2025-09-24 22:06:54.144893344 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url70997c83aa_Xilaew_risiko_tgz-pJ8-risiko_XMI2XMLtransformerJ8/src/risiko/main/Main.java	2025-09-24 22:06:52.156754366 +0000
+@@ -10,19 +10,19 @@
+ 	static Engine engine = new Engine();
+ 	
+ 	Main () throws IOException, RuntimeException{
+-		try {
++		try (java.io.InputStream __arodnap_temp0 = getClass().getResourceAsStream("default.board")) {
+ 			System.out.println("default.board");
+ 			
+-			System.out.println(getClass().getResourceAsStream("default.board"));
++			System.out.println(__arodnap_temp0);
+ 			System.out.println("main.risiko.default.board");
+ 			System.out.println(getClass().getResourceAsStream("main.risiko.default.board"));
+ 			System.out.println("default.board");
+-			System.out.println(getClass().getResourceAsStream("default.board"));
++			System.out.println(__arodnap_temp0);
+ 			System.out.println("default.board");
+-			System.out.println(getClass().getResourceAsStream("default.board"));
++			System.out.println(__arodnap_temp0);
+ 			System.out.println("default.board");
+-			System.out.println(getClass().getResourceAsStream("default.board"));
+-			engine.setBoard(getClass().getResourceAsStream("default.board"));
++			System.out.println(__arodnap_temp0);
++			engine.setBoard(__arodnap_temp0);
+ 		} catch (Exception e) {
+ 			e.printStackTrace();
+ 		}

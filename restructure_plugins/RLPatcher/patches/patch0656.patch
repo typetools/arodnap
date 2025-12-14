@@ -1,0 +1,17 @@
+--- /tmp/orig-2922236818406507623.java	2025-09-24 22:41:55.563791478 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlb44e9843ba_QuasimodoNZ_SWEN222_Game_Project_tgz-pJ8-Game_World_GameWorldLevelBuilderJ8/src/User_Interface/MediaPlayer.java	2025-09-24 22:41:53.603654447 +0000
+@@ -54,6 +54,14 @@
+ 			clip.start();
+ 		} catch (Exception e) {
+ 			e.printStackTrace();
++		} finally {
++		    if (ais != null) {
++		        try {
++		            ais.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
+ 		}
+ 	}
+ 

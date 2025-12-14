@@ -1,0 +1,25 @@
+--- /tmp/orig-11768099697534708710.java	2025-09-24 21:37:48.006843031 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url0e7d57473a_kyorohiro_HetimaUtil_tgz-pJ8-net_hetimatan_net_http_HttpServer3xxJ8/src/net/hetimatan/util/http/TestForHttpHeader.java	2025-09-24 21:37:45.710682585 +0000
+@@ -25,13 +25,14 @@
+ 	}
+ 
+ 	public void testDecode001() throws IOException {
+-		CashKyoroFile base = new CashKyoroFile(512);
+-		base.addChunk("key:value\r\n".getBytes());
+-		MarkableFileReader reader = new MarkableFileReader(base, 512);
+-
+-		HttpRequestHeader value = HttpRequestHeader.decode(reader);
+-		assertEquals("key", value.getKey());
+-		assertEquals("value", value.getValue());
+-	}
++	    try (CashKyoroFile base = new CashKyoroFile(512)) {
++	        base.addChunk("key:value\r\n".getBytes());
++	        MarkableFileReader reader = new MarkableFileReader(base, 512);
++	        HttpRequestHeader value = HttpRequestHeader.decode(reader);
++	        assertEquals("key", value.getKey());
++	        assertEquals("value", value.getValue());
++	    }
++	
++}
+ 
+ }

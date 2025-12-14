@@ -1,0 +1,13 @@
+--- /tmp/orig-1148361822979748260.java	2025-09-24 21:54:45.453954806 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url47af6b1535_rolandotr_db_comparison_tgz-pJ8-methodology_HistoryJ8/src/utils/Optimization.java	2025-09-24 21:54:43.585824216 +0000
+@@ -31,7 +31,9 @@
+ public class Optimization {
+ 
+ 	public static void main(String[] args) throws FileNotFoundException {
+-		System.setOut(new PrintStream("optimization_reduced"+DBProtocol.MAX_N+".txt"));
++	try (java.io.PrintStream __arodnap_temp0 = new PrintStream("optimization_reduced" + DBProtocol.MAX_N + ".txt")) {
++	    System.setOut(__arodnap_temp0);
++	}
+ 
+ 		createRoot();
+ 	}

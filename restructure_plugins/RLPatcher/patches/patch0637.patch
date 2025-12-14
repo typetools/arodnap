@@ -1,0 +1,35 @@
+--- /tmp/orig-13927133492474386096.java	2025-09-24 22:40:33.322042077 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url9ecf1e8297_nhamidi_ninja_tgz-pJ8-net_fec_openrq_test_TestRunnerJ8/src/Utils.java	2025-09-24 22:40:31.361905046 +0000
+@@ -29,7 +29,8 @@
+     }
+     
+     public static void printInFile(String message, int port, int diff) {
+-	try {
++	   java.io.FileWriter fw = null;
++	   try {
+ 	    String path = System.getProperty("user.dir");
+ 	    File file = new File(path + "/histo/time_division_final_" + diff + "_" + port + ".txt");
+ 	    
+@@ -38,13 +39,21 @@
+ 		file.createNewFile();
+ 	    }
+ 	    
+-	    FileWriter fw = new FileWriter(file.getAbsoluteFile(), true);
++	    fw = new FileWriter(file.getAbsoluteFile(), true);
+ 	    BufferedWriter bw = new BufferedWriter(fw);
+ 	    bw.write(message + "\n");
+ 	    bw.close();
+ 	    
+ 	} catch (IOException e) {
+ 	    e.printStackTrace();
++	} finally {
++	    if (fw != null) {
++	        try {
++	            fw.close();
++	        } catch (Exception e) {
++	            e.printStackTrace();
++	        }
++	    }
+ 	}
+     }
+     

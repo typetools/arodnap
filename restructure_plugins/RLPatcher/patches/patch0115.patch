@@ -1,0 +1,14 @@
+--- /tmp/orig-13286826149488314014.java	2025-09-24 21:44:09.633509455 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url20b0f880a5_jgraph_legacy_jgraph5_tgz-pJ8-org_jgraph_example_HelloWorldJ8/src/com/jgraph/example/SerialGraph.java	2025-09-24 21:44:05.097192476 +0000
+@@ -64,9 +64,9 @@
+ 	}
+ 
+ 	public static Object readObject(String filename) {
+-		try {
++		try (java.io.FileInputStream __arodnap_temp0 = new FileInputStream(filename)) {
+ 			ObjectInputStream in = new ObjectInputStream(
+-					new BufferedInputStream(new FileInputStream(filename)));
++					new BufferedInputStream(__arodnap_temp0));
+ 			Object object = in.readObject();
+ 			in.close();
+ 			File file = new File(filename);

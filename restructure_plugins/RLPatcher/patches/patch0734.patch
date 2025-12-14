@@ -1,0 +1,13 @@
+--- /tmp/orig-2675419032564828684.java	2025-09-24 22:49:23.483104868 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlcdd0c1ab49_emiln_JHouseFireExplorer_tgz-pJ8-dk_brics_automaton_DatatypesJ8/src/dk/brics/automaton/Datatypes.java	2025-09-24 22:49:21.658977346 +0000
+@@ -791,8 +791,8 @@
+ 
+ 		System.out.println("Building Unicode category automata...");
+ 		Map<String,Set<Integer>> categories = new HashMap<String,Set<Integer>>();
+-		try {
+-			StreamTokenizer st = new StreamTokenizer(new BufferedReader(new FileReader("src/Unicode.txt")));
++		try (java.io.FileReader __arodnap_temp0 = new FileReader("src/Unicode.txt")) {
++			StreamTokenizer st = new StreamTokenizer(new BufferedReader(__arodnap_temp0));
+ 			st.resetSyntax();
+ 			st.whitespaceChars(';', ';');
+ 			st.whitespaceChars('\n', ' ');

@@ -1,0 +1,19 @@
+--- /tmp/orig-6584589647277444899.java	2025-09-24 22:45:07.873235552 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlbd77b745af_KokaKiwi_MCLauncher_tgz-pJ8-net_contrapunctus_lzma_BenchmarkJ8/src/com/kokakiwi/mclauncher/utils/Configuration.java	2025-09-24 22:45:05.905097962 +0000
+@@ -293,11 +293,11 @@
+     
+     public void save(File file) throws Exception
+     {
+-        final OutputStream out = new FileOutputStream(file);
+-        final Yaml yaml = new Yaml();
+-        final byte[] data = yaml.dump(config).getBytes("UTF-8");
+-        out.write(data);
+-        out.close();
++        try (final OutputStream out = new FileOutputStream(file)) {
++            final Yaml yaml = new Yaml();
++            final byte[] data = yaml.dump(config).getBytes("UTF-8");
++            out.write(data);
++        }
+     }
+     
+     public static Configuration getLauncherConfiguration()

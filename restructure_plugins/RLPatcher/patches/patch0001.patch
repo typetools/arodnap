@@ -1,0 +1,14 @@
+--- /tmp/orig-3763012000466789485.java	2025-09-24 21:32:14.407532555 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url00509339cf_tedwon_scribe_log4j_appender_tgz-pJ8-com_realtimecep_scribe_ScribeJavaServerJ8/src/com/realtimecep/scribe/ScribeJavaClient.java	2025-09-24 21:32:11.823351983 +0000
+@@ -26,9 +26,9 @@
+ 
+     public static void main(String[] args) {
+ 
+-        try {
++        try (java.net.Socket __arodnap_temp0 = new Socket("localhost", ScribeJavaServer.PORT)) {
+ 
+-            TSocket sock = new TSocket(new Socket("localhost", ScribeJavaServer.PORT));
++            TSocket sock = new TSocket(__arodnap_temp0);
+             TFramedTransport transport = new TFramedTransport(sock);
+             TBinaryProtocol protocol = new TBinaryProtocol(transport, false, false);
+ 

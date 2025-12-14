@@ -1,0 +1,40 @@
+--- /tmp/orig-16799969419899079736.java	2025-09-24 21:47:10.914180565 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url294e6c45f3_Ecdosis_NMergeNew_tgz-pJ8-TestJ8/src/edu/luc/nmerge/graph/suffixtree/SuffixTree.java	2025-09-24 21:47:08.530013906 +0000
+@@ -948,22 +948,22 @@
+             {
+                 for ( int i=0;i<files.length;i++ )
+                 {
+-                    FileInputStream fis = new FileInputStream(files[i]);
+-                    byte[] data = new byte[(int)files[i].length()];
+-                    fis.read( data );
+-                    fis.close();
+-                    System.gc();
+-                    long mem2,mem1 = Runtime.getRuntime().freeMemory();
+-                    long time2,time1 = System.nanoTime();
+-                    String dataStr = new String(data,"UTF-8");
+-                    char[] chars = new char[dataStr.length()];
+-                    dataStr.getChars(0,chars.length,chars,0);
+-                    SuffixTree st = new SuffixTree( chars, false );
+-                    mem2 = Runtime.getRuntime().freeMemory();
+-                    time2 = System.nanoTime();
+-                    Entry e = new Entry( files[i].getName(),
++                    try (FileInputStream fis = new FileInputStream(files[i])) {
++                        byte[] data = new byte[(int)files[i].length()];
++                        fis.read( data );
++                        System.gc();
++                        long mem2,mem1 = Runtime.getRuntime().freeMemory();
++                        long time2,time1 = System.nanoTime();
++                        String dataStr = new String(data,"UTF-8");
++                        char[] chars = new char[dataStr.length()];
++                        dataStr.getChars(0,chars.length,chars,0);
++                        SuffixTree st = new SuffixTree( chars, false );
++                        mem2 = Runtime.getRuntime().freeMemory();
++                        time2 = System.nanoTime();
++                        Entry e = new Entry( files[i].getName(),
+                         (int)files[i].length(),(time2-time1)/1000,mem1-mem2);
+-                    appendEntry( e );
++                        appendEntry( e );
++                    }
+                 }
+             }
+             catch ( Exception e )

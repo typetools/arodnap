@@ -1,0 +1,56 @@
+--- /tmp/orig-8192882443876581240.java	2025-09-24 22:44:19.877880266 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlb5d5be4365_abmargb_oursim_ext_tgz-pJ8-br_edu_ufcg_lsd_oursim_experiments_RemoteNoFScenarioGeneratorJ8/src/br/edu/ufcg/lsd/oursim/queue/FileEventProxyTest.java	2025-09-24 22:44:17.525715830 +0000
+@@ -21,26 +21,38 @@
+ 	
+ 	@Test
+ 	public void testPaging() {
+-		FileEventProxy proxy = new FileEventProxy(
+-				getClass().getResourceAsStream("event-example.conf"));
+-		
+-		Assert.assertTrue(proxy.hasNextEvent());
+-		Assert.assertNotNull(proxy.nextEventTime());
++	java.io.InputStream __arodnap_temp0 = null;
++	try {
++    __arodnap_temp0 = getClass().getResourceAsStream("event-example.conf");
++    FileEventProxy proxy = new FileEventProxy(
++				__arodnap_temp0);
++    Assert.assertTrue(proxy.hasNextEvent());
++    Assert.assertNotNull(proxy.nextEventTime());
++    List<EventSpec> page1 = proxy.nextEventPage(5);
++    Assert.assertEquals(5, page1.size());
++    Assert.assertEquals(100, page1.get(0).getTime());
++    Assert.assertEquals(500, page1.get(4).getTime());
++    List<EventSpec> page2 = proxy.nextEventPage(5);
++    Assert.assertEquals(5, page2.size());
++    Assert.assertEquals(600, page2.get(0).getTime());
++    Assert.assertEquals(23000, page2.get(4).getTime());
++    Assert.assertFalse(proxy.hasNextEvent());
++    Assert.assertNull(proxy.nextEventTime());
++} finally {
++    if (__arodnap_temp0 != null) {
++        try {
++            __arodnap_temp0.close();
++        } catch (Exception e) {
++            e.printStackTrace();
++        }
++    }
++}
++	
+ 		
+-		List<EventSpec> page1 = proxy.nextEventPage(5);
+ 		
+-		Assert.assertEquals(5, page1.size());
+-		Assert.assertEquals(100, page1.get(0).getTime());
+-		Assert.assertEquals(500, page1.get(4).getTime());
+ 		
+-		List<EventSpec> page2 = proxy.nextEventPage(5);
+ 		
+-		Assert.assertEquals(5, page2.size());
+-		Assert.assertEquals(600, page2.get(0).getTime());
+-		Assert.assertEquals(23000, page2.get(4).getTime());
+ 		
+-		Assert.assertFalse(proxy.hasNextEvent());
+-		Assert.assertNull(proxy.nextEventTime());
+ 	}
+ 	
+ 	@Test

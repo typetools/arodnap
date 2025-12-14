@@ -1,0 +1,37 @@
+--- /tmp/orig-12281336845987849361.java	2025-09-24 21:38:04.776014788 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url0e7d57473a_kyorohiro_HetimaUtil_tgz-pJ8-net_hetimatan_net_http_HttpServer3xxJ8/src/net/hetimatan/util/http/TestForHttpRequestUri.java	2025-09-24 21:38:02.651866362 +0000
+@@ -99,14 +99,26 @@
+ 	}
+ 
+ 	public void testEncode001() throws IOException {
+-		HttpGetRequestUri uri = new HttpGetRequestUri("*");
+-		CashKyoroFile output = new CashKyoroFile(512);
+-		uri.encode(output.getLastOutput());
+-		output.seek(0);
+-		byte[] buffer = new byte[(int)output.length()];
+-		int len = output.read(buffer);
+-		String tag = new String(buffer, 0, len);
+-		assertEquals("*", tag);
++	net.hetimatan.util.http.HttpGetRequestUri uri = null;
++	try {
++	    uri = new HttpGetRequestUri("*");
++	    CashKyoroFile output = new CashKyoroFile(512);
++	    uri.encode(output.getLastOutput());
++	    output.seek(0);
++	    byte[] buffer = new byte[(int)output.length()];
++	    int len = output.read(buffer);
++	    String tag = new String(buffer, 0, len);
++	    assertEquals("*", tag);
++	} finally {
++	    if (uri != null) {
++	        try {
++	            uri.createEncode(null);
++	        } catch (Exception e) {
++	            e.printStackTrace();
++	        }
++	    }
++	}
++
+ 	}
+ 
+ 	public void testEncode002() throws IOException {

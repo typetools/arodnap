@@ -1,0 +1,23 @@
+--- /tmp/orig-3275486149339745796.java	2025-09-24 21:57:04.455671625 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url49584c1d41_Arrem_GGS_tgz-pJ8-com_gamezgalaxy_test_console_MainJ8/src/com/gamezgalaxy/GGS/world/Level.java	2025-09-24 21:57:02.219515308 +0000
+@@ -263,14 +263,12 @@
+ 	public void Save() throws IOException {
+ 		if (!new File("levels").exists())
+ 			new File("levels").mkdir();
+-		FileOutputStream fos = new FileOutputStream("levels/" + name + ".ggs");
+-		GZIPOutputStream gos = new GZIPOutputStream(fos);
+-		ObjectOutputStream out = new ObjectOutputStream(gos);
+-		out.writeLong(serialVersionUID);
+-		out.writeObject(this);
+-		out.close();
+-		gos.close();
+-		fos.close();
++		try (FileOutputStream fos = new FileOutputStream("levels/" + name + ".ggs")) {
++		    GZIPOutputStream gos = new GZIPOutputStream(fos);
++		    ObjectOutputStream out = new ObjectOutputStream(gos);
++		    out.writeLong(serialVersionUID);
++		    out.writeObject(this);
++		}
+ 	}
+ 	
+ 	/**

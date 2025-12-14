@@ -1,0 +1,13 @@
+--- /tmp/orig-8405939486823753122.java	2025-09-24 21:46:04.141512989 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url284ba87ea1_swabhs_forbidden_paths_tgz-pJ8-tagging_hypergraph_TaggingHypergraphGeneratorJ8/src/learning/InputReader.java	2025-09-24 21:46:02.389390511 +0000
+@@ -50,9 +50,8 @@
+ 			File trainingFile, Map<String, Double> weightsMap) {
+ 		
+ 		List<LearningExample> examples = new ArrayList<LearningExample>();
+-		try {
++		try (FileInputStream fstream = new FileInputStream(trainingFile)) {
+ 			
+-			FileInputStream fstream = new FileInputStream(trainingFile);
+ 			DataInputStream in = new DataInputStream(fstream);
+ 			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+ 			String strLine;

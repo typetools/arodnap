@@ -1,0 +1,27 @@
+--- /tmp/orig-2476295350867376731.java	2025-09-24 22:13:30.560604167 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url7a45f192ca_mfullen_ping_pong_net_tgz-pJ8-ping_pong_net_client_io_TestClientNonPPNServerJ8/src/ping/pong/net/connection/io/AbstractIoConnectionTest.java	2025-09-24 22:13:28.776479451 +0000
+@@ -429,11 +429,23 @@
+     @Test
+     public void testAddConnectionEventListener()
+     {
+-        AbstractIoConnection instance = new AbstractIoConnectionImpl();
++    ping.pong.net.connection.io.AbstractIoConnection instance = null;
++    try {
++        instance = new AbstractIoConnectionImpl();
+         assertEquals(0, instance.connectionEventListeners.size());
+         ConnectionEventImpl connectionEventImpl = new ConnectionEventImpl();
+         instance.addConnectionEventListener(connectionEventImpl);
+         assertEquals(1, instance.connectionEventListeners.size());
++    } finally {
++        if (instance != null) {
++            try {
++                instance.close();
++            } catch (Exception e) {
++                e.printStackTrace();
++            }
++        }
++    }
++
+     }
+ 
+     /**

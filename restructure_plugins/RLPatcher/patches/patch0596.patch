@@ -1,0 +1,37 @@
+--- /tmp/orig-16990098818110248857.java	2025-09-24 22:36:53.410669028 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url8c14fd53ee_luca89_itaco_tgz-pJ8-main_RunnerJ8/src/compilatore/JasminTarget.java	2025-09-24 22:36:51.706549903 +0000
+@@ -133,22 +133,22 @@
+ 	 */
+ 	private void scriviContenutoStub(String stubFileName,
+ 			String replacePattern, String replaceString) throws IOException {
+-		/*
+-		 * Copio il contenuto dello stub nel file di output
+-		 */
+-		InputStreamReader stub = new InputStreamReader(JasminTarget.class.getResourceAsStream("/compilatore/stub/"+stubFileName));
+-		StringBuilder sb = new StringBuilder();
+-		int charsRead = 0;
+-		char[] fileData = new char[1024];
+-
+-		while (stub.ready()) {
++			    try (java.io.InputStream __arodnap_temp0 = JasminTarget.class.getResourceAsStream("/compilatore/stub/" + stubFileName)) {
++			        InputStreamReader stub = new InputStreamReader(__arodnap_temp0);
++			        StringBuilder sb = new StringBuilder();
++			        int charsRead = 0;
++			        char[] fileData = new char[1024];
++			        while (stub.ready()) {
+ 			charsRead = stub.read(fileData);
+ 			sb.append(fileData, 0, charsRead);
+ 		}
+-		String stubReplaced = sb.toString().replaceAll(replacePattern,
++			        String stubReplaced = sb.toString().replaceAll(replacePattern,
+ 				replaceString);
+-		outputFile.print(stubReplaced);
+-	}
++			        outputFile.print(stubReplaced);
++			    }
++			
++
++}
+ 
+ 	/*
+ 	 * Scrive nel linguaggio target delle parti di codice indipendenti dallo

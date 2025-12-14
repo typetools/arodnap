@@ -1,0 +1,30 @@
+--- /tmp/orig-9205705589649052285.java	2025-09-24 21:50:09.550667976 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url2df0f7c811_przemekgalazka_legacycode_tgz-pJ8-pl_cc_core_cmd_CommandJ8/src/ccproxy/CCproxy.java	2025-09-24 21:50:07.482523404 +0000
+@@ -88,10 +88,11 @@
+ 	}
+ 	
+ 	static boolean checkLicense(String max_agents, String key, String expirydate) {
++	java.io.FileInputStream fis = null;
+ 
+ 		try {
+ 			File file = new File("/usr/sbin/dmidecode");
+-			FileInputStream fis = new FileInputStream(file);
++			fis = new FileInputStream(file);
+ 			byte[] bytes = new byte[(int) file.length()];
+ 
+ 			int offset = 0;
+@@ -125,6 +126,14 @@
+ 
+ 		} catch (Exception e) {
+ 			e.printStackTrace();
++		} finally {
++		    if (fis != null) {
++		        try {
++		            fis.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
+ 		}
+ 		return false;
+ 	}

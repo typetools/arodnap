@@ -1,0 +1,37 @@
+--- /tmp/orig-12711035188385335307.java	2025-09-24 22:14:13.467603514 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url7a45f192ca_mfullen_ping_pong_net_tgz-pJ8-ping_pong_net_client_io_TestClientNonPPNServerJ8/src/ping/pong/net/server/io/ServerConnectionManagerTest.java	2025-09-24 22:14:11.539468731 +0000
+@@ -51,15 +51,25 @@
+     @Test
+     public void testShutdown()
+     {
+-        ServerConnectionManager instance = new ServerConnectionManager(ConnectionConfigFactory.createConnectionConfiguration(), new IoServer());
+-        assertNull(instance.tcpServerSocket);
+-        assertNull(instance.udpServerSocket);
+-        //assertNotNull(instance.executorService);
+-        instance.shutdown();
+-        assertNull(instance.tcpServerSocket);
+-        assertNull(instance.udpServerSocket);
+-        //assertNull(instance.executorService);
+-        instance.shutdown();
++    ping.pong.net.server.io.IoServer __arodnap_temp0 = null;
++    try {
++    __arodnap_temp0 = new IoServer();
++    ServerConnectionManager instance = new ServerConnectionManager(ConnectionConfigFactory.createConnectionConfiguration(), __arodnap_temp0);
++    assertNull(instance.tcpServerSocket);
++    assertNull(instance.udpServerSocket);
++    assertNull(instance.tcpServerSocket);
++    assertNull(instance.udpServerSocket);
++} finally {
++    if (__arodnap_temp0 != null) {
++        try {
++            __arodnap_temp0.shutdown();
++        } catch (Exception e) {
++            e.printStackTrace();
++        }
++    }
++}
++
++
+     }
+ 
+     @Test

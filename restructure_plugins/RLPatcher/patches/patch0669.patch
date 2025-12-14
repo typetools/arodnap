@@ -1,0 +1,37 @@
+--- /tmp/orig-12408988600492553541.java	2025-09-24 22:43:03.168517625 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlb5d5be4365_abmargb_oursim_ext_tgz-pJ8-br_edu_ufcg_lsd_oursim_experiments_RemoteNoFScenarioGeneratorJ8/src/br/edu/ufcg/lsd/oursim/experiments/ScenarioEvaluator.java	2025-09-24 22:43:00.880357663 +0000
+@@ -42,10 +42,10 @@
+ 	}
+ 
+ 	private static void analyzeFile(File file) throws FileNotFoundException, IOException {
+-		List<String> lines = IOUtils.readLines(new FileInputStream(file));
+-		Map<String, Long> greaterMakespan = new HashMap<String, Long>();
+-		
+-		for (String line : lines) {
++	    try (java.io.FileInputStream __arodnap_temp0 = new FileInputStream(file)) {
++	        List<String> lines = IOUtils.readLines(__arodnap_temp0);
++	        Map<String, Long> greaterMakespan = new HashMap<String, Long>();
++	        for (String line : lines) {
+ 			String[] split = line.split(":");
+ 			if (split[0].equals("JOB_ENDED")) {
+ 				String broker = split[4];
+@@ -60,12 +60,14 @@
+ 				
+ 			}
+ 		}
+-		StringBuilder b = new StringBuilder();
+-		for (Entry<String, Long> msEntry : greaterMakespan.entrySet()) {
++	        StringBuilder b = new StringBuilder();
++	        for (Entry<String, Long> msEntry : greaterMakespan.entrySet()) {
+ 			b.append(msEntry.getValue() + "\t");
+ 		}
+-		
+-		System.out.println(b.toString().trim());
+-	}
++	        System.out.println(b.toString().trim());
++	    }
++	
++
++}
+ 	
+ }

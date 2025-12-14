@@ -1,0 +1,51 @@
+--- /tmp/orig-7722859183655177702.java	2025-09-24 21:37:18.976814537 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url0e7d57473a_kyorohiro_HetimaUtil_tgz-pJ8-net_hetimatan_net_http_HttpServer3xxJ8/src/net/hetimatan/util/http/TestForHttpRequest.java	2025-09-24 21:37:16.868667230 +0000
+@@ -74,29 +74,30 @@
+ 	}
+ 
+ 	public void testDecode002() throws IOException {
+-		CashKyoroFile base = new CashKyoroFile(512);
+-		String inputUrl = "GET /announce HTTP/1.1\r\n"
++	    try (CashKyoroFile base = new CashKyoroFile(512)) {
++	        String inputUrl = "GET /announce HTTP/1.1\r\n"
+ 				+"Accept-encoding: gzip\r\n"
+ 				+"Host: 127.0.0.1:6969\r\n"
+ 				+"User-agent: BitTorrent/4.0.2\r\n"
+ 				+"\r\n";
+-		base.addChunk(inputUrl.getBytes());
+-		MarkableFileReader reader = new MarkableFileReader(base, 512);
++	        base.addChunk(inputUrl.getBytes());
++	        MarkableFileReader reader = new MarkableFileReader(base, 512);
++	        HttpRequest uri = HttpRequest.decode(reader);
++	        HttpRequestLine line = uri.getLine();
++	        assertEquals("GET", line.getMethod());
++	        assertEquals("/announce", HttpObject.createEncode(line.getRequestURI()));
++	        assertEquals("HTTP/1.1", line.getHttpVersion());
++	        assertEquals(3, uri.getHeader().size());
++	        assertEquals("gzip", uri.getHeader().get(0).getValue());
++	        assertEquals("127.0.0.1:6969", uri.getHeader().get(1).getValue());
++	        assertEquals("BitTorrent/4.0.2", uri.getHeader().get(2).getValue());
++	        assertEquals("Accept-encoding", uri.getHeader().get(0).getKey());
++	        assertEquals("Host", uri.getHeader().get(1).getKey());
++	        assertEquals("User-agent", uri.getHeader().get(2).getKey());
++	    }
++	
+ 
+-		HttpRequest uri = HttpRequest.decode(reader);
+-		HttpRequestLine line = uri.getLine();
+-		assertEquals("GET", line.getMethod());
+-		assertEquals("/announce", HttpObject.createEncode(line.getRequestURI()));
+-		assertEquals("HTTP/1.1", line.getHttpVersion());
+-		assertEquals(3, uri.getHeader().size());
+-		assertEquals("gzip", uri.getHeader().get(0).getValue());
+-		assertEquals("127.0.0.1:6969", uri.getHeader().get(1).getValue());
+-		assertEquals("BitTorrent/4.0.2", uri.getHeader().get(2).getValue());
+-		assertEquals("Accept-encoding", uri.getHeader().get(0).getKey());
+-		assertEquals("Host", uri.getHeader().get(1).getKey());
+-		assertEquals("User-agent", uri.getHeader().get(2).getKey());
+-
+-	}
++}
+ 
+ 
+ 	public void testDecodeError001() throws IOException {

@@ -1,0 +1,26 @@
+--- /tmp/orig-392798174128290797.java	2025-09-24 22:45:42.859681404 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlbd77b745af_KokaKiwi_MCLauncher_tgz-pJ8-net_contrapunctus_lzma_BenchmarkJ8/src/com/kokakiwi/mclauncher/utils/lang/Translater.java	2025-09-24 22:45:40.923546052 +0000
+@@ -61,9 +61,20 @@
+     {
+         Translater.lang = lang;
+         main.clear();
+-        main.load(
+-                Translater.class.getResourceAsStream("/lang/" + Translater.lang
+-                        + ".yml"), "yaml");
++        java.io.InputStream __arodnap_temp0 = null;
++        try {
++    __arodnap_temp0 = Translater.class.getResourceAsStream("/lang/" + Translater.lang + ".yml");
++    main.load(
++                __arodnap_temp0, "yaml");
++} finally {
++    if (__arodnap_temp0 != null) {
++        try {
++            __arodnap_temp0.close();
++        } catch (Exception e) {
++            e.printStackTrace();
++        }
++    }
++}
+     }
+     
+     public static void set(String name, Object value)

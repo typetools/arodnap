@@ -1,0 +1,14 @@
+--- /tmp/orig-4919883628748178949.java	2025-09-24 22:49:36.159991091 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlce7759b8da_Palachsuper_EBA4_tgz-pJ8-json_TestJ8/src/terminal/tools/PropTools.java	2025-09-24 22:49:34.447871399 +0000
+@@ -42,9 +42,8 @@
+     	
+     	prop.setProperty(propertyName, propertyValue);
+     	
+-    	try 
+-    	{ 
+-    		FileOutputStream sF=new FileOutputStream( propFile );
++    	try (
++FileOutputStream sF=new FileOutputStream( propFile ))     	{ 
+     		prop.store(sF, "");
+     	} 
+     	catch(IOException ex )

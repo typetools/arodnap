@@ -1,0 +1,42 @@
+--- /tmp/orig-1528744709875301511.java	2025-09-24 22:02:39.399085617 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url4e79c36700_JacenLakiir_Tivoo_tgz-pJ8-MainJ8/src/tivoo/output/HTMLBuilder.java	2025-09-24 22:02:38.106995295 +0000
+@@ -230,24 +230,24 @@
+     
+     private void writeSummaryPageHTML (File summaryPage, List<Event> eventList) throws IOException
+     {
+-        FileOutputStream fos = new FileOutputStream(summaryPage);
+-        OutputStreamWriter out = new OutputStreamWriter(fos, "UTF-8");
+-
+-        Document doc = initializeHTMLDocument(getTitle(), "");
+-        
+-        String uniqueCSS = getUniqueCSS();
+-        if (uniqueCSS.length() > 0)
++        try (FileOutputStream fos = new FileOutputStream(summaryPage)) {
++            OutputStreamWriter out = new OutputStreamWriter(fos, "UTF-8");
++            Document doc = initializeHTMLDocument(getTitle(), "");
++            String uniqueCSS = getUniqueCSS();
++            if (uniqueCSS.length() > 0)
+         {
+             doc.head.appendChild(insertCSS(uniqueCSS));
+         }
+-        
+-        writeHeader(doc);    
+-        writeSummaryPageContent(doc, eventList);
+-        writeFooter(doc);
+-        
+-        out.write(doc.write());
+-        out.close();
+-    }
++            writeHeader(doc);
++            writeSummaryPageContent(doc, eventList);
++            writeFooter(doc);
++            out.write(doc.write());
++        }
++    
++
++
++
++}
+     
+     private void writeSummaryPageContent(Document doc, List<Event> eventList)
+     {

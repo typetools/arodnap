@@ -1,0 +1,19 @@
+--- /tmp/orig-13855304108392380810.java	2025-09-24 22:10:02.186038068 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url73e3057d61_empeeoh_BACnet4J_tgz-pJ8-com_serotonin_bacnet4j_test_OverflowTestJ8/src/com/serotonin/bacnet4j/rs485/HubServer.java	2025-09-24 22:09:58.341769340 +0000
+@@ -30,13 +30,14 @@
+     	// Use the main thread for the socket acceptor.
+         try ( ServerSocket acceptor = new ServerSocket(50505)){
+             while (true) {
+-                Socket socket = acceptor.accept();
+-                try {
++                try (Socket socket = acceptor.accept()) {
++                    try {
+                     new Thread(new SocketHandler(socket)).start();
+                 }
+                 catch (Exception e) {
+                     System.out.println("Failed to create socket handler");
+                 }
++                }
+             }
+         }
+         catch (IOException e) {

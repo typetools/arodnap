@@ -1,0 +1,55 @@
+--- /tmp/orig-215947472683444152.java	2025-09-24 22:57:21.380514813 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlfc1c29991b_nil_mish_InJava_tgz-pJ8-edu_usc_cs_nsl_indexing_test_TestTrieProtoJ8/src/edu/usc/cs/nsl/counting/CountingUtil.java	2025-09-24 22:57:20.092424738 +0000
+@@ -189,23 +189,23 @@
+ 		 */		
+ 		long[] the_big_array = new long[big_array_size];   		
+ 		BufferedReader br = null;
+-		br = new BufferedReader(new FileReader(getTmpFileName(max_string_size)));
+-		String the_line = br.readLine();
+-		int index = 0;
+-		int num_lines = 0;
+-		while(the_line != null){
++		try (java.io.FileReader __arodnap_temp0 = new FileReader(getTmpFileName(max_string_size))) {
++		    br = new BufferedReader(__arodnap_temp0);
++		    String the_line = br.readLine();
++		    int index = 0;
++		    int num_lines = 0;
++		    while(the_line != null){
+ 			index = (int)Math.abs(getHash(the_line.replace("\n", "").replace("\r", ""))%big_array_size);
+ 			the_big_array[index] += 1;
+ 			the_line = br.readLine();
+ 			num_lines++;
+ 		}
+-		br.close();
+-		
+-		int this_chunk_size = 0;
+-		long number_of_words_in_chunk = 0;
+-		BufferedWriter bw = new BufferedWriter(new FileWriter(tmpDir+"/chunk_list_"+max_string_size+".txt"));
+-		bw.write('0');
+-		for(int i = 0; i < big_array_size; i++){
++		    int this_chunk_size = 0;
++		    long number_of_words_in_chunk = 0;
++		    try (java.io.FileWriter __arodnap_temp1 = new FileWriter(tmpDir + "/chunk_list_" + max_string_size + ".txt")) {
++		        BufferedWriter bw = new BufferedWriter(__arodnap_temp1);
++		        bw.write('0');
++		        for(int i = 0; i < big_array_size; i++){
+ 			if(the_big_array[i] > 0){
+ 				number_of_words_in_chunk += the_big_array[i]; 
+ 				this_chunk_size++;
+@@ -217,10 +217,12 @@
+ 				}
+ 			}
+ 		}
+-		num_of_chunks++;
+-		bw.write("\t"+big_array_size+"\t"+number_of_words_in_chunk+"\n");
+-		bw.close();
+-		System.out.println("Max String: "+max_string_size+"\tNumLines: "+num_lines+"\tnum of chunks: "+num_of_chunks);
++		        num_of_chunks++;
++		        bw.write("\t"+big_array_size+"\t"+number_of_words_in_chunk+"\n");
++		    }
++		    System.out.println("Max String: "+max_string_size+"\tNumLines: "+num_lines+"\tnum of chunks: "+num_of_chunks);
++		}
++
+ 		return num_of_chunks;
+ 	}
+ 	

@@ -1,0 +1,13 @@
+--- /tmp/orig-5043516897611480063.java	2025-09-24 22:57:11.123797569 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlfc1c29991b_nil_mish_InJava_tgz-pJ8-edu_usc_cs_nsl_indexing_test_TestTrieProtoJ8/src/edu/usc/cs/nsl/counting/CountingUtil.java	2025-09-24 22:57:09.723699661 +0000
+@@ -104,8 +104,8 @@
+ 			}
+ 		}
+ 		BufferedReader br = null;
+-		try {
+-			br = new BufferedReader(new FileReader(inputFile));
++		try (java.io.FileReader __arodnap_temp0 = new FileReader(inputFile)) {
++			br = new BufferedReader(__arodnap_temp0);
+ 		} catch (FileNotFoundException e) {
+ 			e.printStackTrace();
+ 			System.exit(1);

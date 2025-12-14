@@ -1,0 +1,17 @@
+--- /tmp/orig-10479271173167700489.java	2025-09-24 21:42:26.966335517 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url20b0f880a5_jgraph_legacy_jgraph5_tgz-pJ8-org_jgraph_example_HelloWorldJ8/src/com/mxgraph/util/mxUtils.java	2025-09-24 21:42:22.398016302 +0000
+@@ -1732,10 +1732,10 @@
+ 	public static void writeFile(String contents, String filename)
+ 			throws IOException
+ 	{
+-		FileWriter fw = new FileWriter(filename);
+-		fw.write(contents);
+-		fw.flush();
+-		fw.close();
++	    try (FileWriter fw = new FileWriter(filename)) {
++	        fw.write(contents);
++	        fw.flush();
++	    }
+ 	}
+ 
+ 	/**

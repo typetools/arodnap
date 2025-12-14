@@ -1,0 +1,12 @@
+--- /tmp/orig-5150529850978092965.java	2025-09-24 22:53:07.598772470 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urld8e41b4f7f_warrenfalk_jbox2dtest_tgz-pJ8-org_jbox2d_testbed_framework_TestbedMainJ8/src/org/jbox2d/testbed/framework/TestbedTest.java	2025-09-24 22:53:05.570630686 +0000
+@@ -407,8 +407,7 @@
+       return;
+     }
+ 
+-    try {
+-      FileOutputStream fos = new FileOutputStream(getFilename());
++    try (FileOutputStream fos = new FileOutputStream(getFilename())) {
+       result.writeTo(fos);
+     } catch (FileNotFoundException e) {
+       log.error("File not found exception while saving", e);

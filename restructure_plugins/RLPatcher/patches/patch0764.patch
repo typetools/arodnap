@@ -1,0 +1,47 @@
+--- /tmp/orig-5548043927213341825.java	2025-09-24 22:51:48.209222461 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urld58fd5e7a9_longrm_weibo_robot_tgz-pJ8-weibo4j_org_json_TestJ8/src/com/ufgov/longrm/RobotFrame.java	2025-09-24 22:51:46.309089625 +0000
+@@ -240,10 +240,12 @@
+       JOptionPane.showMessageDialog(null, "请输入信息！", "设置", JOptionPane.ERROR_MESSAGE);
+       return;
+     }
++    java.io.OutputStream outStream = null;
++    java.io.FileInputStream inStream = null;
+     // 保存设置
+     try {
+       Properties properties = new Properties();
+-      FileInputStream inStream = new FileInputStream(settingFile);
++      inStream = new FileInputStream(settingFile);
+       properties.load(inStream);
+ 
+       properties.setProperty("FETCH_FREQUENCY", fetchFrequencyTf.getText());
+@@ -253,7 +255,7 @@
+       properties.setProperty("COMMENT_COUNT", commentCountTf.getText());
+       properties.setProperty("REMARK", remarkTf.getText());
+ 
+-      OutputStream outStream = new FileOutputStream(settingFile);
++      outStream = new FileOutputStream(settingFile);
+       properties.store(outStream, "Update setting!");
+       inStream.close();
+       outStream.close();
+@@ -261,6 +263,21 @@
+       e.printStackTrace();
+       JOptionPane.showMessageDialog(null, e.toString(), "保存设置", JOptionPane.ERROR_MESSAGE);
+       return;
++    } finally {
++        if (outStream != null) {
++            try {
++                outStream.close();
++            } catch (Exception e) {
++                e.printStackTrace();
++            }
++        }
++        if (inStream != null) {
++            try {
++                inStream.close();
++            } catch (Exception e) {
++                e.printStackTrace();
++            }
++        }
+     }
+ 
+     robotThread = new Thread(new Runnable() {

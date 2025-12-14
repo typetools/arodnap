@@ -1,0 +1,22 @@
+--- /tmp/orig-9660676872223361785.java	2025-09-24 21:55:29.341022702 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url47af6b1535_rolandotr_db_comparison_tgz-pJ8-methodology_HistoryJ8/src/methodology/Evolution.java	2025-09-24 21:55:27.676906373 +0000
+@@ -119,12 +119,14 @@
+ 	}
+ 
+ 	public static void main2(String[] args) throws IOException, ClassNotFoundException {
+-		ObjectInputStream in = new ObjectInputStream(new FileInputStream(new File("evolution.obj")));
+-		ParetoFrontier[] frontiers = (ParetoFrontier[])in.readObject();
+-		
+-		History.printLatexTable(frontiers, 0, 32, "evolution_table.tex");
++	    try (java.io.FileInputStream __arodnap_temp0 = new FileInputStream(new File("evolution.obj"))) {
++	        ObjectInputStream in = new ObjectInputStream(__arodnap_temp0);
++	        ParetoFrontier[] frontiers = (ParetoFrontier[])in.readObject();
++	        History.printLatexTable(frontiers, 0, 32, "evolution_table.tex");
++	    }
++	
+ 
+-	}
++}
+ 	
+ 	
+ 

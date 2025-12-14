@@ -1,0 +1,13 @@
+--- /tmp/orig-6222107755441197594.java	2025-09-24 22:44:47.803832529 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlb5d5be4365_abmargb_oursim_ext_tgz-pJ8-br_edu_ufcg_lsd_oursim_experiments_RemoteNoFScenarioGeneratorJ8/src/br/edu/ufcg/lsd/oursim/experiments/ScalabilityScenarioGenerator.java	2025-09-24 22:44:45.535673966 +0000
+@@ -172,7 +172,9 @@
+ 		long time = System.currentTimeMillis() - begin;
+ 		
+ 		System.out.println("Simulation time: " + time);
+-		IOUtils.write(String.valueOf(time), new FileOutputStream(timeFile));
++		try (java.io.FileOutputStream __arodnap_temp1 = new FileOutputStream(timeFile)) {
++		    IOUtils.write(String.valueOf(time), __arodnap_temp1);
++		}
+ 	}
+ 	 
+ 	private static class JobFinishedCondition extends HaltCondition {

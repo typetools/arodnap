@@ -1,0 +1,15 @@
+--- /tmp/orig-457618867032547153.java	2025-09-24 22:47:30.791226742 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlc58f2e0b85_xoriole_CEAC_tgz-pJ8-com_sdm_phr_cpabe_CpabeTestJ8/src/com/sdm/phr/cpabe/Common.java	2025-09-24 22:47:29.199115440 +0000
+@@ -24,9 +24,9 @@
+ 
+     /* write byte[] into outputfile */
+     public static void spitFile(String outputfile, byte[] b) throws IOException {
+-        OutputStream os = new FileOutputStream(outputfile);
+-        os.write(b);
+-        os.close();
++        try (OutputStream os = new FileOutputStream(outputfile)) {
++            os.write(b);
++        }
+     }
+ 
+     public static void writeCpabeFile(String encfile,

@@ -1,0 +1,12 @@
+--- /tmp/orig-13486192246558609967.java	2025-09-24 21:34:21.944444284 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url063b9533f6_karlney_tetris_ai_tgz-pJ8-karlney_tetris_cmd_TetrisGameRunnerJ8/src/karlney/tetris/swing/Highscore.java	2025-09-24 21:34:20.676355675 +0000
+@@ -80,8 +80,7 @@
+     }
+ 
+     public static void updateFile(int score){
+-        try{
+-            FileOutputStream writer = new FileOutputStream(outputfile);
++        try(FileOutputStream writer = new FileOutputStream(outputfile)) {
+             ObjectOutputStream w = new ObjectOutputStream(writer);
+ 
+             for(int i=0; i<place; i++){

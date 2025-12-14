@@ -1,0 +1,18 @@
+--- /tmp/orig-6164944595582725234.java	2025-09-24 22:57:04.071304394 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlfaa9045c2e_Azmisov_racko_ai_tgz-pJ8-client_TestingJ8/src/models/ModelBaltar.java	2025-09-24 22:57:02.671206485 +0000
+@@ -44,10 +44,11 @@
+ 		cylons = new ArrayList();
+ 		weights = new ArrayList();
+ 		for (String filename: Filenames){
+-			FileReader in = new FileReader(filename);
+-			BufferedReader buff = new BufferedReader(in);
+-			weights.add( Double.parseDouble(buff.readLine()));
+-			cylons.add(new ReinforcementLearner(buff));
++		    try (FileReader in = new FileReader(filename)) {
++		        BufferedReader buff = new BufferedReader(in);
++		        weights.add( Double.parseDouble(buff.readLine()));
++		        cylons.add(new ReinforcementLearner(buff));
++		    }
+ 		}
+ 	}
+ 

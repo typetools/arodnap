@@ -1,0 +1,13 @@
+--- /tmp/orig-16047409741831583727.java	2025-09-24 21:49:44.428911857 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url2df0f7c811_przemekgalazka_legacycode_tgz-pJ8-pl_cc_core_cmd_CommandJ8/src/pl/cc/utils/IniFile.java	2025-09-24 21:49:42.064746592 +0000
+@@ -54,7 +54,9 @@
+ 	 */
+ 	public IniFile(URL url) throws IOException {
+ 		this();
+-		load(url.openStream());
++		try (java.io.InputStream __arodnap_temp0 = url.openStream()) {
++		    load(__arodnap_temp0);
++		}
+ 	}
+ 
+ 	/**

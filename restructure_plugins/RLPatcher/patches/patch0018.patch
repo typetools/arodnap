@@ -1,0 +1,19 @@
+--- /tmp/orig-8784497713030518891.java	2025-09-24 21:33:41.529620270 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url0307c0e995_js_labs_js_collider_tgz-pJ8-org_jsl_tests_shmem_throughput_MainJ8/src/org/jsl/tests/shmem_throughput/Server.java	2025-09-24 21:33:39.421472961 +0000
+@@ -86,7 +86,15 @@
+             if (messageLength > 4)
+             {
+                 try { shMem = new ShMemServer( data ); }
+-                catch (final Exception ex) { ex.printStackTrace(); }
++                catch (final Exception ex) { ex.printStackTrace(); } finally {
++                    if (shMem != null) {
++                        try {
++                            shMem.close();
++                        } catch (Exception e) {
++                            e.printStackTrace();
++                        }
++                    }
++                }
+             }
+ 
+             ByteBuffer reply = ByteBuffer.allocateDirect(4);

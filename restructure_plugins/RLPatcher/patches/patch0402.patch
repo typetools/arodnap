@@ -1,0 +1,28 @@
+--- /tmp/orig-2806454598157368936.java	2025-09-24 22:11:46.037297629 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url78f6619d18_IntersectAustralia_rifcs_tgz-pJ8-org_ands_rifcs_example_SampleRIFCSBuildCollectionJ8/src/RIFCSWrapper.java	2025-09-24 22:11:44.765208705 +0000
+@@ -193,17 +193,19 @@
+ /* 306 */     SchemaFactory factory = SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema");
+ /*     */ 
+ /* 308 */     URL theSchema = new URL(schemaUrl);
++try (java.io.InputStream __arodnap_temp0 = theSchema.openStream()) {
++    Source schemaFile = new StreamSource(__arodnap_temp0);
++    Schema schema = factory.newSchema(schemaFile);
++    Validator validator = schema.newValidator();
++    validator.validate(new DOMSource(this.doc));
++}
+ /*     */ 
+-/* 310 */     Source schemaFile = new StreamSource(theSchema.openStream());
+-/* 311 */     Schema schema = factory.newSchema(schemaFile);
+ /*     */ 
+-/* 314 */     Validator validator = schema.newValidator();
+ /*     */ 
+-/* 316 */     validator.validate(new DOMSource(this.doc));
+ /*     */   }
+ /*     */ }
+ 
+ /* Location:           /Users/przemyslaw/Downloads/rifcs-api-1.3.0.jar
+  * Qualified Name:     org.ands.rifcs.base.RIFCSWrapper
+  * JD-Core Version:    0.6.2
+- */
++ */
+\ No newline at end of file

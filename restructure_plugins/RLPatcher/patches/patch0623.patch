@@ -1,0 +1,25 @@
+--- /tmp/orig-9360977385505680120.java	2025-09-24 22:39:18.944842501 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url933dd5727b_AppleLiang_Testing_Project_tgz-pJ8-org_joda_time_chrono_gj_MainTestJ8/src/org/joda/time/TestSerialization.java	2025-09-24 22:39:13.248444298 +0000
+@@ -290,16 +290,16 @@
+     }
+ 
+     private void loadAndCompare(Serializable test, String filename, boolean same) throws Exception {
+-        FileInputStream fis = new FileInputStream("src/resources/" + filename + ".dat");
+-        ObjectInputStream ois = new ObjectInputStream(fis);
+-        Object obj = ois.readObject();
+-        ois.close();
+-        if (same) {
++        try (FileInputStream fis = new FileInputStream("src/resources/" + filename + ".dat")) {
++            ObjectInputStream ois = new ObjectInputStream(fis);
++            Object obj = ois.readObject();
++            if (same) {
+             assertSame(test, obj);
+         } else {
+             assertEquals(test, obj);
+         }
+-//        try {
++        }
++    //        try {
+ //            fis = new FileInputStream("./resources/" + filename + "2.dat");
+ //            ois = new ObjectInputStream(fis);
+ //            obj = ois.readObject();

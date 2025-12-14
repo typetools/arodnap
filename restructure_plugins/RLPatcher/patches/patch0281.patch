@@ -1,0 +1,27 @@
+--- /tmp/orig-7186834826132298084.java	2025-09-24 21:59:04.780082822 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url4c41254592_topskychen_AuthTopk_tgz-pJ8-quickhull3d_QuickHull3DTestJ8/src/utility/geo/mergeIndexDL.java	2025-09-24 21:59:01.975886796 +0000
+@@ -40,10 +40,10 @@
+ 		HashSet<Long> cc = new HashSet<Long>();
+ 		for(int i = 0; i < machineList.length; i++){
+ 			String fileName = filePath + "/" + type + "." + machineList[i] + ".idx";
+-			DataInputStream dis = new DataInputStream(new FileInputStream(new File(fileName)));
+-			long id = 0, p, l, num = 0;
+-			
+-			while(dis.available() > 0){
++			try (java.io.FileInputStream __arodnap_temp0 = new FileInputStream(new File(fileName))) {
++			    DataInputStream dis = new DataInputStream(__arodnap_temp0);
++			    long id = 0, p, l, num = 0;
++			    while(dis.available() > 0){
+ 				id = dis.readLong();
+ 				p = dis.readLong();
+ 				l = dis.readLong();
+@@ -57,7 +57,8 @@
+ 				num ++;
+ 				cc.add(id);
+ 			}
+-			dis.close();
++			}
++
+ 		}
+ 		dos.flush();
+ 		dos.close();

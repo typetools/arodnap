@@ -1,0 +1,30 @@
+--- /tmp/orig-18179747236151822057.java	2025-09-24 22:13:24.128154517 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url7a45f192ca_mfullen_ping_pong_net_tgz-pJ8-ping_pong_net_client_io_TestClientNonPPNServerJ8/src/ping/pong/net/connection/io/AbstractIoConnectionTest.java	2025-09-24 22:13:22.044008828 +0000
+@@ -415,12 +415,24 @@
+     @Test
+     public void testEnqueueMessageToWrite()
+     {
+-        AbstractIoConnection instance = new AbstractIoConnectionImpl();
++    ping.pong.net.connection.io.AbstractIoConnection instance = null;
++    try {
++        instance = new AbstractIoConnectionImpl();
+         Envelope createTcpEnvelope = EnvelopeFactory.createTcpEnvelope("TestTcp");
+         Envelope createUdpEnvelope = EnvelopeFactory.createUdpEnvelope("TestUdp");
+-        //uncomment when UDP is added
+-        //instance.enqueueMessageToWrite(createUdpEnvelope);
+         instance.enqueueMessageToWrite(createTcpEnvelope);
++    } finally {
++        if (instance != null) {
++            try {
++                instance.close();
++            } catch (Exception e) {
++                e.printStackTrace();
++            }
++        }
++    }
++
++        //uncomment when UDP is added
++
+     }
+ 
+     /**

@@ -1,0 +1,25 @@
+--- /tmp/orig-13291072537461794757.java	2025-09-24 22:02:35.930843172 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url4df616fce9_s3e0n1g1_prototype3_tgz-pJ8-Trading_Engine_MainJ8/src/Trading_Engine/Main.java	2025-09-24 22:02:34.114716217 +0000
+@@ -22,8 +22,19 @@
+ 				System.out.println(failure.toString());
+ 			}
+ 		}
+-		
+-		myDatabase db = new myDatabase();
+-		new Mainmenu(db,result);
++		Trading_Engine.myDatabase db = null;
++		try {
++		    db = new myDatabase();
++		    new Mainmenu(db,result);
++		} finally {
++		    if (db != null) {
++		        try {
++		            db.closeDatabase();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
++		}
++
+ 	}
+ }

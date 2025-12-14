@@ -1,0 +1,20 @@
+--- /tmp/orig-3270946658941506471.java	2025-09-24 22:40:47.135007721 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urla39b63eb76_tef_pipeline_tgz-pJ8-org_twentygototen_pipeline_ExampleJ8/src/org/twentygototen/pipeline/pipes/FileReaderPipe.java	2025-09-24 22:40:45.954925223 +0000
+@@ -15,8 +15,8 @@
+ 	@Override
+ 	final public Pair<File,List<String>> process(File input) {
+ 		List<String> out =  new ArrayList<String>();
+-		try {
+-			BufferedReader bufferedReader = new BufferedReader(new FileReader(input));
++		try (java.io.FileReader __arodnap_temp0 = new FileReader(input)) {
++			BufferedReader bufferedReader = new BufferedReader(__arodnap_temp0);
+ 			String line = bufferedReader.readLine();
+ 			while (line != null) {
+ 				out.add(line);
+@@ -28,4 +28,4 @@
+ 		}
+ 		return Pair.make(input,out);
+ 	}
+-}
++}
+\ No newline at end of file

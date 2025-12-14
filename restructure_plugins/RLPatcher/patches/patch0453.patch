@@ -1,0 +1,85 @@
+--- /tmp/orig-8096707810679528976.java	2025-09-24 22:16:39.681824392 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url7a45f192ca_mfullen_ping_pong_net_tgz-pJ8-ping_pong_net_client_io_TestClientNonPPNServerJ8/src/ping/pong/net/server/io/ServerConnectionManagerTest.java	2025-09-24 22:16:37.889699116 +0000
+@@ -140,30 +140,63 @@
+                                                   KeyManagementException
+     {
+         ConnectionConfiguration createConnectionConfiguration = ConnectionConfigFactory.createPPNConfig("localhost", 8011, 8012, true);
+-        ServerConnectionManager instance = new ServerConnectionManager(createConnectionConfiguration, new IoServer(createConnectionConfiguration));
+-        Thread th = new Thread(instance);
+-        th.start();
+-
+-        synchronized (this)
++        ping.pong.net.server.io.ServerConnectionManager instance = null;
++        try {
++            instance = new ServerConnectionManager(createConnectionConfiguration, new IoServer(createConnectionConfiguration));
++            Thread th = new Thread(instance);
++            th.start();
++            synchronized (this)
+         {
+             wait(500);
+         }
++            KeyStore ks = KeyStore.getInstance("JKS");
++            String absolutePath = new File(Thread.currentThread().getContextClassLoader().getResource(ConnectionConfiguration.DEFAULT_KEY_STORE).toURI()).getAbsolutePath();
++            java.io.FileInputStream __arodnap_temp1 = null;
++            try {
++    __arodnap_temp1 = new FileInputStream(absolutePath);
++    ks.load(__arodnap_temp1, (ConnectionConfiguration.DEFAULT_KEY_STORE_PASSWORD).toCharArray());
++} finally {
++    if (__arodnap_temp1 != null) {
++        try {
++            __arodnap_temp1.close();
++        } catch (Exception e) {
++            e.printStackTrace();
++        }
++    }
++}
++            TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
++            tmf.init(ks);
++            SSLContext sslcontext = SSLContext.getInstance("SSLv3");
++            sslcontext.init(null, tmf.getTrustManagers(), null);
++            SSLSocketFactory factory = (SSLSocketFactory) sslcontext.getSocketFactory();
++            javax.net.ssl.SSLSocket client = null;
++            try {
++                client = (SSLSocket) factory.createSocket("localhost", 8011);
++                client.startHandshake();
++            } finally {
++                if (client != null) {
++                    try {
++                        client.close();
++                    } catch (Exception e) {
++                        e.printStackTrace();
++                    }
++                }
++            }
++            th.join(1500);
++            assertTrue(instance.isListening());
++            assertFalse(instance.isListening());
++        } finally {
++            if (instance != null) {
++                try {
++                    instance.shutdown();
++                } catch (Exception e) {
++                    e.printStackTrace();
++                }
++            }
++        }
++
+ 
+-        KeyStore ks = KeyStore.getInstance("JKS");
+-        String absolutePath = new File(Thread.currentThread().getContextClassLoader().getResource(ConnectionConfiguration.DEFAULT_KEY_STORE).toURI()).getAbsolutePath();
+-        ks.load(new FileInputStream(absolutePath), (ConnectionConfiguration.DEFAULT_KEY_STORE_PASSWORD).toCharArray());
+-        TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
+-        tmf.init(ks);
+-        SSLContext sslcontext = SSLContext.getInstance("SSLv3");
+-        sslcontext.init(null, tmf.getTrustManagers(), null);
+ 
+-        SSLSocketFactory factory = (SSLSocketFactory) sslcontext.getSocketFactory();
+-        SSLSocket client = (SSLSocket) factory.createSocket("localhost", 8011);
+-        client.startHandshake();
+ 
+-        th.join(1500);
+-        assertTrue(instance.isListening());
+-        instance.shutdown();
+-        assertFalse(instance.isListening());
+     }
+ }

@@ -1,0 +1,27 @@
+--- /tmp/orig-11021252193928483679.java	2025-09-24 21:44:57.068824441 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url270fc4f5ee_ykcilborw_Joust_tgz-pJ8-fri_patterns_interpreter_parsergenerator_examples_HowToOverrideLexerImplJ8/src/fri/patterns/interpreter/parsergenerator/parsertables/SLRParserTables.java	2025-09-24 21:44:54.600651910 +0000
+@@ -292,13 +292,22 @@
+ 			{ "FAKT", "`number`", },
+ 			{ "FAKT", "'('", "EXPR", "')'" },
+ 		};
+-		
++		fri.patterns.interpreter.parsergenerator.parsertables.SLRParserTables p = null;
++
+ 		try	{
+-			SLRParserTables p = new SLRParserTables(new Syntax(syntax));
++			p = new SLRParserTables(new Syntax(syntax));
+ 			p.dump(System.err);
+ 		}
+ 		catch (Exception e)	{
+ 			e.printStackTrace();
++		} finally {
++		    if (p != null) {
++		        try {
++		            p.toSourceFile(null);
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
+ 		}
+ 	}
+ 	

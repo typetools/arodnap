@@ -1,0 +1,20 @@
+--- /tmp/orig-14078917964967813290.java	2025-09-24 22:06:28.567105368 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url70997c83aa_Xilaew_risiko_tgz-pJ8-risiko_XMI2XMLtransformerJ8/src/risiko/main/MainNio.java	2025-09-24 22:06:26.642970864 +0000
+@@ -27,7 +27,9 @@
+ 		this.ssc.configureBlocking(false);
+ 		this.selector = Selector.open();
+ 		engine = new Engine();
+-		engine.setBoard(MainNio.class.getResourceAsStream("default.board"));
++		try (java.io.InputStream __arodnap_temp0 = MainNio.class.getResourceAsStream("default.board")) {
++		    engine.setBoard(__arodnap_temp0);
++		}
+ 
+ 		this.ssc.register(selector, SelectionKey.OP_ACCEPT);
+ 	}
+@@ -143,4 +145,4 @@
+ 		MainNio server = new MainNio(10523);
+ 		(new Thread(server)).start();
+ 	}
+-}
++}
+\ No newline at end of file

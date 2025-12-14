@@ -1,0 +1,26 @@
+--- /tmp/orig-11739048346569516324.java	2025-09-24 22:10:37.552510306 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url75694980d5_fabioalmeid_tp01ftc_tgz-pJ8-agentes_jade_Centralizador_ExemploParserGramaticaCentralizadorJ8/src/agentes/jade/Centralizador/AgenteCentralizador.java	2025-09-24 22:10:34.376288278 +0000
+@@ -395,7 +395,7 @@
+ 		// }
+ 
+ 		// true = append file
+-		FileWriter fileWritter;
++		FileWriter fileWritter = null;
+ 		try {
+ 			fileWritter = new FileWriter(file.getName(), true);
+ 			BufferedWriter bufferWritter = new BufferedWriter(fileWritter);
+@@ -406,6 +406,14 @@
+ 		} catch (IOException e) {
+ 			// TODO Auto-generated catch block
+ 			e.printStackTrace();
++		} finally {
++		    if (fileWritter != null) {
++		        try {
++		            fileWritter.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
+ 		}
+ 
+ //		System.out.println("Done");

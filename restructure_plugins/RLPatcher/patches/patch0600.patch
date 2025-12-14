@@ -1,0 +1,15 @@
+--- /tmp/orig-9297967435278125881.java	2025-09-24 22:37:07.139628742 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url8c14fd53ee_luca89_itaco_tgz-pJ8-main_RunnerJ8/src/compilatore/CTarget.java	2025-09-24 22:37:05.611521921 +0000
+@@ -536,8 +536,9 @@
+ 		} else {
+ 			sorgenteC = new File(nomeClasse + ".c");
+ 		}
+-		FileOutputStream sorgenteCStream = new FileOutputStream(sorgenteC);
+-		CTarget ct = new CTarget(sorgenteCStream);
+-		result.scriviCodice(ct);
++		try (FileOutputStream sorgenteCStream = new FileOutputStream(sorgenteC)) {
++		    CTarget ct = new CTarget(sorgenteCStream);
++		    result.scriviCodice(ct);
++		}
+ 	}
+ }

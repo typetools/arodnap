@@ -1,0 +1,32 @@
+--- /tmp/orig-3474424507187166435.java	2025-09-24 22:20:13.644781140 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url80e39b1957_tobikster_IJN_headers_recognition_tgz-pJ8-org_maltparser_examples_CreatePhraseStructureGraphJ8/src/org/maltparser/core/config/ConfigurationDir.java	2025-09-24 22:20:10.140536181 +0000
+@@ -675,19 +675,19 @@
+ 					createConfigFile(filePath, jos);
+ 					continue;
+ 				}
+-	
+-				FileInputStream fis = new FileInputStream(f);
+-				
+-				String entryPath = f.getPath().substring(workingDirectory.getPath().length()+1);
+-				entryPath = entryPath.replace('\\', '/');
+-				JarEntry entry = new JarEntry(entryPath);
+-				jos.putNextEntry(entry);
+-	
+-				while ((bytesIn = fis.read(readBuffer)) != -1) {
++				try (FileInputStream fis = new FileInputStream(f)) {
++				    String entryPath = f.getPath().substring(workingDirectory.getPath().length()+1);
++				    entryPath = entryPath.replace('\\', '/');
++				    JarEntry entry = new JarEntry(entryPath);
++				    jos.putNextEntry(entry);
++				    while ((bytesIn = fis.read(readBuffer)) != -1) {
+ 					jos.write(readBuffer, 0, bytesIn);
+ 				}
++				}
++
++				
++	
+ 	
+-				fis.close();
+ 			}
+ 		} catch (FileNotFoundException e) {
+ 			throw new ConfigurationException("The directory '"+directory+"' cannot be found. ", e);

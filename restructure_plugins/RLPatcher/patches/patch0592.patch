@@ -1,0 +1,27 @@
+--- /tmp/orig-437738287036716891.java	2025-09-24 22:36:35.761435270 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url8be3f02398_vnamboo_LearnJava_tgz-pJ8-org_json_TestJ8/src/test/TestXML2JSON.java	2025-09-24 22:36:33.917306357 +0000
+@@ -54,15 +54,17 @@
+     }
+     
+    private String readXML() throws IOException{
+-	   FileReader reader=new FileReader(new File("c:\\mxml.xml"));
+-	   StringBuffer xmlData=new StringBuffer();
+-	   char data[]=new char[1024];	   
+-	   while(reader.read(data)!=-1){
++       try (FileReader reader=new FileReader(new File("c:\\mxml.xml"))) {
++           StringBuffer xmlData=new StringBuffer();
++           char data[]=new char[1024];
++           while(reader.read(data)!=-1){
+ 		   xmlData.append(data);
+ 		   data=new char[1024];
+-	   }	   
+-	return xmlData.toString();   
+-   }
++	   }
++           return xmlData.toString();
++       }
++   
++}
+    
+ 	public void initialize(String scriptPath) throws Exception {
+ 		try {

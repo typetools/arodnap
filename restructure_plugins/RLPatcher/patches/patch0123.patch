@@ -1,0 +1,15 @@
+--- /tmp/orig-13496220765084317148.java	2025-09-24 21:45:11.221813770 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url270fc4f5ee_ykcilborw_Joust_tgz-pJ8-fri_patterns_interpreter_parsergenerator_examples_HowToOverrideLexerImplJ8/src/fri/patterns/interpreter/parsergenerator/lexer/examples/CStyleCommentStrip.java	2025-09-24 21:45:08.525625300 +0000
+@@ -86,8 +86,10 @@
+ 			try	{
+ 				for (int i = 0; i < args.length; i++)	{
+ 					PrintWriter out = new PrintWriter(System.out);
+-					Reader in = new BufferedReader(new FileReader(args[i]));
+-					new CStyleCommentStrip(in, out);
++					try (java.io.FileReader __arodnap_temp0 = new FileReader(args[i])) {
++					    Reader in = new BufferedReader(__arodnap_temp0);
++					    new CStyleCommentStrip(in, out);
++					}
+ 				}
+ 			}
+ 			catch (Exception e)	{

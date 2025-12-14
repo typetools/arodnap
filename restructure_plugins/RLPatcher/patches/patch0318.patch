@@ -1,0 +1,13 @@
+--- /tmp/orig-10071707345531626459.java	2025-09-24 22:03:21.578034108 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url5681492665_ArgParser_Java_ArgParser_tgz-pJ8-org_argparser_ArgParserTestJ8/src/org/argparser/ArgParser.java	2025-09-24 22:03:20.329946861 +0000
+@@ -2202,8 +2202,8 @@
+       args = new String[0];
+     }
+     if (!file.canRead()) { return args; }
+-    try {
+-      return prependArgs(new FileReader(file), args);
++    try (java.io.FileReader __arodnap_temp0 = new FileReader(file)) {
++      return prependArgs(__arodnap_temp0, args);
+     } catch (IOException e) {
+       throw new IOException("File " + file.getName() + ": " + e.getMessage());
+     }

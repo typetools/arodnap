@@ -1,0 +1,22 @@
+--- /tmp/orig-12574683016813222543.java	2025-09-24 22:19:04.115920833 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url80587fc7d5_dennervidal_CloudSim_DVFS_tgz-pJ8-Examples_Dvfs_example_simpleJ8/src/org/cloudbus/cloudsim/UtilizationModelPlanetLabInMemory.java	2025-09-24 22:19:01.571742986 +0000
+@@ -26,13 +26,14 @@
+ 			throws NumberFormatException,
+ 			IOException {
+ 		setSchedulingInterval(schedulingInterval);
+-		BufferedReader input = new BufferedReader(new FileReader(inputPath));
+-		int n = data.length;
+-		for (int i = 0; i < n - 1; i++) {
++		try (java.io.FileReader __arodnap_temp0 = new FileReader(inputPath)) {
++		    BufferedReader input = new BufferedReader(__arodnap_temp0);
++		    int n = data.length;
++		    for (int i = 0; i < n - 1; i++) {
+ 			data[i] = Integer.valueOf(input.readLine()) / 100.0;
+ 		}
+-		data[n - 1] = data[n - 2];
+-		input.close();
++		    data[n - 1] = data[n - 2];
++		}
+ 	}
+ 
+ 	/*

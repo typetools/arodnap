@@ -1,0 +1,13 @@
+--- /tmp/orig-7563070631858768667.java	2025-09-24 22:22:26.026035063 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url80e39b1957_tobikster_IJN_headers_recognition_tgz-pJ8-org_maltparser_examples_CreatePhraseStructureGraphJ8/src/org/maltparser/core/syntaxgraph/reader/TigerXMLReader.java	2025-09-24 22:22:22.445784788 +0000
+@@ -87,8 +87,8 @@
+ 	public void open(URL url, String charsetName) throws MaltChainedException {
+ 		setUrl(url);
+ 		setCharsetName(charsetName);
+-		try {
+-			open(url.openStream(), charsetName);
++		try (java.io.InputStream __arodnap_temp0 = url.openStream()) {
++			open(__arodnap_temp0, charsetName);
+ 		} catch (IOException e) {
+ 			throw new DataFormatException("The URL '"+url.toString()+"' cannot be opened. ", e);
+ 		}

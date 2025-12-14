@@ -1,0 +1,31 @@
+--- /tmp/orig-12132465754816651078.java	2025-09-24 22:51:01.389949393 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urld0f681c558_farom57_AstroidDriver_tgz-pJ8-laazotea_indi_server_examples_MinimumINDIServerJ8/src/laazotea/indi/server/INDIJavaDevice.java	2025-09-24 22:50:59.501817397 +0000
+@@ -180,20 +180,20 @@
+ 
+   @Override
+   public void closeConnections() {
+-    try {
+-      toDriver.getInputStream().close();
++    try (java.io.InputStream __arodnap_temp0 = toDriver.getInputStream()) {
++      __arodnap_temp0.close();
+     } catch (IOException e) {
+     }
+-    try {
+-      toDriver.getOutputStream().close();
++    try (java.io.OutputStream __arodnap_temp1 = toDriver.getOutputStream()) {
++      __arodnap_temp1.close();
+     } catch (IOException e) {
+     }
+-    try {
+-      fromDriver.getInputStream().close();
++    try (java.io.InputStream __arodnap_temp2 = fromDriver.getInputStream()) {
++      __arodnap_temp2.close();
+     } catch (IOException e) {
+     }
+-    try {
+-      fromDriver.getOutputStream().close();
++    try (java.io.OutputStream __arodnap_temp3 = fromDriver.getOutputStream()) {
++      __arodnap_temp3.close();
+     } catch (IOException e) {
+     }
+   }

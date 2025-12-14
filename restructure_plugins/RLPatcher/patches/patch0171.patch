@@ -1,0 +1,63 @@
+--- /tmp/orig-17181563485784336369.java	2025-09-24 21:49:38.988531551 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url2b9f720f64_jfimbett_QBnB_tgz-pJ8-tests_TestJ8/src/tests/Test.java	2025-09-24 21:49:37.712442347 +0000
+@@ -80,29 +80,24 @@
+ 		public void loadFromFile(String file) throws IOException{
+ 			double in=System.currentTimeMillis();
+ 			File f= new File(file);
+-			FileReader fr = new FileReader(f);
+-			BufferedReader bf= new BufferedReader(fr);
+-			String line= bf.readLine();
+-		
+-			int k=0;
+-
+-			
+-	         tsize=Integer.parseInt(line);
+-			line=bf.readLine();
+-			psize=Integer.parseInt(line);
+-			line=bf.readLine();
+-			
+-			K=Integer.parseInt(line);
+-			line=bf.readLine();
+-			D= new double[psize][tsize];
+-			V= new double[psize];
+-			R= new double[psize];
+-	
+-			M=new double[psize];
+-			N=new double[psize];
+-			inInv=new double[psize];
+-			int[][] A=new int[psize][tsize];
+-			while(line!=null){
++			try (FileReader fr = new FileReader(f)) {
++			    BufferedReader bf= new BufferedReader(fr);
++			    String line= bf.readLine();
++			    int k=0;
++			    tsize=Integer.parseInt(line);
++			    line=bf.readLine();
++			    psize=Integer.parseInt(line);
++			    line=bf.readLine();
++			    K=Integer.parseInt(line);
++			    line=bf.readLine();
++			    D= new double[psize][tsize];
++			    V= new double[psize];
++			    R= new double[psize];
++			    M=new double[psize];
++			    N=new double[psize];
++			    inInv=new double[psize];
++			    int[][] A=new int[psize][tsize];
++			    while(line!=null){
+ 				//Reads demand
+ 				if(k<psize){
+ 					String[] data= line.split("\t");
+@@ -138,6 +133,12 @@
+ 				k++;
+ 				line=bf.readLine();
+ 			}
++			}
++
++
++			
++			
++	
+ 			
+ 			System.out.println("Time loading data: "+(System.currentTimeMillis()-in)/1000+" seconds.");
+ 		

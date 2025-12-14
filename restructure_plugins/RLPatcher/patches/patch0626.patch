@@ -1,0 +1,14 @@
+--- /tmp/orig-15063794644939795214.java	2025-09-24 22:39:38.042177541 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url9a01f43c15_poragchowdhury_securitygame_tgz-pJ8-securitygame_GameMasterJ8/src/securitygame/DefenderHelper.java	2025-09-24 22:39:36.934100077 +0000
+@@ -61,9 +61,8 @@
+         budget = Parameters.DEFENDER_BUDGET;
+         net = Parser.parseGraph(graphFile+".graph");
+         File csv = new File(defenderName+"-"+graphFile+".defence");
+-		try
+-		{
+-			CSVParser parser = CSVParser.parse(csv, StandardCharsets.US_ASCII, CSVFormat.DEFAULT);
++		try(
++CSVParser parser = CSVParser.parse(csv, StandardCharsets.US_ASCII, CSVFormat.DEFAULT)) 		{
+ 			for (CSVRecord csvRecord : parser)
+ 			{
+ 				Iterator<String> itr = csvRecord.iterator();

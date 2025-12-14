@@ -1,0 +1,42 @@
+--- /tmp/orig-4707610558764482549.java	2025-09-24 21:51:22.551771068 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url416ee5b4ee_martinmarinov_HonProj_tgz-pJ8-martin_gui_MainJ8/src/martin/experiments/ExperimTest.java	2025-09-24 21:51:20.475625936 +0000
+@@ -36,12 +36,13 @@
+ 		int c = 0;
+ 		
+ 		for (int n = 0; n < 8; n++) {
+-			final Worksheet ws = new Worksheet("C:\\Users\\Martin\\Desktop\\data\\"+n+"_all.csv");
+-			final HashMap<String, Complex> rule = Tools.generatePairs(new String[]{"Pi", "n"}, new Complex[]{new Complex(Math.PI, 0), new Complex(n, 0)});
+-			final String[] res_rows = perform(items, ws, rule, null).csv.toString().split("\n");
+-			final int initc = c;
+-			
+-			for (int r = 0; r < res_rows.length; r+=2) {
++		martin.experiments.Worksheet ws = null;
++		try {
++		    ws = new Worksheet("C:\\Users\\Martin\\Desktop\\data\\"+n+"_all.csv");
++		    final HashMap<String, Complex> rule = Tools.generatePairs(new String[]{"Pi", "n"}, new Complex[]{new Complex(Math.PI, 0), new Complex(n, 0)});
++		    final String[] res_rows = perform(items, ws, rule, null).csv.toString().split("\n");
++		    final int initc = c;
++		    for (int r = 0; r < res_rows.length; r+=2) {
+ 				final String[] origs = res_rows[r].split(",");
+ 				final Double[] orig = new Double[origs.length-1];
+ 				double origsum = 0;
+@@ -72,7 +73,18 @@
+ 				avg += avgres;
+ 				c++;
+ 			}
+-			System.out.println(n+"_all.csv ready! " + (c-initc) +" done");
++		    System.out.println(n+"_all.csv ready! " + (c-initc) +" done");
++		} finally {
++		    if (ws != null) {
++		        try {
++		            ws.finalize();
++		        } catch (Throwable e) {
++		            e.printStackTrace();
++		        }
++		    }
++		}
++
++			
+ 		}
+ 		
+ 		CSVExporter csv = new CSVExporter(",");

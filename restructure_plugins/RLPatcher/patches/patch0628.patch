@@ -1,0 +1,32 @@
+--- /tmp/orig-14484888959041061970.java	2025-09-24 22:39:45.274683155 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url9a01f43c15_poragchowdhury_securitygame_tgz-pJ8-securitygame_GameMasterJ8/src/securitygame/Parser.java	2025-09-24 22:39:44.146604292 +0000
+@@ -220,10 +220,11 @@
+ 	public static int parseAttackerBudget(String attackerName, String defenderName, String graphName){;
+ 		String historyFile = attackerName + "-" + defenderName + "-" + graphName + ".history";
+ 		int budget = Parameters.ATTACKER_BUDGET;
++		org.apache.commons.csv.CSVParser parser = null;
+ 		try
+ 		{
+ 			File csvTrainData = new File(historyFile);
+-			CSVParser parser = CSVParser.parse(csvTrainData, StandardCharsets.US_ASCII, CSVFormat.DEFAULT);
++			parser = CSVParser.parse(csvTrainData, StandardCharsets.US_ASCII, CSVFormat.DEFAULT);
+ 			for (CSVRecord csvRecord : parser)
+ 			{
+ 				Iterator<String> itr = csvRecord.iterator();
+@@ -258,7 +259,15 @@
+ 			return budget;
+ 		}
+ 		catch(NumberFormatException nfe){ nfe.printStackTrace(); }
+-		catch (IOException e) { e.printStackTrace();}
++		catch (IOException e) { e.printStackTrace();} finally {
++		    if (parser != null) {
++		        try {
++		            parser.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
++		}
+ 		return budget;
+ 	}
+ }

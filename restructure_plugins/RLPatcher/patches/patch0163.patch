@@ -1,0 +1,12 @@
+--- /tmp/orig-18421154887016453299.java	2025-09-24 21:48:58.385693237 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url29ecd5d728_geodb_db3dcore_tgz-pJ8-de_uos_igf_db3d_dbms_model3d_SegmentNetBuilderJ8/src/de/uos/igf/db3d/resources/DB3DProperties.java	2025-09-24 21:48:55.361481832 +0000
+@@ -95,8 +95,7 @@
+ 
+ 	public static void store(String comments) throws IOException {
+ 		if (propertiesFile != null && propertiesFile.exists()) {
+-			try {
+-				FileOutputStream fw = new FileOutputStream(propertiesFile);
++			try (FileOutputStream fw = new FileOutputStream(propertiesFile)) {
+ 				db3dProperties.store(fw, comments);
+ 			} catch (IOException e) {
+ 				IOException ioe = new IOException(

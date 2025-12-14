@@ -1,0 +1,22 @@
+--- /tmp/orig-7281177066925625919.java	2025-09-24 22:05:25.962729106 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url647b55da7c_Nikhilkumar13_emuSr_tgz-pJ8-MainJ8/src/frontend/handlers.java	2025-09-24 22:05:24.074597120 +0000
+@@ -645,8 +645,8 @@
+         } else
+         {
+             backend.Register.resetRegisters();
+-            try
+-            {
++            try(
++java.io.FileReader __arodnap_temp0 = new FileReader(file.getAbsoluteFile()))             {
+                 FrontEnd.activepane = new JEditorPane();
+                 JScrollPane scroll = new JScrollPane();
+ //                   scroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+@@ -656,7 +656,7 @@
+                // FrontEnd.activepane.setSelectionColor(new Color(1.0f, 1.0f, 1.0f, 0.0f));//line replaced by nikhil in place of below on saturday 3:45;
+                FrontEnd.activepane.setSelectionColor(new Color(0.0f, 0.0f, 1.0f, 0.1f));
+ 
+-                FrontEnd.activepane.read(new FileReader(file.getAbsoluteFile()), null);
++                FrontEnd.activepane.read(__arodnap_temp0, null);
+                 FrontEnd.EditorPane.add(file.getName(), scroll);
+                 countOpened++;
+                 FrontEnd.EditorPane.setTabComponentAt(countOpened - 1, new ButtonTabComponent(FrontEnd.EditorPane));

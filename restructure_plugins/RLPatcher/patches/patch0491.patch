@@ -1,0 +1,16 @@
+--- /tmp/orig-16151737011456022405.java	2025-09-24 22:21:33.234344724 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url80e39b1957_tobikster_IJN_headers_recognition_tgz-pJ8-org_maltparser_examples_CreatePhraseStructureGraphJ8/src/org/maltparser/core/options/OptionDescriptions.java	2025-09-24 22:21:29.470081590 +0000
+@@ -151,11 +151,11 @@
+ 			throw new OptionException("The URL to the default option file is null. ");
+ 		}
+ 
+-        try {
++        try (java.io.InputStream __arodnap_temp0 = url.openStream()) {
+             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+             DocumentBuilder db = dbf.newDocumentBuilder();
+ 
+-    		Element root = db.parse(url.openStream()).getDocumentElement();
++    		Element root = db.parse(__arodnap_temp0).getDocumentElement();
+     		NodeList groups = root.getElementsByTagName("optiongroup");
+             Element group;
+             for (int i = 0; i < groups.getLength(); i++) {

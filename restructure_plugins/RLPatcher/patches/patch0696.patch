@@ -1,0 +1,18 @@
+--- /tmp/orig-10595819841441589828.java	2025-09-24 22:45:47.363996294 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlbd77b745af_KokaKiwi_MCLauncher_tgz-pJ8-net_contrapunctus_lzma_BenchmarkJ8/src/com/kokakiwi/mclauncher/ui/simple/SimpleTheme.java	2025-09-24 22:45:45.495865696 +0000
+@@ -48,12 +48,10 @@
+     {
+         if (background == null)
+         {
+-            try
+-            {
++            try(
++java.io.InputStream __arodnap_temp0 = SimpleTheme.class.getResourceAsStream("/" + api.getConfig().getString("theme.simple.background")))             {
+                 background = ImageIO.read(
+-                        SimpleTheme.class.getResourceAsStream("/"
+-                                + api.getConfig().getString(
+-                                        "theme.simple.background")))
++                        __arodnap_temp0)
+                         .getScaledInstance(32, 32, 16);
+             }
+             catch (final IOException e)

@@ -1,0 +1,26 @@
+--- /tmp/orig-3662399851039412530.java	2025-09-24 21:45:51.568634113 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url284ba87ea1_swabhs_forbidden_paths_tgz-pJ8-tagging_hypergraph_TaggingHypergraphGeneratorJ8/src/hypergraph/BaseTest.java	2025-09-24 21:45:49.948520863 +0000
+@@ -76,7 +76,7 @@
+ 		double locOBigramCount = 0.0;
+ 		double starLocBigramCount = 0.0;
+ 		double starCount = 0.0;
+-		FileInputStream fstream;
++		FileInputStream fstream = null;
+ 		try {
+ 			fstream = new FileInputStream(counts);
+ 			DataInputStream in = new DataInputStream(fstream);
+@@ -110,6 +110,14 @@
+ 			}
+ 		} catch (Exception e) {
+ 			e.printStackTrace();
++		} finally {
++		    if (fstream != null) {
++		        try {
++		            fstream.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
+ 		}
+ 		
+ 		Hyperedge britainLocOEdge = h.getEdges(14);

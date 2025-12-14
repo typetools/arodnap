@@ -1,0 +1,32 @@
+--- /tmp/orig-18078012577083795100.java	2025-09-24 22:36:57.446951182 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url8c14fd53ee_luca89_itaco_tgz-pJ8-main_RunnerJ8/src/compilatore/JasminTarget.java	2025-09-24 22:36:55.902843242 +0000
+@@ -156,20 +156,19 @@
+ 	 */
+ 	@SuppressWarnings("unused")
+ 	private void scriviContenutoStub(String stubFileName) throws IOException {
+-		/*
+-		 * Copio il contenuto dello stub nel file di output
+-		 */
+-		InputStream stub = JasminTarget.class.getResourceAsStream("/compilatore/stub/"+stubFileName);
+-		int copiedBytes = 0;
+-		int bytesRead = 0;
+-		byte[] fileData = new byte[1024];
+-
+-		while (stub.available() > 0) {
++	    try (InputStream stub = JasminTarget.class.getResourceAsStream("/compilatore/stub/"+stubFileName)) {
++	        int copiedBytes = 0;
++	        int bytesRead = 0;
++	        byte[] fileData = new byte[1024];
++	        while (stub.available() > 0) {
+ 			bytesRead = stub.read(fileData);
+ 			outputFile.write(fileData, 0, bytesRead);
+ 			copiedBytes += bytesRead;
+ 		}
+-	}
++	    }
++	
++
++}
+ 
+ 	@Override
+ 	public void somma(Espressione addendo1, Espressione addendo2)

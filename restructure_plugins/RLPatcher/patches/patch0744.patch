@@ -1,0 +1,12 @@
+--- /tmp/orig-13464652795693592914.java	2025-09-24 22:50:06.058081223 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urld0f681c558_farom57_AstroidDriver_tgz-pJ8-laazotea_indi_server_examples_MinimumINDIServerJ8/src/laazotea/indi/driver/INDIProperty.java	2025-09-24 22:50:04.189950625 +0000
+@@ -579,8 +579,7 @@
+ 
+     INDIProperty prop = null;
+ 
+-    try {
+-      FileInputStream fis = new FileInputStream(file);
++    try (FileInputStream fis = new FileInputStream(file)) {
+ 
+       ObjectInputStream ois = new ObjectInputStream(fis);
+ 

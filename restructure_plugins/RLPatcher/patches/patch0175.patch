@@ -1,0 +1,26 @@
+--- /tmp/orig-14126635208535109476.java	2025-09-24 21:50:02.338163791 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url2df0f7c811_przemekgalazka_legacycode_tgz-pJ8-pl_cc_core_cmd_CommandJ8/src/ccproxy/ReadConfig.java	2025-09-24 21:50:00.078005796 +0000
+@@ -47,7 +47,7 @@
+ 	public ReadConfig(Parametry p, String filename) {
+ 
+ 		log = p.log;
+-		FileReader Fr;
++		FileReader Fr = null;
+ 		try {
+ 			configFile=filename;
+ 			p.log.info("Trying to open config file [" + filename + "]");
+@@ -220,6 +220,14 @@
+ 		} catch (IOException e) {
+ 			// TODO Auto-generated catch block
+ 			e.printStackTrace();
++		} finally {
++		    if (Fr != null) {
++		        try {
++		            Fr.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
+ 		}
+ 
+ 	}

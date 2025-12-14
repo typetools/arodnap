@@ -1,0 +1,17 @@
+--- /tmp/orig-3285447028757398090.java	2025-09-24 22:22:34.390619784 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url80e39b1957_tobikster_IJN_headers_recognition_tgz-pJ8-org_maltparser_examples_CreatePhraseStructureGraphJ8/src/org/maltparser/core/feature/system/FeatureEngine.java	2025-09-24 22:22:30.470345740 +0000
+@@ -75,12 +75,12 @@
+ 	}
+ 	
+ 	public void load(URL specModelURL) throws MaltChainedException {
+-        try {
++        try (java.io.InputStream __arodnap_temp0 = specModelURL.openStream()) {
+             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+             DocumentBuilder db = dbf.newDocumentBuilder();
+             Element root = null;
+ 
+-            root = db.parse(specModelURL.openStream()).getDocumentElement();
++            root = db.parse(__arodnap_temp0).getDocumentElement();
+ 
+             if (root == null) {
+             	throw new FeatureException("The feature system file '"+specModelURL.getFile()+"' cannot be found. ");

@@ -1,0 +1,29 @@
+--- /tmp/orig-2766492929536639478.java	2025-09-24 21:54:55.414651102 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url47af6b1535_rolandotr_db_comparison_tgz-pJ8-methodology_HistoryJ8/src/utils/Data.java	2025-09-24 21:54:53.546520511 +0000
+@@ -25,20 +25,20 @@
+ 			suffix += "-"+attribute.getName();
+ 		}
+ 		for (DBProtocol p : protocols) {
+-			FileWriter writer = new FileWriter(new File(p.getIdentifier()+suffix+"-increment-"+increment+".DAT"));
+-			writer.write("# n");
+-			for (Attribute attribute : attributes) {
++		    try (FileWriter writer = new FileWriter(new File(p.getIdentifier()+suffix+"-increment-"+increment+".DAT"))) {
++		        writer.write("# n");
++		        for (Attribute attribute : attributes) {
+ 				writer.append("\t "+attribute.getName());
+ 			}
+-			writer.append(newLine);
+-			for (int i = 1; i <= maxN; i+=increment) {
++		        writer.append(newLine);
++		        for (int i = 1; i <= maxN; i+=increment) {
+ 				writer.append(""+i);
+ 				for (Attribute attribute : attributes) {
+ 					writer.append("\t "+p.getAttribute(attribute).getValue().toString());
+ 				}
+ 				writer.append(newLine);
+ 			}
+-			writer.close();
++		    }
+ 		}
+ 	}
+ 

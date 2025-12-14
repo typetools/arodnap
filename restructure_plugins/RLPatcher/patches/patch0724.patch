@@ -1,0 +1,33 @@
+--- /tmp/orig-11312436029450680206.java	2025-09-24 22:48:25.063020805 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlc98c3b97d2_Trimax_venta_tgz-pJ8-com_gesoftware_venta_structures_map_MapTestJ8/src/com/gesoftware/venta/network/NetworkTest.java	2025-09-24 22:48:22.918870911 +0000
+@@ -13,7 +13,9 @@
+     private final static int c_Port = 5502;
+ 
+     private static void startServer() {
+-        final Server server = new Server(c_Port, new IServerHandler() {
++    com.gesoftware.venta.network.Server server = null;
++    try {
++        server = new Server(c_Port, new IServerHandler() {
+             @Override
+             public boolean onConnect(final String clientID, final InetAddress clientAddress) {
+                 LoggingUtility.info("Client connected: " + clientID);
+@@ -31,8 +33,18 @@
+                 LoggingUtility.info("Client disconnected: " + clientID);
+             }
+         });
+-
+         (new Thread(server)).start();
++    } finally {
++        if (server != null) {
++            try {
++                server.stop();
++            } catch (Exception e) {
++                e.printStackTrace();
++            }
++        }
++    }
++
++
+     }
+ 
+     private static class Task extends TimerTask {

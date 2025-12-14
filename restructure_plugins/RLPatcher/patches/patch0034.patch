@@ -1,0 +1,26 @@
+--- /tmp/orig-5834336157155482636.java	2025-09-24 21:35:05.791508127 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url0d38a10ee7_diegopliebana_GEBT_tgz-pJ8-ch_idsia_scenarios_test_EvolveWithChangingSeedsJ8/src/ch/idsia/mario/engine/LevelScene.java	2025-09-24 21:35:02.827301001 +0000
+@@ -82,13 +82,13 @@
+         killedCreaturesByShell = 0;
+ 
+         // moved from init;
+-        try
+-        {
++        try(
++java.io.InputStream __arodnap_temp0 = LevelScene.class.getResourceAsStream("resources/tiles.dat"))         {
+ //            System.out.println("Java::LevelScene: loading tiles.dat...");
+ //            System.out.println("LS: System.getProperty(\"user.dir()\") = " + System.getProperty("user.dir"));
+ 
+             //Level.loadBehaviors(new DataInputStream(LevelScene.class.getResourceAsStream("C:\\tiles.dat")));
+-            Level.loadBehaviors(new DataInputStream(LevelScene.class.getResourceAsStream("resources/tiles.dat")));
++            Level.loadBehaviors(new DataInputStream(__arodnap_temp0));
+         }
+         catch (IOException e)
+         {
+@@ -1073,4 +1073,4 @@
+     {
+         return numberOfHiddenCoinsGained;
+     }
+-}
++}
+\ No newline at end of file

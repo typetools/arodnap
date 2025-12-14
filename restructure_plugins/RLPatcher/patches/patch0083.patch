@@ -1,0 +1,16 @@
+--- /tmp/orig-10813243962671790195.java	2025-09-24 21:40:17.253271726 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url11fb0973cf_raichuman9_Swimmer526_tgz-pJ8-fr_inria_optimization_cmaes_examples_CMAExample1J8/src/ubc/swim/tests/BasicSwimTest.java	2025-09-24 21:40:14.505079694 +0000
+@@ -109,9 +109,10 @@
+ 		if (mainChar != null) {
+ 			float rootDisp = mainChar.getRootBody().getPosition().x;
+ 			float swimSpeed = mainChar.getRootBody().getLinearVelocity().x;
+-			Formatter f = new Formatter();
+-			float torque = 0.0f; //TODO: hook up to a motor value?
+-			addTextLine(f.format("Horizontal Displacement: %f, Swim Speed: %f, Motor Force = %f, ", rootDisp, swimSpeed, torque).toString());
++			try (Formatter f = new Formatter()) {
++			    float torque = 0.0f;
++			    addTextLine(f.format("Horizontal Displacement: %f, Swim Speed: %f, Motor Force = %f, ", rootDisp, swimSpeed, torque).toString());
++			}
+ 		}
+ 	}
+ 

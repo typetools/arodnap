@@ -1,0 +1,15 @@
+--- /tmp/orig-3671783841915454542.java	2025-09-24 21:35:47.386414595 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url0d38a10ee7_diegopliebana_GEBT_tgz-pJ8-ch_idsia_scenarios_test_EvolveWithChangingSeedsJ8/src/ch/idsia/maibe/tasks/ProgressTask.java	2025-09-24 21:35:44.078183430 +0000
+@@ -83,9 +83,9 @@
+ 
+     public void dumpFitnessEvaluation(float fitness, String fileName)
+     {
+-        try
+-        {
+-            BufferedWriter out = new BufferedWriter(new FileWriter(fileName + fileTimeStamp + ".txt", true));
++        try(
++java.io.FileWriter __arodnap_temp0 = new FileWriter(fileName + fileTimeStamp + ".txt", true))         {
++            BufferedWriter out = new BufferedWriter(__arodnap_temp0);
+             out.write(this.fitnessEvaluations + " " + fitness + "\n");
+             out.close();
+         } catch (IOException e)

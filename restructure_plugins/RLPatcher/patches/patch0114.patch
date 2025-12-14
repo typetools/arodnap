@@ -1,0 +1,14 @@
+--- /tmp/orig-91806924122364595.java	2025-09-24 21:43:59.880827979 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url20b0f880a5_jgraph_legacy_jgraph5_tgz-pJ8-org_jgraph_example_HelloWorldJ8/src/com/jgraph/example/SerialGraph.java	2025-09-24 21:43:55.364512399 +0000
+@@ -50,9 +50,9 @@
+ 	}
+ 
+ 	public static void writeObject(Object object, String filename) {
+-		try {
++		try (java.io.FileOutputStream __arodnap_temp0 = new FileOutputStream(filename)) {
+ 			ObjectOutputStream out = new ObjectOutputStream(
+-					new BufferedOutputStream(new FileOutputStream(filename)));
++					new BufferedOutputStream(__arodnap_temp0));
+ 			out.writeObject(object);
+ 			out.flush();
+ 			out.close();

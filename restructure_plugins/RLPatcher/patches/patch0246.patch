@@ -1,0 +1,16 @@
+--- /tmp/orig-8967890470222705552.java	2025-09-24 21:55:54.698795319 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url47af6b1535_rolandotr_db_comparison_tgz-pJ8-methodology_HistoryJ8/src/methodology/ParetoFrontier.java	2025-09-24 21:55:52.974674796 +0000
+@@ -70,9 +70,10 @@
+ 			ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(state.identifier));
+ 			out.writeObject(state);
+ 			out.close();
+-			out = new ObjectOutputStream(new FileOutputStream(state.identifier+"Backup"));
+-			out.writeObject(state);
+-			out.close();
++			try (java.io.FileOutputStream __arodnap_temp1 = new FileOutputStream(state.identifier + "Backup")) {
++			    out = new ObjectOutputStream(__arodnap_temp1);
++			    out.writeObject(state);
++			}
+ 			//if (i > 20) break;  
+ 		}
+ 		List<DBProtocol> result = new LinkedList<>();

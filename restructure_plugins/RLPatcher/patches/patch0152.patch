@@ -1,0 +1,22 @@
+--- /tmp/orig-12709618497966031518.java	2025-09-24 21:47:47.084708991 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url294e6c45f3_Ecdosis_NMergeNew_tgz-pJ8-TestJ8/src/edu/luc/nmerge/mvd/XMLGuideFile.java	2025-09-24 21:47:44.776547641 +0000
+@@ -293,8 +293,8 @@
+ 	 */
+ 	public static XMLGuideFile internalise( File src ) throws MVDException
+ 	{
+-		try
+-		{
++		try(
++java.io.FileInputStream __arodnap_temp0 = new FileInputStream(src)) 		{
+ 			XMLGuideFile guide = new XMLGuideFile();
+ 			// use DOM3 to parse
+ 			DOMImplementationRegistry registry = 
+@@ -304,7 +304,7 @@
+ 			LSParser parser = impl.createLSParser(
+ 				DOMImplementationLS.MODE_SYNCHRONOUS, null );
+ 			LSInput input = impl.createLSInput();
+-			input.setByteStream( new FileInputStream(src) );
++			input.setByteStream( __arodnap_temp0 );
+ 			Document document = parser.parse( input );
+ 			// get the MVDGUIDE element
+ 			Element root = document.getDocumentElement();

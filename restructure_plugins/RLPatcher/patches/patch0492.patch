@@ -1,0 +1,13 @@
+--- /tmp/orig-16064739491792295918.java	2025-09-24 22:21:41.490921888 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url80e39b1957_tobikster_IJN_headers_recognition_tgz-pJ8-org_maltparser_examples_CreatePhraseStructureGraphJ8/src/org/maltparser/core/helper/SystemInfo.java	2025-09-24 22:21:37.722658473 +0000
+@@ -20,8 +20,8 @@
+ 		URL url = getClass().getResource("/appdata/release.properties");
+ 		if (url != null) {
+ 			Properties properties = new Properties();
+-			try {
+-			   properties.load(url.openStream());
++			try (java.io.InputStream __arodnap_temp0 = url.openStream()) {
++			   properties.load(__arodnap_temp0);
+ 			} catch (IOException e) {
+ 				
+ 			}

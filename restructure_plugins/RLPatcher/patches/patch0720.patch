@@ -1,0 +1,25 @@
+--- /tmp/orig-18219007716270127824.java	2025-09-24 22:47:58.745180963 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlc8dbc7ce6e_dlubarov_guava_tgz-pJ8-MainJ8/src/util/FileUtils.java	2025-09-24 22:47:56.289009256 +0000
+@@ -6,16 +6,17 @@
+     private FileUtils() {}
+ 
+     public static byte[] readFile(File f) throws IOException {
+-        InputStream in = new FileInputStream(f);
+-        byte[] result = new byte[(int) f.length()];
+-        int pos = 0;
+-        while (pos < result.length) {
++        try (InputStream in = new FileInputStream(f)) {
++            byte[] result = new byte[(int) f.length()];
++            int pos = 0;
++            while (pos < result.length) {
+             int n = in.read(result, pos, result.length - pos);
+             if (n == -1)
+                 throw new IOException("file changed while reading?");
+             pos += n;
+         }
+-        return result;
++            return result;
++        }
+     }
+ 
+     public static String readFileAsUTF8(File f) throws IOException {

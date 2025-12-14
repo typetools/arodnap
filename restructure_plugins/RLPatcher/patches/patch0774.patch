@@ -1,0 +1,13 @@
+--- /tmp/orig-16611963970308612434.java	2025-09-24 22:52:42.108990516 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urld829b80034_wjch111_PTSP2013Wang_tgz-pJ8-controllers_momcts_momctsCore_TestPlannerJ8/src/wox/serial/Easy.java	2025-09-24 22:52:39.712823004 +0000
+@@ -32,9 +32,8 @@
+     }
+ 
+     public static Object load(String filename) {
+-        try {
++        try (InputStream is = new FileInputStream(filename)) {
+             SAXBuilder builder = new SAXBuilder();
+-            InputStream is = new FileInputStream(filename);
+             Document doc = builder.build(is);
+             Element el = doc.getRootElement();
+             ObjectReader reader = new SimpleReader();

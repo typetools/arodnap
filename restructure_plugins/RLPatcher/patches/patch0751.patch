@@ -1,0 +1,13 @@
+--- /tmp/orig-7994562609103657608.java	2025-09-24 22:50:39.652429755 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urld0f681c558_farom57_AstroidDriver_tgz-pJ8-laazotea_indi_server_examples_MinimumINDIServerJ8/src/laazotea/indi/server/AbstractINDIServer.java	2025-09-24 22:50:37.564283776 +0000
+@@ -541,8 +541,8 @@
+ 
+     ArrayList<String> list = new ArrayList<String>();
+ 
+-    try {
+-      JarInputStream jarFile = new JarInputStream(new FileInputStream(file));
++    try (java.io.FileInputStream __arodnap_temp0 = new FileInputStream(file)) {
++      JarInputStream jarFile = new JarInputStream(__arodnap_temp0);
+       JarEntry jarEntry = jarFile.getNextJarEntry();
+       while (jarEntry != null) {
+         if (jarEntry.getName().endsWith(".class")) {

@@ -1,0 +1,12 @@
+--- /tmp/orig-1387986472761478884.java	2025-09-24 21:46:13.210146909 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url28dfd00382_byang223_TurnBAPI_tgz-pJ8-units_upgrades_UpgradeTestJ8/src/input/TBInputEngine.java	2025-09-24 21:46:11.190005696 +0000
+@@ -138,8 +138,7 @@
+ 			} 
+ 		}
+ 		
+-		try{
+-			FileWriter fstream = new FileWriter(file);
++		try(FileWriter fstream = new FileWriter(file)) {
+ 			BufferedWriter out = new BufferedWriter(fstream);
+ 			for (UserEvents event : getEventList()) {
+ 				out.write(event.toString()+"\n");

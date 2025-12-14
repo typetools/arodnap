@@ -1,0 +1,30 @@
+--- /tmp/orig-3970525118195309407.java	2025-09-24 22:50:56.933637859 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urld0f681c558_farom57_AstroidDriver_tgz-pJ8-laazotea_indi_server_examples_MinimumINDIServerJ8/src/laazotea/indi/driver/examples/INDIElTiempoDriver.java	2025-09-24 22:50:55.157513693 +0000
+@@ -386,20 +386,20 @@
+     URL u = new URL(url);
+     InputStream is = u.openStream();  // throws an IOException
+     BufferedInputStream bis = new BufferedInputStream(is);
+-    FileOutputStream fos = new FileOutputStream(file);
+-
+-    int readed = 0;
+-
+-    while (readed != -1) {
++    try (FileOutputStream fos = new FileOutputStream(file)) {
++        int readed = 0;
++        while (readed != -1) {
+       readed = bis.read(buffer);
+ 
+       if (readed > 0) {
+         fos.write(buffer, 0, readed);
+       }
+     }
++        bis.close();
++    }
++
++
+ 
+-    bis.close();
+-    fos.close();
+   }
+ 
+   /**

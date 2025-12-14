@@ -1,0 +1,12 @@
+--- /tmp/orig-3755497205547040570.java	2025-09-24 22:34:07.899099048 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url85460dd114_a2800276_event_java_tgz-pJ8-event_CloseSemanticsTestJ8/src/event/TCPClientLoop.java	2025-09-24 22:34:06.719016555 +0000
+@@ -75,8 +75,7 @@
+ 
+   public void createTCPClient (final Callback.TCPClient cb, final InetAddress host, final int port) {
+     if (this.isLoopThread()) {
+-      try {
+-        final SocketChannel sc = SocketChannel.open();
++      try (final SocketChannel sc = SocketChannel.open()) {
+                             sc.configureBlocking(false);
+ 
+         SocketAddress remote = new InetSocketAddress(host, port);

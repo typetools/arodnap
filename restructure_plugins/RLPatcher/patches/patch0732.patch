@@ -1,0 +1,30 @@
+--- /tmp/orig-5029098458203504977.java	2025-09-24 22:49:14.566481519 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlcdd0c1ab49_emiln_JHouseFireExplorer_tgz-pJ8-dk_brics_automaton_DatatypesJ8/src/dk/brics/automaton/Datatypes.java	2025-09-24 22:49:12.822359591 +0000
+@@ -465,15 +465,25 @@
+ 	}
+ 
+ 	private static Automaton load(String name) {
+-		try {
++	java.io.InputStream __arodnap_temp0 = null;
++	try {
+ 			URL url = Datatypes.class.getClassLoader().getResource(name + ".aut");
+-			return Automaton.load(url.openStream());
++			__arodnap_temp0 = url.openStream();
++			return Automaton.load(__arodnap_temp0);
+ 		} catch (IOException e) {
+ 			e.printStackTrace();
+ 			return null;
+ 		} catch (ClassNotFoundException e) {
+ 			e.printStackTrace();
+ 			return null;
++		} finally {
++		    if (__arodnap_temp0 != null) {
++		        try {
++		            __arodnap_temp0.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
+ 		}
+ 	}
+ 	

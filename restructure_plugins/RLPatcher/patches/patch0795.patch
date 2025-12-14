@@ -1,0 +1,25 @@
+--- /tmp/orig-4955317362714694043.java	2025-09-24 22:54:27.308344850 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urle381b6cba7_IkarosKappler_ikrs_http_tgz-pJ8-ikrs_json_rpc_JSONRPCHandlerJ8/src/ikrs/yuccasrv/socketmngr/ServerSocketThread.java	2025-09-24 22:54:24.624157203 +0000
+@@ -269,10 +269,12 @@
+ 			   "Initializing key store '" + fileName + "' ... " );
+ 	*/
+ 	KeyStore keyStore = KeyStore.getInstance( keyStoreType );
+-	keyStore.load( new FileInputStream(fileName), 
++ try (java.io.FileInputStream __arodnap_temp0 = new FileInputStream(fileName)) {
++     keyStore.load( __arodnap_temp0, 
+ 		       ( password == null ? new char[0] : password )
+-		       ); 
+-    
++		       );
++ }
++   
+ 	return keyStore;
+     }
+ 
+@@ -474,4 +476,4 @@
+         }
+     }
+ 
+-}
++}
+\ No newline at end of file

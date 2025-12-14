@@ -1,0 +1,39 @@
+--- /tmp/orig-9924215104699427383.java	2025-09-24 22:18:57.983492155 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url80587fc7d5_dennervidal_CloudSim_DVFS_tgz-pJ8-Examples_Dvfs_example_simpleJ8/src/org/cloudbus/cloudsim/network/GraphReaderBrite.java	2025-09-24 22:18:55.275302843 +0000
+@@ -45,16 +45,12 @@
+ 	public TopologicalGraph readGraphFile(String filename) throws IOException {
+ 
+ 		graph = new TopologicalGraph();
+-
+-		// lets read the file
+-		FileReader fr = new FileReader(filename);
+-		BufferedReader br = new BufferedReader(fr);
+-
+-		String lineSep = System.getProperty("line.separator");
+-		String nextLine = null;
+-		StringBuffer sb = new StringBuffer();
+-
+-		while ((nextLine = br.readLine()) != null) {
++		try (FileReader fr = new FileReader(filename)) {
++		    BufferedReader br = new BufferedReader(fr);
++		    String lineSep = System.getProperty("line.separator");
++		    String nextLine = null;
++		    StringBuffer sb = new StringBuffer();
++		    while ((nextLine = br.readLine()) != null) {
+ 			sb.append(nextLine);
+ 			//
+ 			// note:
+@@ -83,8 +79,12 @@
+ 			}
+ 
+ 		}
++		}
++
++
++
++
+ 
+-		br.close();
+ 
+ 		// Log.printLine("read file successfully...");
+ 		// Log.printLine(sb.toString());

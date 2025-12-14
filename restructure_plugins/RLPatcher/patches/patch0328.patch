@@ -1,0 +1,26 @@
+--- /tmp/orig-17042083335422647318.java	2025-09-24 22:04:05.017070684 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url5997ccb760_JANNLab_JANNLab_tgz-pJ8-de_jannlab_examples_recurrent_SequentialXorExampleJ8/src/de/jannlab/io/Serializer.java	2025-09-24 22:04:03.216944847 +0000
+@@ -65,15 +65,16 @@
+     public static <T> T read(final String filename) throws IOException, ClassNotFoundException {
+         //
+         File file = new File(filename);
+-        //
+-        ObjectInputStream in = new ObjectInputStream(
+-            new GZIPInputStream(new FileInputStream(file))
++        try (java.io.FileInputStream __arodnap_temp0 = new FileInputStream(file)) {
++            ObjectInputStream in = new ObjectInputStream(
++            new GZIPInputStream(__arodnap_temp0)
+         );
+-        //
+-        @SuppressWarnings("unchecked")
++            @SuppressWarnings("unchecked")
+         T obj = (T)in.readObject();
+-        in.close();
+-        return obj;
++            return obj;
++        }
++
++
+     }
+     
+ }

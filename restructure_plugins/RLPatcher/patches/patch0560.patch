@@ -1,0 +1,12 @@
+--- /tmp/orig-17927457577190799654.java	2025-09-24 22:33:47.025639903 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url835a90ed59_aschi_regularLanguages_tgz-pJ8-ch_zhaw_regularLanguages_evolution_runners_EvolvingLocalDivisable5LanguageJ8/src/fr/loria/graphViz/GraphViz.java	2025-09-24 22:33:45.457530284 +0000
+@@ -166,8 +166,7 @@
+     */
+    public int writeGraphToFile(byte[] img, File to)
+    {
+-      try {
+-         FileOutputStream fos = new FileOutputStream(to);
++      try (FileOutputStream fos = new FileOutputStream(to)) {
+          fos.write(img);
+          fos.close();
+       } catch (java.io.IOException ioe) { return -1; }

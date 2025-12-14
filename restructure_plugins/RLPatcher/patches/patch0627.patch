@@ -1,0 +1,20 @@
+--- /tmp/orig-12899322434511345000.java	2025-09-24 22:39:41.010385044 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url9a01f43c15_poragchowdhury_securitygame_tgz-pJ8-securitygame_GameMasterJ8/src/securitygame/Parser.java	2025-09-24 22:39:39.826302266 +0000
+@@ -94,15 +94,14 @@
+ 		Network hidden = parseGraph(defenderName + "-" + graphName + "-hidden.graph");
+ 		String historyFile = attackerName + "-" + defenderName + "-" + graphName + ".history";
+ 		File csvTrainData = new File(historyFile);
+-		try
+-		{
++		try(
++CSVParser parser = CSVParser.parse(csvTrainData, StandardCharsets.US_ASCII, CSVFormat.DEFAULT)) 		{
+ 			boolean deleteJunkFile = false;
+ 			File hFile = new File(historyFile);
+ 			if(!hFile.exists()){
+ 				hFile.createNewFile();
+ 				deleteJunkFile = true;
+ 			}
+-			CSVParser parser = CSVParser.parse(csvTrainData, StandardCharsets.US_ASCII, CSVFormat.DEFAULT);
+ 			for (CSVRecord csvRecord : parser)
+ 			{
+ 				Iterator<String> itr = csvRecord.iterator();

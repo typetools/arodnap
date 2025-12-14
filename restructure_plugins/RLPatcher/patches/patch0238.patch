@@ -1,0 +1,15 @@
+--- /tmp/orig-3864552951576784595.java	2025-09-24 21:55:20.708419245 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url47af6b1535_rolandotr_db_comparison_tgz-pJ8-methodology_HistoryJ8/src/mains/DecisionMaking.java	2025-09-24 21:55:18.840288655 +0000
+@@ -43,8 +43,10 @@
+ 	
+ 	public static void bestProtocols(double mafiaUpperBound, 
+ 			double distanceUpperBound, double terroristUpperBound, int cryptoOperations, String name) throws FileNotFoundException, IOException {
+-		System.setOut(new PrintStream(name+".txt"));		
+-		System.out.println("Starting");
++			try (java.io.PrintStream __arodnap_temp0 = new PrintStream(name + ".txt")) {
++			    System.setOut(__arodnap_temp0);
++			}
++			System.out.println("Starting");
+ 		DBProtocol[][] protocols = new DBProtocol[][]{DBProtocol.loadProtocols()};
+ 		System.out.println("Total protocols: "+protocols.length+" and "+protocols[0].length);
+ 		protocols = Evolution.constraintProtocols(protocols);

@@ -1,0 +1,26 @@
+--- /tmp/orig-15229354877522272996.java	2025-09-24 22:10:22.467455809 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url7507f7ef16_Neuro17_jsongkick_tgz-pJ8-jsongkick_AppJ8/src/http/SongkickConnector.java	2025-09-24 22:10:21.315375275 +0000
+@@ -100,7 +100,7 @@
+ 	 */
+ 	protected JsonObject executeRequest(URI uri){
+ 		//TODO - capire come accedere ai risultati che sono oltre la prima pagina. 
+-		InputStream response;
++		InputStream response = null;
+ 		
+ 		try {
+ 			url = uri.toURL();
+@@ -128,6 +128,14 @@
+ 		} catch (IOException e) {
+ 			log.error(e.getMessage());
+ 			jsonResponse =  null;
++		} finally {
++		    if (response != null) {
++		        try {
++		            response.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
+ 		}
+ 		
+ 		return jsonResponse;

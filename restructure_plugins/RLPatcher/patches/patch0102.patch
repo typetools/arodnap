@@ -1,0 +1,39 @@
+--- /tmp/orig-13575790864228395301.java	2025-09-24 21:41:58.276330782 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url147ce07ebe_JoshuaKissoon_Kademlia_tgz-pJ8-kademlia_simulations_RoutingTableStateTestingJ8/src/kademlia/simulations/SimpleMessageTest.java	2025-09-24 21:41:56.704220930 +0000
+@@ -17,16 +17,33 @@
+ 
+     public static void main(String[] args)
+     {
+-        try
++    kademlia.JKademliaNode kad2 = null;
++    kademlia.JKademliaNode kad1 = null;
++    try
+         {
+-            JKademliaNode kad1 = new JKademliaNode("Joshua", new KademliaId("12345678901234567890"), 7574);
+-            JKademliaNode kad2 = new JKademliaNode("Crystal", new KademliaId("12345678901234567891"), 7572);
++            kad1 = new JKademliaNode("Joshua", new KademliaId("12345678901234567890"), 7574);
++            kad2 = new JKademliaNode("Crystal", new KademliaId("12345678901234567891"), 7572);
+ 
+             kad1.getServer().sendMessage(kad2.getNode(), new SimpleMessage("Some Message"), new SimpleReceiver());
+         }
+         catch (IOException e)
+         {
+             e.printStackTrace();
++        } finally {
++            if (kad2 != null) {
++                try {
++                    kad2.shutdown(false);
++                } catch (Exception e) {
++                    e.printStackTrace();
++                }
++            }
++            if (kad1 != null) {
++                try {
++                    kad1.shutdown(false);
++                } catch (Exception e) {
++                    e.printStackTrace();
++                }
++            }
+         }
+     }
+ }

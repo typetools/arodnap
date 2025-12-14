@@ -1,0 +1,13 @@
+--- /tmp/orig-1399597927414077439.java	2025-09-24 22:20:05.260195029 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url80e39b1957_tobikster_IJN_headers_recognition_tgz-pJ8-org_maltparser_examples_CreatePhraseStructureGraphJ8/src/org/maltparser/core/config/ConfigurationDir.java	2025-09-24 22:20:01.407925742 +0000
+@@ -648,8 +648,8 @@
+ 	 * @throws MaltChainedException
+ 	 */
+ 	public void createConfigFile() throws MaltChainedException {
+-		try {
+-			JarOutputStream jos = new JarOutputStream(new FileOutputStream(workingDirectory.getPath()+File.separator+getName()+".mco"));
++		try (java.io.FileOutputStream __arodnap_temp0 = new FileOutputStream(workingDirectory.getPath() + File.separator + getName() + ".mco")) {
++			JarOutputStream jos = new JarOutputStream(__arodnap_temp0);
+ //			configLogger.info("Creates configuration file '"+workingDirectory.getPath()+File.separator+getName()+".mco' ...\n");
+ 			createConfigFile(configDirectory.getPath(), jos);
+ 			jos.close();

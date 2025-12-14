@@ -1,0 +1,19 @@
+--- /tmp/orig-9920730350283755354.java	2025-09-24 21:52:35.904898768 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url43a0865bb0_kevinjdolan_darwin_tgz-pJ8-tui_DriverJ8/src/darwInvest/data/index/TickerIndex.java	2025-09-24 21:52:33.508731265 +0000
+@@ -67,7 +67,15 @@
+ 			in.close();
+ 		}
+ 		catch(IOException e) {} 
+-		catch (ClassNotFoundException e) {}
++		catch (ClassNotFoundException e) {} finally {
++		    if (fis != null) {
++		        try {
++		            fis.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
++		}
+ 		
+ 		return ticker;
+ 	}

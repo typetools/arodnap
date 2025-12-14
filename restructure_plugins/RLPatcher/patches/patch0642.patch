@@ -1,0 +1,14 @@
+--- /tmp/orig-1107481026725290978.java	2025-09-24 22:40:55.791612891 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urla958522fc1_spirosikmd_inmdsy_08_tgz-pJ8-TesterAppJ8/src/nl/rug/peerbox/logic/filesystem/Filelist.java	2025-09-24 22:40:54.335511098 +0000
+@@ -38,9 +38,8 @@
+ 
+ 	static Filelist deserialize(String datafile, String path) {
+ 		Filelist filelist = null;
+-		try {
+-			InputStream file = new FileInputStream(path
+-					+ System.getProperty("file.separator") + datafile);
++		try (InputStream file = new FileInputStream(path
++					+ System.getProperty("file.separator") + datafile)) {
+ 			InputStream buffer = new BufferedInputStream(file);
+ 			try (ObjectInput input = new ObjectInputStream(buffer)) {
+ 				filelist = (Filelist) input.readObject();

@@ -1,0 +1,13 @@
+--- /tmp/orig-1120033161234223402.java	2025-09-24 21:47:30.047518033 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url294e6c45f3_Ecdosis_NMergeNew_tgz-pJ8-TestJ8/src/edu/luc/nmerge/mvd/MVDXMLFile.java	2025-09-24 21:47:27.599346900 +0000
+@@ -81,7 +81,9 @@
+ 		// don't preserve entities: so &lt; becomes <
+ 		config.setParameter( "entities", false );
+ 		LSInput input = impl.createLSInput();
+-		input.setByteStream( new FileInputStream(src) );
++		try (java.io.FileInputStream __arodnap_temp0 = new FileInputStream(src)) {
++		    input.setByteStream( __arodnap_temp0 );
++		}
+ 		Document document = parser.parse( input );
+ 		// get the "mvd" element
+ 		Element root = document.getDocumentElement();

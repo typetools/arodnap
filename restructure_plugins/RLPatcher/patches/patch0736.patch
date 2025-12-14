@@ -1,0 +1,26 @@
+--- /tmp/orig-13077461321040424541.java	2025-09-24 22:49:32.199714234 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlce7759b8da_Palachsuper_EBA4_tgz-pJ8-json_TestJ8/src/terminal/tools/PropTools.java	2025-09-24 22:49:30.535597898 +0000
+@@ -14,7 +14,7 @@
+     public static Properties load(String propsFile)
+     {
+     	Properties props = new Properties();
+-        FileInputStream fis;
++        FileInputStream fis = null;
+ 		try {
+ 			fis = new FileInputStream(new File(propsFile));
+ 			props.load(fis);    
+@@ -22,6 +22,14 @@
+ 		} catch (Exception e) {
+ 			// TODO Auto-generated catch block
+ 			e.printStackTrace();
++		} finally {
++		    if (fis != null) {
++		        try {
++		            fis.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
+ 		}
+        
+         return props;

@@ -1,0 +1,23 @@
+--- /tmp/orig-16962380860363585420.java	2025-09-24 22:39:30.721665774 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url933dd5727b_AppleLiang_Testing_Project_tgz-pJ8-org_joda_time_chrono_gj_MainTestJ8/src/org/joda/time/tz/TestCompiler.java	2025-09-24 22:39:25.201279854 +0000
+@@ -141,14 +141,14 @@
+         tempFile.deleteOnExit();
+ 
+         InputStream in = new ByteArrayInputStream(data.getBytes("UTF-8"));
+-
+-        FileOutputStream out = new FileOutputStream(tempFile);
+-        byte[] buf = new byte[1000];
+-        int amt;
+-        while ((amt = in.read(buf)) > 0) {
++        try (FileOutputStream out = new FileOutputStream(tempFile)) {
++            byte[] buf = new byte[1000];
++            int amt;
++            while ((amt = in.read(buf)) > 0) {
+             out.write(buf, 0, amt);
+         }
+-        out.close();
++        }
++
+         in.close();
+ 
+         return tempDir;

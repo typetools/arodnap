@@ -1,0 +1,35 @@
+--- /tmp/orig-13711059083355527864.java	2025-09-24 22:50:26.095482009 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urld0f681c558_farom57_AstroidDriver_tgz-pJ8-laazotea_indi_server_examples_MinimumINDIServerJ8/src/laazotea/indi/driver/examples/INDIDriverExample.java	2025-09-24 22:50:24.179348055 +0000
+@@ -128,6 +128,7 @@
+     if (imageE.getValue().getSize() == 0) { // If it has not been already loaded
+ 
+       byte[] fileContents;
++      java.io.FileInputStream in = null;
+ 
+       try {
+         File file = new File("image.jpg");
+@@ -135,14 +136,22 @@
+ // Create a buffer big enough to hold the file
+         int size = (int) file.length();
+         fileContents = new byte[size];
+-// Create an input stream from the file object and read it all
+-        FileInputStream in = new FileInputStream(file);
++
++        in = new FileInputStream(file);
+         in.read(fileContents);
+         in.close();
+       } catch (IOException e) {
+         e.printStackTrace();
+ 
+         return false;
++      } finally {
++          if (in != null) {
++              try {
++                  in.close();
++              } catch (Exception e) {
++                  e.printStackTrace();
++              }
++          }
+       }
+ 
+       // Create the new BLOB value and set it to the image element.

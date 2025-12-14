@@ -1,0 +1,15 @@
+--- /tmp/orig-9514138089954115403.java	2025-09-24 22:34:33.720904104 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url85940d3d8e_ccp999_Expr4j_tgz-pJ8-org_boris_expr_util_ExprEvaluatorJ8/src/org/boris/expr/util/IO.java	2025-09-24 22:34:31.572753939 +0000
+@@ -90,9 +90,9 @@
+ 
+     public static byte[] toBytes(File file) throws IOException {
+         byte[] b = new byte[(int) file.length()];
+-        FileInputStream fis = new FileInputStream(file);
+-        fis.read(b);
+-        fis.close();
++        try (FileInputStream fis = new FileInputStream(file)) {
++            fis.read(b);
++        }
+         return b;
+     }
+ 

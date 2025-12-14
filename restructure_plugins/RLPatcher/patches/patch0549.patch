@@ -1,0 +1,43 @@
+--- /tmp/orig-17411506400715355200.java	2025-09-24 22:31:55.721859283 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url80e39b1957_tobikster_IJN_headers_recognition_tgz-pJ8-org_maltparser_examples_CreatePhraseStructureGraphJ8/src/org/maltparser/core/config/ConfigDirChartItem.java	2025-09-24 22:31:51.581569859 +0000
+@@ -130,13 +130,37 @@
+ 	
+ 	public int postprocess(int signal) throws MaltChainedException {
+ 		if (taskName.equals("createfile")) {
+-			OptionManager.instance().saveOptions(getOptionContainerIndex(), configDir.getOutputStreamWriter("savedoptions.sop"));
+-			configDir.createConfigFile();
++		java.io.OutputStreamWriter __arodnap_temp0 = null;
++		try {
++    __arodnap_temp0 = configDir.getOutputStreamWriter("savedoptions.sop");
++    OptionManager.instance().saveOptions(getOptionContainerIndex(), __arodnap_temp0);
++} finally {
++    if (__arodnap_temp0 != null) {
++        try {
++            __arodnap_temp0.close();
++        } catch (Exception e) {
++            e.printStackTrace();
++        }
++    }
++}
++		configDir.createConfigFile();
+ 		} else if (taskName.equals("deletedir")) {
+ 			configDir.terminate();
+ 			configDir.deleteConfigDirectory();
+ 		} else if (taskName.equals("savesymboltables")) {
+-			configDir.getSymbolTables().save(configDir.getOutputStreamWriter("symboltables.sym", outCharSet));
++		java.io.OutputStreamWriter __arodnap_temp1 = null;
++		try {
++    __arodnap_temp1 = configDir.getOutputStreamWriter("symboltables.sym", outCharSet);
++    configDir.getSymbolTables().save(__arodnap_temp1);
++} finally {
++    if (__arodnap_temp1 != null) {
++        try {
++            __arodnap_temp1.close();
++        } catch (Exception e) {
++            e.printStackTrace();
++        }
++    }
++}
+ 		}
+ 		return signal;
+ 	}

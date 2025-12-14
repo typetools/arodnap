@@ -1,0 +1,21 @@
+--- /tmp/orig-2820583790245550333.java	2025-09-24 22:55:10.375355602 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urle381b6cba7_IkarosKappler_ikrs_http_tgz-pJ8-ikrs_json_rpc_JSONRPCHandlerJ8/src/ikrs/httpd/AbstractPreparedResponse.java	2025-09-24 22:55:07.419148938 +0000
+@@ -341,7 +341,7 @@
+ 
+ 
+ 	// Send data? (resource MUST be locked!)
+-	try {
++	try (ikrs.util.HexDumpOutputStream hexOut = this.getHTTPHandler().createHexDumpOutputStream()) {
+ 	    
+ 	    // Resource must already be opened!
+ 	    if( this.responseDataResource != null && this.responseDataResource.getLength() > 0 ) {
+@@ -357,8 +357,7 @@
+ 		
+ 		byte[] buffer = new byte[ 1024 ];
+ 		int len = -1;
+-		// Print the data on stdout?
+-		ikrs.util.HexDumpOutputStream hexOut = this.getHTTPHandler().createHexDumpOutputStream();
++
+ 		long maxHexOutput = 1024*10;  // 10 KB
+ 		// Read the resource's data chunk by chunk
+ 		long totalLength = 0L;

@@ -1,0 +1,34 @@
+--- /tmp/orig-13638247657523971418.java	2025-09-24 21:54:41.037646087 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url47af6b1535_rolandotr_db_comparison_tgz-pJ8-methodology_HistoryJ8/src/utils/SpiderChart.java	2025-09-24 21:54:39.317525844 +0000
+@@ -126,19 +126,20 @@
+ 	
+ 	public static void printSpiderChart(DBProtocol[] protocols, Attribute[] attributes, 
+ 			String fileName) throws IOException{
+-		FileWriter writer = new FileWriter(fileName);
+-		//first, we print the header
+-		writer.append("\\begin{tikzpicture}[label distance=.15cm,rotate=30,scale=0.5]"+newLine);
+-		writer.append("\\tkzKiviatDiagram{");
+-		addAttributes(attributes, writer);
+-		writer.append("}"+newLine);
+-		double[][] normalizedAttributes = normalizeAttributes(protocols, attributes);		
+-		for (int i = 0; i < protocols.length; i++) {
++			    try (FileWriter writer = new FileWriter(fileName)) {
++			        writer.append("\\begin{tikzpicture}[label distance=.15cm,rotate=30,scale=0.5]"+newLine);
++			        writer.append("\\tkzKiviatDiagram{");
++			        addAttributes(attributes, writer);
++			        writer.append("}"+newLine);
++			        double[][] normalizedAttributes = normalizeAttributes(protocols, attributes);
++			        for (int i = 0; i < protocols.length; i++) {
+ 			addProtocol(i, attributes, normalizedAttributes, writer);
+ 		}
+-	    writer.append("\\end{tikzpicture}");
+-		writer.close();	
+-	}
++			        writer.append("\\end{tikzpicture}");
++			    }
++			
++	
++}
+ 
+ 	private static double[][] normalizeAttributes(DBProtocol[] protocols, 
+ 			Attribute[] allAttributes) {

@@ -1,0 +1,12 @@
+--- /tmp/orig-1280383528625437241.java	2025-09-24 22:41:28.741916400 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlaf656038a0_Salihan04_MOBLIMA_tgz-pJ8-com_moblima_util_dataTestJ8/src/com/moblima/util/showTimeReadtest.java	2025-09-24 22:41:27.245811809 +0000
+@@ -182,8 +182,7 @@
+ 	static void write(String output){
+ 		File file = new File("data.txt");
+ 		
+-		try {
+-			FileOutputStream fop = new FileOutputStream(file);
++		try (FileOutputStream fop = new FileOutputStream(file)) {
+ 			// if file doesn't exists, then create it
+ 			if (!file.exists()) {
+ 				file.createNewFile();

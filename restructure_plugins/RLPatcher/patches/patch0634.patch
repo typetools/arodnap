@@ -1,0 +1,20 @@
+--- /tmp/orig-114400855772772884.java	2025-09-24 22:40:17.228917029 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url9d32402837_dusan_rychnovsky_chess_endgames_tgz-pJ8-cz_dusanrychnovsky_chessendgames_core_strategies_PrecomputedValuesJ8/src/cz/dusanrychnovsky/chessendgames/gui/GUIAdapter.java	2025-09-24 22:40:15.764814676 +0000
+@@ -57,12 +57,12 @@
+ 	public GUIAdapter() throws ClassNotFoundException, IOException 
+ 	{
+ 		SplashScreen splashScreen = new SplashScreen();
++		try (InputStream is = PrecomputedValues.class.getResourceAsStream("strategy.dat")) {
++		    ObjectInputStream in = new ObjectInputStream(new BufferedInputStream(is));
++		    strategy = PrecomputedValues.load(in);
++		}
++
+ 		
+-		InputStream is = PrecomputedValues.class.getResourceAsStream("strategy.dat");
+-		ObjectInputStream in = new ObjectInputStream(new BufferedInputStream(is));
+-		
+-		strategy = PrecomputedValues.load(in);
+-		in.close();
+ 		
+ 		splashScreen.close();
+ 		

@@ -1,0 +1,14 @@
+--- /tmp/orig-2969318841288387388.java	2025-09-24 21:34:49.142344755 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url0d38a10ee7_diegopliebana_GEBT_tgz-pJ8-ch_idsia_scenarios_test_EvolveWithChangingSeedsJ8/src/grammaticalbehaviors/GEBT_Mario/Map.java	2025-09-24 21:34:45.878116665 +0000
+@@ -308,9 +308,8 @@
+ 
+     public void dumpToFileProcessing(String filename)
+     {
+-        try
+-        {
+-            FileWriter fw = new FileWriter(filename);
++        try(
++FileWriter fw = new FileWriter(filename))         {
+             BufferedWriter bw = new BufferedWriter(fw);
+ 
+             bw.write("void setup() { size(" + m_lastCell*10 + ", 240); background(134,183,183); }");

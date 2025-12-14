@@ -1,0 +1,33 @@
+--- /tmp/orig-5707832355107587485.java	2025-09-24 21:38:48.115043131 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url0e7d57473a_kyorohiro_HetimaUtil_tgz-pJ8-net_hetimatan_net_http_HttpServer3xxJ8/src/net/hetimatan/net/http/TestForHttpGet.java	2025-09-24 21:38:45.898888275 +0000
+@@ -19,6 +19,7 @@
+ 	public void testRedirect() throws InterruptedException, IOException {
+ 		HttpServer3xx _3xx = null;
+ 		HttpServerResponseCheck rc = null;
++		net.hetimatan.net.http.HttpGet httpget = null;
+ 
+ 		try {
+ 			_3xx = new HttpServer3xx();
+@@ -31,7 +32,7 @@
+ 			rc.startServer(null);
+ 			while(!rc.isBinded()){Thread.yield();}
+ 
+-			HttpGet httpget = new HttpGet();
++			httpget = new HttpGet();
+ 			httpget.update("127.0.0.1", "/301?mv=http://127.0.0.1:8081", 8080);
+ 			EventTaskRunner runner = httpget.startTask(null, new CloseRunnerTask(null));
+ 
+@@ -43,6 +44,13 @@
+ 		} finally {
+ 			if(_3xx != null) { _3xx.close(); }
+ 			if(rc != null) { rc.close(); }
++			if (httpget != null) {
++			    try {
++			        httpget.dispose();
++			    } catch (Exception e) {
++			        e.printStackTrace();
++			    }
++			}
+ 		}
+ 	}
+ 

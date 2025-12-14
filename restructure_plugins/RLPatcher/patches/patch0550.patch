@@ -1,0 +1,58 @@
+--- /tmp/orig-8717968487219104914.java	2025-09-24 22:32:07.714697635 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url80e39b1957_tobikster_IJN_headers_recognition_tgz-pJ8-org_maltparser_examples_CreatePhraseStructureGraphJ8/src/org/maltparser/ml/lib/LibLinear.java	2025-09-24 22:32:04.074443165 +0000
+@@ -54,8 +54,10 @@
+ 		int nr_class = 0;
+ 		int nr_feature = 0;
+ 		Parameter parameter = getLiblinearParameters();
++		java.io.InputStreamReader __arodnap_temp0 = null;
+ 		try {	
+-			Problem problem = readProblem(getInstanceInputStreamReader(".ins"));
++		__arodnap_temp0 = getInstanceInputStreamReader(".ins");
++		Problem problem = readProblem(__arodnap_temp0);
+ 			boolean res = checkProblem(problem);
+ 			if (res == false) {
+ 				throw new LibException("Abort (The number of training instances * the number of classes) > "+Integer.MAX_VALUE+" and this is not supported by LibLinear. ");
+@@ -86,6 +88,14 @@
+ 			throw new LibException("The Liblinear learner cannot remove the instance file. ", e);
+ 		} catch (NegativeArraySizeException e) {
+ 			throw new LibException("(The number of training instances * the number of classes) > "+Integer.MAX_VALUE+" and this is not supported by LibLinear.", e);
++		} finally {
++		    if (__arodnap_temp0 != null) {
++		        try {
++		            __arodnap_temp0.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
+ 		}
+ 		
+ 		if (configLogger.isInfoEnabled()) {
+@@ -104,9 +114,11 @@
+ 		} catch (OutOfMemoryError e) {
+ 			throw new LibException("Out of memory. Please increase the Java heap size (-Xmx<size>). ", e);
+ 		}			
++		java.io.FileOutputStream __arodnap_temp1 = null;
+ 		try {
+-			if (xmodel != null) {
+-			    ObjectOutputStream output = new ObjectOutputStream (new BufferedOutputStream(new FileOutputStream(getFile(".moo").getAbsolutePath())));
++		__arodnap_temp1 = new FileOutputStream(getFile(".moo").getAbsolutePath());
++		if (xmodel != null) {
++			    ObjectOutputStream output = new ObjectOutputStream (new BufferedOutputStream(__arodnap_temp1));
+ 		        try{
+ 		          output.writeObject(xmodel);
+ 		        } finally {
+@@ -121,6 +133,14 @@
+ 			throw new LibException("The Liblinear learner cannot remove the instance file. ", e);
+ 		} catch (IOException e) {
+ 			throw new LibException("The Liblinear learner cannot save the model file '"+getFile(".mod").getAbsolutePath()+"'. ", e);
++		} finally {
++		    if (__arodnap_temp1 != null) {
++		        try {
++		            __arodnap_temp1.close();
++		        } catch (Exception e) {
++		            e.printStackTrace();
++		        }
++		    }
+ 		}
+ 	}
+ 	

@@ -1,0 +1,42 @@
+--- /tmp/orig-7553243746815689027.java	2025-09-24 22:16:00.019051827 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url7a45f192ca_mfullen_ping_pong_net_tgz-pJ8-ping_pong_net_client_io_TestClientNonPPNServerJ8/src/ping/pong/net/connection/io/IoUdpReadRunnableTest.java	2025-09-24 22:15:57.990910053 +0000
+@@ -40,9 +40,9 @@
+                                      IOException, InterruptedException
+     {
+         final String message = "hello world";
+-        DatagramSocket udpSocket = new DatagramSocket(7001);
+-        MessageProcessorImpl messageProcessorImpl = new MessageProcessorImpl();
+-        IoUdpReadRunnable<byte[]> ioUdpReadRunnable = new IoUdpReadRunnable<byte[]>(messageProcessorImpl, new RunnableEventListener()
++        try (DatagramSocket udpSocket = new DatagramSocket(7001)) {
++            MessageProcessorImpl messageProcessorImpl = new MessageProcessorImpl();
++            IoUdpReadRunnable<byte[]> ioUdpReadRunnable = new IoUdpReadRunnable<byte[]>(messageProcessorImpl, new RunnableEventListener()
+         {
+             @Override
+             public void onRunnableClosed(DisconnectState disconnectState)
+@@ -50,16 +50,17 @@
+                 logger.debug("Close called {}", disconnectState);
+             }
+         }, udpSocket);
+-        Thread thread = new Thread(ioUdpReadRunnable);
+-        thread.start();
+-
+-        DatagramSocket clientUdpSocket = new DatagramSocket();
+-        DatagramPacket sendPacket =
++            Thread thread = new Thread(ioUdpReadRunnable);
++            thread.start();
++            try (DatagramSocket clientUdpSocket = new DatagramSocket()) {
++                DatagramPacket sendPacket =
+                 new DatagramPacket(message.getBytes(), message.getBytes().length, InetAddress.getLocalHost(), 7001);
+-        clientUdpSocket.send(sendPacket);
+-        thread.join(200);
+-        assertEquals(messageProcessorImpl.myMessage, message);
+-        ioUdpReadRunnable.close();
++                clientUdpSocket.send(sendPacket);
++            }
++            thread.join(200);
++            assertEquals(messageProcessorImpl.myMessage, message);
++        }
++
+     }
+ 
+     /**

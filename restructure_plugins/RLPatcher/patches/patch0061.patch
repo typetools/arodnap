@@ -1,0 +1,18 @@
+--- /tmp/orig-14224784635443317138.java	2025-09-24 21:37:52.943187961 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url0e7d57473a_kyorohiro_HetimaUtil_tgz-pJ8-net_hetimatan_net_http_HttpServer3xxJ8/src/net/hetimatan/util/http/HttpRequestLine.java	2025-09-24 21:37:50.867042889 +0000
+@@ -95,10 +95,11 @@
+ 	}
+ 
+ 	public static HttpRequestLine decode(String path) throws IOException {
+-		CashKyoroFile vFile = new CashKyoroFile(512, 2);
+-		vFile.addChunk(path.getBytes());
+-		MarkableReader reader = new MarkableFileReader(vFile, 256);
+-		return HttpRequestLine.decode(reader);
++	    try (CashKyoroFile vFile = new CashKyoroFile(512, 2)) {
++	        vFile.addChunk(path.getBytes());
++	        MarkableReader reader = new MarkableFileReader(vFile, 256);
++	        return HttpRequestLine.decode(reader);
++	    }
+ 	}
+ 
+ 	public static HttpRequestLine decode(MarkableReader reader) throws IOException {

@@ -1,0 +1,17 @@
+--- /tmp/orig-17309014834846918702.java	2025-09-24 22:11:36.208610570 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url78eec0e0b6_Orikuro_vic_tgz-pJ8-net_nexon_vindictus_itemcomparer_inport_StaticImportJ8/src/net/nexon/vindictus/itemcomparer/inport/StaticImport.java	2025-09-24 22:11:34.436486692 +0000
+@@ -2084,12 +2084,11 @@
+ 	}
+ 
+ 	private static void exportItems() {
+-		try {
++		try (java.io.FileOutputStream __arodnap_temp0 = new FileOutputStream("data" + File.separator + "static.xml")) {
+ 			File outd = new File("data" + File.separator);
+ 			outd.mkdirs();
+ 			BufferedWriter out = new BufferedWriter(
+-					new OutputStreamWriter(new FileOutputStream("data"
+-							+ File.separator + "static.xml"), "UTF-8"));
++					new OutputStreamWriter(__arodnap_temp0, "UTF-8"));
+ 
+ 			JAXBContext context = JAXBContext.newInstance(Items.class);
+ 			Marshaller m = context.createMarshaller();

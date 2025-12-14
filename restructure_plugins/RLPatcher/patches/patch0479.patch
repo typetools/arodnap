@@ -1,0 +1,16 @@
+--- /tmp/orig-13810229822681188536.java	2025-09-24 22:19:39.710409011 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url80e39b1957_tobikster_IJN_headers_recognition_tgz-pJ8-org_maltparser_examples_CreatePhraseStructureGraphJ8/src/org/maltparser/core/io/dataformat/DataFormatSpecification.java	2025-09-24 22:19:36.146159857 +0000
+@@ -66,11 +66,11 @@
+ 			throw new DataFormatException("The data format specifcation file cannot be found. ");
+ 		}
+ 
+-        try {
++        try (java.io.InputStream __arodnap_temp0 = url.openStream()) {
+             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+             DocumentBuilder db = dbf.newDocumentBuilder();
+ 
+-    		Element root = db.parse(url.openStream()).getDocumentElement();
++    		Element root = db.parse(__arodnap_temp0).getDocumentElement();
+     		if (root.getNodeName().equals("dataformat")) { 
+     			dataFormatName = root.getAttribute("name");
+     			if (root.getAttribute("datastructure").length() > 0) {

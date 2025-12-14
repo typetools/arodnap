@@ -1,0 +1,68 @@
+--- /tmp/orig-13950764967475897782.java	2025-09-24 22:36:39.813718542 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url8be3f02398_vnamboo_LearnJava_tgz-pJ8-org_json_TestJ8/src/nio/samples/NBTimeServer.java	2025-09-24 22:36:38.033594103 +0000
+@@ -27,32 +27,16 @@
+ 
+ 	// Accept connections for current time. Lazy Exception thrown.
+ 	private static void acceptConnections(int port) throws Exception {
+-		// Selector for incoming time requests
+-		Selector acceptSelector = SelectorProvider.provider().openSelector();
+-
+-		// Create a new server socket and set to non blocking mode
+-		ServerSocketChannel ssc = ServerSocketChannel.open();
+-		ssc.configureBlocking(false);
+-
+-		// Bind the server socket to the local host and port
+-
+-		InetAddress lh = InetAddress.getLocalHost();
+-		InetSocketAddress isa = new InetSocketAddress(lh, port);
+-		ssc.socket().bind(isa);
+-
+-		// Register accepts on the server socket with the selector. This
+-		// step tells the selector that the socket wants to be put on the
+-		// ready list when accept operations occur, so allowing multiplexed
+-		// non-blocking I/O to take place.
+-		SelectionKey acceptKey = ssc.register(acceptSelector,
++	    try (Selector acceptSelector = SelectorProvider.provider().openSelector()) {
++	        ServerSocketChannel ssc = ServerSocketChannel.open();
++	        ssc.configureBlocking(false);
++	        InetAddress lh = InetAddress.getLocalHost();
++	        InetSocketAddress isa = new InetSocketAddress(lh, port);
++	        ssc.socket().bind(isa);
++	        SelectionKey acceptKey = ssc.register(acceptSelector,
+ 				SelectionKey.OP_ACCEPT);
+-
+-		int keysAdded = 0;
+-
+-		// Here's where everything happens. The select method will
+-		// return when any operations registered above have occurred, the
+-		// thread has been interrupted, etc.
+-		while ((keysAdded = acceptSelector.select()) > 0) {
++	        int keysAdded = 0;
++	        while ((keysAdded = acceptSelector.select()) > 0) {
+ 			// Someone is ready for I/O, get the ready keys
+ 			Set readyKeys = acceptSelector.selectedKeys();
+ 			Iterator i = readyKeys.iterator();
+@@ -74,6 +58,23 @@
+ 				out.close();
+ 			}
+ 		}
++	    }
++	
++
++
++
++// Bind the server socket to the local host and port
++
++
++		// Register accepts on the server socket with the selector. This
++		// step tells the selector that the socket wants to be put on the
++		// ready list when accept operations occur, so allowing multiplexed
++
++
++
++		// Here's where everything happens. The select method will
++		// return when any operations registered above have occurred, the
++		
+ 	}
+ 
+ 	// Entry point.

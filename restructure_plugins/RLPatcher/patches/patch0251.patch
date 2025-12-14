@@ -1,0 +1,13 @@
+--- /tmp/orig-13692860474345690591.java	2025-09-24 21:56:18.644469225 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url47ebb27197_asirbu_CorrectiveEvolution_tgz-pJ8-eu_fbk_soa_evolution_engine_impl_test_ProblemToSMVFuncTestJ8/src/eu/fbk/soa/util/IOUtils.java	2025-09-24 21:56:16.684332203 +0000
+@@ -142,8 +142,8 @@
+ 	public static void writeStringToFile(String str, String filePath) {
+ 		File file = new File(filePath);
+ 		
+-		try {
+-			BufferedWriter out = new BufferedWriter(new FileWriter(file, false));
++		try (java.io.FileWriter __arodnap_temp0 = new FileWriter(file, false)) {
++			BufferedWriter out = new BufferedWriter(__arodnap_temp0);
+ 			out.write(str);
+ 			out.close();
+ 		} catch (IOException e) {

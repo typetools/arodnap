@@ -1,0 +1,36 @@
+--- /tmp/orig-15917024668940375446.java	2025-09-24 21:44:40.131640532 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url270fc4f5ee_ykcilborw_Joust_tgz-pJ8-fri_patterns_interpreter_parsergenerator_examples_HowToOverrideLexerImplJ8/src/fri/patterns/interpreter/parsergenerator/util/SourceGenerator.java	2025-09-24 21:44:37.491456047 +0000
+@@ -183,7 +183,8 @@
+ 							pkgName = pkgName.substring(0, pkgName.length() - 1);
+ 						pkgName = pkgName.replace(File.separatorChar, '.');
+ 					}
+-					
++					fri.patterns.interpreter.parsergenerator.parsertables.AbstractParserTables pt = null;
++
+ 					try	{
+ 						SyntaxBuilder builder = new SyntaxBuilder(new File(args[i]));
+ 						if (semantic)	{
+@@ -193,7 +194,7 @@
+ 						else
+ 						if (type != null)	{
+ 							Syntax syntax = builder.getParserSyntax();
+-							AbstractParserTables pt = type.equals("SLR")
++							pt = type.equals("SLR")
+ 								? new SLRParserTables(syntax)
+ 								: type.equals("LR")
+ 									? new LRParserTables(syntax)
+@@ -207,6 +208,14 @@
+ 					}
+ 					catch (Exception e)	{
+ 						e.printStackTrace();
++					} finally {
++					    if (pt != null) {
++					        try {
++					            pt.toSourceFile(null);
++					        } catch (Exception e) {
++					            e.printStackTrace();
++					        }
++					    }
+ 					}
+ 				}
+ 			}

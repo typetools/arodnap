@@ -1,0 +1,17 @@
+--- /tmp/orig-7206756438236661140.java	2025-09-24 22:57:56.678983208 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlfcc351a1ba_kuntapavankumar_Z_tgz-pJ8-edu_concordia_dpis_ReplicaTestJ8/src/edu/concordia/dpis/stationserver/FaultyStationServerImpl.java	2025-09-24 22:57:55.258883901 +0000
+@@ -313,6 +313,14 @@
+ 			} catch (IOException e) {
+ 				e.printStackTrace();
+ 				log.error(e.getMessage());
++			} finally {
++			    if (s != null) {
++			        try {
++			            s.close();
++			        } catch (Exception e) {
++			            e.printStackTrace();
++			        }
++			    }
+ 			}
+ 			return false;
+ 		}

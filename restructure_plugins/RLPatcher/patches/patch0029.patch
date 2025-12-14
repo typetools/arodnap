@@ -1,0 +1,19 @@
+--- /tmp/orig-15728136629736057243.java	2025-09-24 21:34:24.892650292 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url088e9d87be_jpush_jpush_java_library_tgz-pJ8-cn_jpush_example_JPushClientExampleJ8/src/cn/jpush/api/HttpPostClient.java	2025-09-24 21:34:23.752570628 +0000
+@@ -40,7 +40,7 @@
+ 		HttpURLConnection conn = null;
+ 		DataOutputStream outStream = null;
+ 		MessageResult messageResult = null;
+-		try {
++		try (InputStream in = conn.getInputStream()) {
+ 			if (enableSSL) {
+ 				initSSL();
+ 			}
+@@ -61,7 +61,6 @@
+ 			outStream.flush();
+ 
+ 			if (conn.getResponseCode() == 200) {
+-				InputStream in = conn.getInputStream();
+ 				StringBuffer sb = new StringBuffer();
+ 				InputStreamReader reader = new InputStreamReader(in, CHARSET);
+ 				char[] buff = new char[1024];

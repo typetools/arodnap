@@ -1,0 +1,59 @@
+--- /tmp/orig-6428577334080784408.java	2025-09-24 22:46:21.166359368 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/urlbd77b745af_KokaKiwi_MCLauncher_tgz-pJ8-net_contrapunctus_lzma_BenchmarkJ8/src/com/kokakiwi/mclauncher/core/updater/FileExtractor.java	2025-09-24 22:46:19.266226532 +0000
+@@ -93,12 +93,10 @@
+     public static void extractZIP(LauncherAPI api, GameFile source, File file,
+             File dest, int min, int max) throws Exception
+     {
+-        final ZipFile zip = new ZipFile(file);
+-        
+-        Enumeration<ZipEntry> entries = (Enumeration<ZipEntry>) zip.entries();
+-        
+-        int total = 0;
+-        while (entries.hasMoreElements())
++        try (final ZipFile zip = new ZipFile(file)) {
++            Enumeration<ZipEntry> entries = (Enumeration<ZipEntry>) zip.entries();
++            int total = 0;
++            while (entries.hasMoreElements())
+         {
+             final ZipEntry entry = entries.nextElement();
+             
+@@ -107,11 +105,9 @@
+                 total += entry.getSize();
+             }
+         }
+-        
+-        entries = (Enumeration<ZipEntry>) zip.entries();
+-        final int current = 0;
+-        
+-        while (entries.hasMoreElements())
++            entries = (Enumeration<ZipEntry>) zip.entries();
++            final int current = 0;
++            while (entries.hasMoreElements())
+         {
+             final ZipEntry entry = entries.nextElement();
+             
+@@ -126,13 +122,19 @@
+             else
+             {
+                 final File e = new File(dest, entry.getName());
+-                copyStream(api, source, zip.getInputStream(entry),
+-                        new FileOutputStream(e), current, total, min, max);
++                try (java.io.FileOutputStream __arodnap_temp1 = new FileOutputStream(e)) {
++                    copyStream(api, source, zip.getInputStream(entry),
++                        __arodnap_temp1, current, total, min, max);
++                }
+             }
+         }
+-        
+-        zip.close();
+-    }
++        }
++    
++
++
++
++
++}
+     
+     public static void extractJAR(LauncherAPI api, GameFile source, File file,
+             File dest, int min, int max) throws Exception

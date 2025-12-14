@@ -1,0 +1,23 @@
+--- /tmp/orig-17362282628958010524.java	2025-09-24 21:47:35.531901405 +0000
++++ /home/smala009/RLF/cf-rlc/june2020_dataset_NJR/url294e6c45f3_Ecdosis_NMergeNew_tgz-pJ8-TestJ8/src/edu/luc/nmerge/mvd/MVDXMLFile.java	2025-09-24 21:47:33.247741736 +0000
+@@ -353,8 +353,8 @@
+ 	{
+ 		DocumentBuilderFactory dbf 
+ 			= DocumentBuilderFactory.newInstance();
+-		try 
+-		{
++		try (
++FileOutputStream fos = new FileOutputStream( dst )) 		{
+ 			DocumentBuilder db = dbf.newDocumentBuilder();
+ 			// create an instance of DOM
+ 			Document dom = db.newDocument();
+@@ -370,8 +370,7 @@
+ 			// print it out manually since DOM serialisation escapes 
+ 			// CRLF as &13;LF on the Mac and this behaviour can't be 
+ 			// turned off. We need a portable externalise routine that 
+-			// works the same on all platforms
+-			FileOutputStream fos = new FileOutputStream( dst );
++
+ 			XMLPretty.writeXMLDeclaration( fos, XMLEncoding );
+ 			XMLPretty.writeNode( dom.getFirstChild(), fos, 
+ 				XMLEncoding, pretty, 0 );
