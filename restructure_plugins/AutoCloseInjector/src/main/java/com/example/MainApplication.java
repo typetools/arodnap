@@ -8,6 +8,7 @@ import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -45,7 +46,7 @@ public class MainApplication {
 
     private static final String PATCH_FILE_NAME = "java-parser-AutoCloseInjector.patch";
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         if (args.length < 2) {
             System.err.println("Usage: java -jar AutoCloseInjector-1.0-SNAPSHOT.jar <warning_file> <project_path>");
             System.exit(1);
@@ -87,6 +88,13 @@ public class MainApplication {
 
             }
 
+            if (classToFieldsMap.isEmpty()) {
+                System.out.println("No valid warnings found to process.");
+                return;
+            }
+            Path baselineLog = Paths.get(projectPath, "baseline.log");
+            CompilerUtils.compileAndCapture(projectPath, baselineLog.toString());
+
             try (FileWriter patchFileWriter = new FileWriter(patchFilePath)) {
                 for (Map.Entry<String, Set<String>> entry : classToFieldsMap.entrySet()) {
                     String key = entry.getKey();
@@ -102,7 +110,10 @@ public class MainApplication {
 
                         // Step 4: Generate the patch and append it to the patch file
                         String modifiedFilePath = resolvedFilePath + ".modified";
-                        String patch = PatchFileGenerator.generatePatch(resolvedFilePath, modifiedFilePath);
+                        // String patch = PatchFileGenerator.generatePatch(resolvedFilePath, modifiedFilePath);
+                        String patch = PatchFileGenerator.generatePatchIfCompiles(
+                            projectPath, baselineLog, resolvedFilePath, modifiedFilePath);
+
                         // if patch is not empty, write it to the patch file
                         if (!patch.isEmpty()) {
                             patchFileWriter.write(patch);

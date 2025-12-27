@@ -28,13 +28,13 @@ BUILD_CMD="javac \
   -processorpath $JARS_PATH/FieldCanBeFinalWithTryCatch-1.0-SNAPSHOT.jar:$JARS_PATH/error_prone_core-2.28.0-with-dependencies.jar:$JARS_PATH/dataflow-errorprone-3.45.0.jar \
   -d $COMPILED_CLASSES_FOLDER \
   '-Xplugin:ErrorProne -XepDisableAllChecks -Xep:FieldCanBeFinalWithTryCatch -XepPatchChecks:FieldCanBeFinalWithTryCatch -XepPatchLocation:$PATCHFILE_PATH' \
-  -cp $lib_folder:$JARS_PATH/FieldCanBeFinalWithTryCatch-1.0-SNAPSHOT.jar \
+  -cp $lib_folder/*:$JARS_PATH/FieldCanBeFinalWithTryCatch-1.0-SNAPSHOT.jar \
   @${SRC_FILES}"
 
 
 # echo $BUILD_CMD
 
-eval $BUILD_CMD
+# eval $BUILD_CMD
 
 echo "Running the patch: FieldCanBeFinalWithTryCatch"
 dos2unix $PROJECT_PATH/src/error-prone.patch
@@ -58,13 +58,13 @@ BUILD_CMD="javac \
   -processorpath $JARS_PATH/FieldCanBeLocalWithTryCatch-1.0-SNAPSHOT.jar:$JARS_PATH/error_prone_core-2.28.0-with-dependencies.jar:$JARS_PATH/dataflow-errorprone-3.45.0.jar \
   -d $COMPILED_CLASSES_FOLDER \
   '-Xplugin:ErrorProne -XepDisableAllChecks -Xep:FieldCanBeLocalWithTryCatch -XepPatchChecks:FieldCanBeLocalWithTryCatch -XepPatchLocation:$PATCHFILE_PATH' \
-  -cp $lib_folder:$JARS_PATH/FieldCanBeLocalWithTryCatch/target/FieldCanBeLocalWithTryCatch-1.0-SNAPSHOT.jar \
+  -cp $lib_folder/*:$JARS_PATH/FieldCanBeLocalWithTryCatch/target/FieldCanBeLocalWithTryCatch-1.0-SNAPSHOT.jar \
   @${SRC_FILES}"
 
 
 # echo $BUILD_CMD
 
-eval $BUILD_CMD
+# eval $BUILD_CMD
 
 
 echo "Running the patch: FieldCanBeLocalWithTryCatch"

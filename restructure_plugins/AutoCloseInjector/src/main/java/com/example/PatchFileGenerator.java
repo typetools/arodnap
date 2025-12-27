@@ -4,6 +4,9 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Scanner;
 
 /**
@@ -14,6 +17,55 @@ import java.util.Scanner;
  * the diff output.
  */
 public class PatchFileGenerator {
+
+    /**
+     * Generates a unified diff patch between the original and modified files if the
+     * modified file compiles successfully within the given project context.
+     * If the modified file does not compile, an empty string is returned.
+     * <p>
+     * This method temporarily replaces the original file with the modified file,
+     * attempts to compile the project, and then restores the original file. If the
+     * compilation is successful, it generates and returns the unified diff patch
+     * between the two files.
+     * @param projectRoot      the root directory of the project
+     * @param baselineLog      the path to the baseline compilation log file
+     * @param originalFilePath the file path of the original version of the file
+     * @param modifiedFilePath the file path of the modified version of the file
+     * @return a string representing the unified diff patch if the modified file
+     *         compiles successfully; otherwise, an empty string
+     * @throws Exception if an error occurs during file operations or compilation
+     */
+    public static String generatePatchIfCompiles(
+            String projectRoot,
+            Path baselineLog,
+            String originalFilePath,
+            String modifiedFilePath) throws Exception {
+
+        // 1) Temporarily swap modified -> original, compile, restore
+        Path original = Paths.get(originalFilePath);
+        Path backup = Paths.get(originalFilePath + ".bak_autoclose");
+
+        Files.copy(original, backup, StandardCopyOption.REPLACE_EXISTING);
+        Files.copy(Paths.get(modifiedFilePath), original, StandardCopyOption.REPLACE_EXISTING);
+
+        Path modifiedLog = Files.createTempFile("autoclose-modified-", ".log");
+        try {
+            CompilerUtils.compileAndCapture(projectRoot, modifiedLog.toString());
+        } finally {
+            // Always restore original
+            Files.move(backup, original, StandardCopyOption.REPLACE_EXISTING);
+        }
+
+        boolean ok = !CompilerUtils.outputsDiffer(baselineLog, modifiedLog);
+        Files.deleteIfExists(modifiedLog);
+
+        if (!ok) {
+            return "";
+        }
+
+        // 2) If compile ok, generate diff
+        return generatePatch(originalFilePath, modifiedFilePath);
+    }
 
     /**
      * Generates a unified diff patch between the original and modified versions of
