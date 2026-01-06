@@ -29,6 +29,8 @@ class CloseInjector:
     def run_close_injector_plugin(benchmark, benchmark_path, results_folder):
         command = f"java -jar {CLOSE_INJECTOR_JAR} {results_folder}/{benchmark}.txt {benchmark_path}"
         os.system(command)
+        if not os.path.exists(f"{benchmark_path}/src/java-parser-AutoCloseInjector.patch"):
+            return
         os.system(f"cd {benchmark_path}/src && dos2unix java-parser-AutoCloseInjector.patch > /dev/null 2>&1")
         patch_command = f"cd {benchmark_path}/src/ && patch --forward -p{compute_p_flag(benchmark_path + '/src/java-parser-AutoCloseInjector.patch')} -u --ignore-whitespace -i java-parser-AutoCloseInjector.patch"
         os.system(patch_command)

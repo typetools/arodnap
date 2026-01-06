@@ -59,3 +59,8 @@ class SourceProjectCompiler:
         shutil.rmtree(temp_dir)
 
         logging.info(f"Benchmark {os.path.basename(source_project_path)} compiled successfully.")
+
+if __name__ == "__main__":
+    import sys
+    project_path = sys.argv[1]
+    SourceProjectCompiler.compile_benchmark_and_generate_jar(project_path)
