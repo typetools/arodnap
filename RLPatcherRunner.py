@@ -6,6 +6,8 @@ import subprocess
 from pathlib import Path
 from typing import Dict, List, Optional, Set, Tuple
 
+import Constants
+
 
 # -------------------------
 # Parsing helpers
@@ -262,7 +264,7 @@ def run_rlpatcher_for_project(
         temp_json_path.write_text(prompt_json)
 
         # Run jar
-        cmd = ["java", "-jar", str(jar_path), "--prompt", str(temp_json_path)]
+        cmd = ["java", "-jar", str(jar_path), "--prompt", str(temp_json_path), "--project-root", Constants.SOURCE_PROJECT_FOLDER]
         logging.info(f"[RLPatcher] ▶ {' '.join(cmd)}")
         result = subprocess.run(cmd, capture_output=True, text=True)
 

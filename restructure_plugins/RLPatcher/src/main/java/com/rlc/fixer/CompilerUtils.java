@@ -4,11 +4,22 @@ import java.io.*;
 import java.nio.file.*;
 import java.util.*;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class CompilerUtils {
     public static List<String> compile(String projectRoot) throws IOException, InterruptedException {
         String srcListPath = projectRoot + "/src-files.txt";
         String libPath = projectRoot + "/lib";
+        String cp;
+        if (!Files.exists(Paths.get(libPath))) {
+            cp = projectRoot + "/lib"; // try 'libs' as alternative
+        } else {
+            cp = Files.list(Paths.get(libPath))
+                    .filter(p -> p.toString().endsWith(".jar"))
+                    .map(Path::toString)
+                    .collect(Collectors.joining(":"));
+            cp += ":" + libPath;
+        }
         String compiledOut = projectRoot + "/compiled_classes";
         Files.createDirectories(Paths.get(compiledOut));
 
@@ -17,7 +28,7 @@ public class CompilerUtils {
                 .inheritIO().start().waitFor();
 
         // Compile using javac
-        ProcessBuilder pb = new ProcessBuilder("javac", "-g", "-d", compiledOut, "-cp", libPath, "@" + srcListPath);
+        ProcessBuilder pb = new ProcessBuilder("javac", "-g", "-d", compiledOut, "-cp", cp, "@" + srcListPath);
         pb.redirectErrorStream(true);
         Process proc = pb.start();
 

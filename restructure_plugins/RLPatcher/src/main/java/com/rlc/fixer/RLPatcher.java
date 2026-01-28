@@ -6,8 +6,8 @@ import java.util.stream.Collectors;
 
 public class RLPatcher {
     public static void main(String[] args) throws Exception {
-        if (args.length < 2 || !args[0].equals("--prompt")) {
-            System.err.println("Usage: java -jar RLFixPatcher.jar --prompt path/to/prompt.(json|txt)");
+        if (args.length < 4 || !args[0].equals("--prompt") || !args[2].equals("--project-root")) {
+            System.err.println("Usage: java -jar RLFixPatcher.jar --prompt path/to/prompt.(json|txt) --project-root /path/to/project");
             System.exit(1);
         }
 
@@ -47,16 +47,17 @@ public class RLPatcher {
         }
 
         // Derive project root (walk up until '/src' then go one up) — keep your logic
-        Path leakPath = Paths.get(leakFile);
-        Path projectRoot = leakPath.toAbsolutePath().normalize();
-        while (projectRoot != null && !projectRoot.endsWith("src")) {
-            projectRoot = projectRoot.getParent();
-        }
-        if (projectRoot == null) {
-            System.err.println("❌ Could not determine project root from leak file.");
-            return;
-        }
-        projectRoot = projectRoot.getParent(); // one level up from /src
+        // Path leakPath = Paths.get(leakFile);
+        // Path projectRoot = leakPath.toAbsolutePath().normalize();
+        // while (projectRoot != null && !projectRoot.endsWith("src")) {
+        //     projectRoot = projectRoot.getParent();
+        // }
+        // if (projectRoot == null) {
+        //     System.err.println("❌ Could not determine project root from leak file.");
+        //     return;
+        // }
+        // projectRoot = projectRoot.getParent(); // one level up from /src
+        Path projectRoot = Paths.get(args[3]).toAbsolutePath().normalize();
 
         // Compile before patch (baseline)
         List<String> baselineOutput = CompilerUtils.compile(projectRoot.toString());
