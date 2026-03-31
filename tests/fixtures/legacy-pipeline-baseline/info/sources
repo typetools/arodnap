@@ -1,0 +1,5 @@
+src/com/arodnap/fixture/BaselineSmoke.java
+src/com/arodnap/fixture/DirectLeakExample.java
+src/com/arodnap/fixture/OwningFieldReassignment.java
+src/com/arodnap/fixture/TryCatchLeakExample.java
+src/com/arodnap/fixture/WrapperMissingClose.java
