@@ -4,10 +4,10 @@ from dataclasses import dataclass
 import hashlib
 import json
 from pathlib import Path
-import subprocess
 
 from arodnap.contracts import RunConfig
 from arodnap.orchestrator.workspace import copied_workspace
+from arodnap.patch_tool import PatchExecution, PatchToolError, append_patch_execution_log, run_patch
 
 
 class ApplyError(RuntimeError):
@@ -35,13 +35,15 @@ def apply_patch_bundle(config: RunConfig) -> None:
 
     manifest_path = _find_manifest_path(patch_dir)
     entries = _load_manifest(manifest_path, patch_dir=patch_dir)
+    log_path = _resolve_apply_log_path(config)
+    _reset_apply_log(log_path)
     _validate_preimages(config.repo_root, entries)
 
     with copied_workspace(config.repo_root, keep_workspace=config.keep_workspace) as workspace:
-        _apply_entries(workspace.workspace_root, entries, check_only=True)
+        _apply_entries(workspace.workspace_root, entries, check_only=True, log_path=log_path)
 
     _validate_preimages(config.repo_root, entries)
-    _apply_entries(config.repo_root, entries, check_only=False)
+    _apply_entries(config.repo_root, entries, check_only=False, log_path=log_path)
 
 
 def _find_manifest_path(patch_dir: Path) -> Path:
@@ -163,33 +165,36 @@ def _validate_preimages(repo_root: Path, entries: list[PatchEntry]) -> None:
                 )
 
 
-def _apply_entries(repo_root: Path, entries: list[PatchEntry], *, check_only: bool) -> None:
+def _apply_entries(
+    repo_root: Path,
+    entries: list[PatchEntry],
+    *,
+    check_only: bool,
+    log_path: Path,
+) -> None:
     for entry in entries:
         target_dir = _resolve_target_dir(repo_root, entry)
-        command = [
-            "patch",
-            "-p",
-            str(entry.strip_level),
-            "-u",
-            "-i",
-            str(entry.patch_file),
-        ]
-        if check_only:
-            command.insert(1, "-C")
-
         try:
-            completed = subprocess.run(
-                command,
+            execution = run_patch(
                 cwd=target_dir,
-                capture_output=True,
-                text=True,
-                check=False,
+                patch_path=entry.patch_file,
+                strip_level=entry.strip_level,
+                check_only=check_only,
+                require_gnu=False,
+                operation_label=("apply dry-run validation" if check_only else "apply"),
             )
-        except FileNotFoundError as exc:
-            raise ApplyError("Patch command not found: patch") from exc
-        if completed.returncode != 0:
+        except PatchToolError as exc:
+            raise ApplyError(str(exc)) from exc
+
+        append_patch_execution_log(
+            log_path,
+            title=f"{'apply_dry_run' if check_only else 'apply_patch'}:{entry.stage}",
+            execution=execution,
+        )
+
+        if execution.completed.returncode != 0:
             mode = "dry-run validation" if check_only else "apply"
-            details = _format_patch_failure(entry=entry, completed=completed, mode=mode)
+            details = _format_patch_failure(entry=entry, execution=execution, mode=mode)
             raise ApplyError(details)
 
 
@@ -200,16 +205,26 @@ def _resolve_target_dir(repo_root: Path, entry: PatchEntry) -> Path:
 def _format_patch_failure(
     *,
     entry: PatchEntry,
-    completed: subprocess.CompletedProcess[str],
+    execution: PatchExecution,
     mode: str,
 ) -> str:
-    stderr = completed.stderr.strip()
-    stdout = completed.stdout.strip()
+    stderr = execution.completed.stderr.strip()
+    stdout = execution.completed.stdout.strip()
     output = stderr or stdout or "<no patch output>"
     return (
         f"Patch {mode} failed for {entry.patch_file} "
-        f"(stage={entry.stage}, strip_level={entry.strip_level}, target_root={entry.target_root}): {output}"
+        f"(stage={entry.stage}, strip_level={entry.strip_level}, target_root={entry.target_root}, "
+        f"patch_binary={execution.tool.binary}, patch_version={execution.tool.version}): {output}"
     )
+
+
+def _resolve_apply_log_path(config: RunConfig) -> Path:
+    return config.out_dir.resolve() / "logs" / "apply.log"
+
+
+def _reset_apply_log(log_path: Path) -> None:
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+    log_path.write_text("")
 
 
 __all__ = ["ApplyError", "PatchEntry", "apply_patch_bundle"]

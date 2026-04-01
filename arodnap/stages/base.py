@@ -6,6 +6,7 @@ from pathlib import Path
 import subprocess
 
 from arodnap.contracts import StageResult
+from arodnap.patch_tool import PatchExecution, PatchToolError, run_patch
 
 
 class StageExecutionError(RuntimeError):
@@ -63,24 +64,21 @@ def apply_normalized_patch(
     workspace_root: Path,
     patch_path: Path,
     extra_args: list[str] | None = None,
-) -> subprocess.CompletedProcess[str]:
-    command = [
-        "patch",
-        "--forward",
-        "-p0",
-        "-u",
-        *(extra_args or []),
-        "--ignore-whitespace",
-        "-i",
-        str(patch_path),
-    ]
-    return subprocess.run(
-        command,
-        cwd=workspace_root,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
+) -> PatchExecution:
+    try:
+        return run_patch(
+            cwd=workspace_root,
+            patch_path=patch_path,
+            strip_level=0,
+            check_only=False,
+            require_gnu=True,
+            operation_label="stage patch apply",
+            extra_args=extra_args,
+            forward=True,
+            ignore_whitespace=True,
+        )
+    except PatchToolError as exc:
+        raise StageExecutionError(str(exc)) from exc
 
 
 def write_stage_result(stage_output_dir: Path, result: StageResult) -> Path:

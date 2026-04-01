@@ -4,6 +4,7 @@ from pathlib import Path
 import subprocess
 
 from arodnap.contracts import RunConfig, StageResult
+from arodnap.patch_tool import append_patch_execution_log
 
 from .base import (
     StageExecutionError,
@@ -84,14 +85,13 @@ def run_owning_field_stage(
         patch_path=stage_paths.patch_path,
         extra_args=["-F3"],
     )
-    append_command_log(
+    append_patch_execution_log(
         stage_paths.log_path,
         title="apply_normalized_patch",
-        command=apply_completed.args,
-        completed=apply_completed,
+        execution=apply_completed,
     )
 
-    if apply_completed.returncode != 0:
+    if apply_completed.completed.returncode != 0:
         raise StageExecutionError(
             f"Failed to apply normalized owning-field patch. See log: {stage_paths.log_path}"
         )
