@@ -1,10 +1,3 @@
-from __future__ import annotations
+from arodnap.cli.commands.apply import run
 
-import argparse
-
-from arodnap.orchestrator.config import build_run_config
-from arodnap.orchestrator import pipeline
-
-
-def run(args: argparse.Namespace) -> int:
-    return pipeline.run_apply(build_run_config(args, command="apply"))
+__all__ = ["run"]

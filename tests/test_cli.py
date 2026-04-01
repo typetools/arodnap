@@ -3,10 +3,16 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+from arodnap.cli.main import build_parser as build_cli_parser
+from arodnap.cli.main import main as cli_main
 from arodnap.main import build_parser, main
 
 
 class CliTest(unittest.TestCase):
+    def test_canonical_cli_import_path_matches_compat_wrapper(self) -> None:
+        self.assertIs(build_parser, build_cli_parser)
+        self.assertIs(main, cli_main)
+
     def test_analyze_parses_defaults(self) -> None:
         parser = build_parser()
         args = parser.parse_args(["analyze", "/tmp/repo"])

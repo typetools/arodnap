@@ -1,0 +1,157 @@
+import json
+import tempfile
+import unittest
+from pathlib import Path
+from unittest.mock import patch
+import subprocess
+
+from arodnap.contracts import RunConfig, StageResult, Timeouts
+from arodnap.stages.owning_field import StageExecutionError, run_owning_field_stage
+
+
+class OwningFieldStageTest(unittest.TestCase):
+    def test_changed_run_normalizes_patch_and_writes_stage_result(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_root = Path(temp_dir)
+            workspace_root, diagnostics_path = self._make_workspace(temp_root)
+            stage_output_dir = temp_root / "arodnap-out" / "stages" / "owning_field"
+            raw_patch_path = workspace_root / "src" / "owning-field.patch"
+            source_file = workspace_root / "src" / "main" / "java" / "com" / "example" / "Demo.java"
+
+            def fake_run(command, **kwargs):
+                if command[0] == "java":
+                    raw_patch_path.parent.mkdir(parents=True, exist_ok=True)
+                    raw_patch_path.write_text(
+                        "\n".join(
+                            [
+                                f"--- {source_file}",
+                                f"+++ {source_file}",
+                                "@@ -1 +1 @@",
+                                "-class Demo {}",
+                                "+final class Demo {}",
+                                "",
+                            ]
+                        )
+                    )
+                    return subprocess.CompletedProcess(command, 0, stdout="patched\n", stderr="")
+                if command[0] == "patch":
+                    self.assertIn("-F3", command)
+                    return subprocess.CompletedProcess(command, 0, stdout="applied\n", stderr="")
+                raise AssertionError(f"Unexpected command: {command}")
+
+            with patch("subprocess.run", side_effect=fake_run):
+                result = run_owning_field_stage(
+                    self._make_config(temp_root),
+                    workspace_root=workspace_root,
+                    diagnostics_path=diagnostics_path,
+                    stage_output_dir=stage_output_dir,
+                )
+
+            self.assertEqual(
+                result,
+                StageResult(
+                    stage="owning_field",
+                    changed=True,
+                    changed_files=["src/main/java/com/example/Demo.java"],
+                    rerun_required=True,
+                    artifacts={
+                        "log": str((stage_output_dir / "stage.log").resolve()),
+                        "patch": str((stage_output_dir / "owning_field.patch").resolve()),
+                    },
+                    notes=["Applied owning-field patch affecting 1 file(s)."],
+                    success=True,
+                ),
+            )
+            normalized_patch = (stage_output_dir / "owning_field.patch").read_text()
+            self.assertIn("--- src/main/java/com/example/Demo.java", normalized_patch)
+            self.assertIn("+++ src/main/java/com/example/Demo.java", normalized_patch)
+            self.assertFalse(raw_patch_path.exists())
+
+            stage_result_payload = json.loads((stage_output_dir / "stage_result.json").read_text())
+            self.assertEqual(stage_result_payload, result.to_dict())
+
+    def test_noop_run_writes_stage_result_without_patch_artifact(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_root = Path(temp_dir)
+            workspace_root, diagnostics_path = self._make_workspace(temp_root)
+            stage_output_dir = temp_root / "arodnap-out" / "stages" / "owning_field"
+
+            completed = subprocess.CompletedProcess(["java"], 0, stdout="No owning-field changes.\n", stderr="")
+            with patch("subprocess.run", return_value=completed):
+                result = run_owning_field_stage(
+                    self._make_config(temp_root),
+                    workspace_root=workspace_root,
+                    diagnostics_path=diagnostics_path,
+                    stage_output_dir=stage_output_dir,
+                )
+
+            self.assertFalse(result.changed)
+            self.assertFalse(result.rerun_required)
+            self.assertEqual(result.changed_files, [])
+            self.assertEqual(result.artifacts, {"log": str((stage_output_dir / "stage.log").resolve())})
+            self.assertTrue((stage_output_dir / "stage_result.json").is_file())
+            self.assertFalse((stage_output_dir / "owning_field.patch").exists())
+
+    def test_invalid_patch_paths_fail_closed(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_root = Path(temp_dir)
+            workspace_root, diagnostics_path = self._make_workspace(temp_root)
+            stage_output_dir = temp_root / "arodnap-out" / "stages" / "owning_field"
+            raw_patch_path = workspace_root / "src" / "owning-field.patch"
+
+            def fake_run(command, **kwargs):
+                if command[0] == "java":
+                    raw_patch_path.parent.mkdir(parents=True, exist_ok=True)
+                    raw_patch_path.write_text(
+                        "\n".join(
+                            [
+                                "--- /tmp/other/Outside.java",
+                                "+++ /tmp/other/Outside.java",
+                                "@@ -1 +1 @@",
+                                "-class Outside {}",
+                                "+final class Outside {}",
+                                "",
+                            ]
+                        )
+                    )
+                    return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
+                raise AssertionError("Patch command should not run when normalization fails.")
+
+            with patch("subprocess.run", side_effect=fake_run):
+                with self.assertRaisesRegex(StageExecutionError, "does not live under workspace root"):
+                    run_owning_field_stage(
+                        self._make_config(temp_root),
+                        workspace_root=workspace_root,
+                        diagnostics_path=diagnostics_path,
+                        stage_output_dir=stage_output_dir,
+                    )
+
+    def _make_workspace(self, root: Path) -> tuple[Path, Path]:
+        workspace_root = root / "workspace"
+        source_file = workspace_root / "src" / "main" / "java" / "com" / "example" / "Demo.java"
+        source_file.parent.mkdir(parents=True)
+        source_file.write_text("class Demo {}\n")
+        diagnostics_path = root / "diagnostics.txt"
+        diagnostics_path.write_text(f"{source_file}:1: warning: owning field overwritten\n")
+        return workspace_root, diagnostics_path
+
+    def _make_config(self, root: Path) -> RunConfig:
+        return RunConfig(
+            command="repair",
+            repo_root=(root / "repo").resolve(),
+            out_dir=(root / "out").resolve(),
+            keep_workspace=False,
+            workspace_mode="copy",
+            build_args=[],
+            compile_target="classes",
+            patch_dir=None,
+            cf_root=root / "checker-framework",
+            close_injector_jar=root / "AutoCloseInjector.jar",
+            owning_field_jar=root / "OwningFieldFixer.jar",
+            rlpatcher_jar=root / "rlpatcher.jar",
+            timeouts=Timeouts(build_seconds=1, analysis_seconds=2, stage_seconds=3),
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()
