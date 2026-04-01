@@ -1,1 +1,3 @@
-"""Analysis package placeholder for v1 slices."""
+from .wpi_runner import WpiRunError, WpiRunResult, run_wpi
+
+__all__ = ["WpiRunError", "WpiRunResult", "run_wpi"]
