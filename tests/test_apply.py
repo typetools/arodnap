@@ -34,6 +34,9 @@ class ApplyBundleTest(unittest.TestCase):
             apply_patch_bundle(self._config(repo_root=repo_root, patch_dir=patch_dir))
 
             self.assertEqual((repo_root / "module" / "src" / "demo.txt").read_text(), "new value\n")
+            apply_log = (repo_root.parent / "out" / "logs" / "apply.log").read_text()
+            self.assertIn("PATCH_BINARY:", apply_log)
+            self.assertIn("PATCH_VERSION:", apply_log)
 
     def test_malformed_manifest_fails_clearly(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
