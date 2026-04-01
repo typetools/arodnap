@@ -61,6 +61,17 @@ class GradleAdapter:
             f"Gradle compile target '{project.compile_target}' failed for {project.repo_root}.\n{output}"
         )
 
+    def write_source_files_file(self, project: GradleProject, output_path: Path) -> Path:
+        source_files = sorted(
+            path.resolve()
+            for path in project.source_root.rglob("*.java")
+            if path.is_file()
+        )
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        contents = "\n".join(str(path) for path in source_files)
+        output_path.write_text(f"{contents}\n" if contents else "")
+        return output_path
+
     def _detect_build_file(self) -> Path:
         for filename in _BUILD_FILES:
             candidate = self.repo_root / filename
