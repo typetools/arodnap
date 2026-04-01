@@ -53,6 +53,80 @@ class GradleAdapterTest(unittest.TestCase):
                 with patch.object(GradleAdapter, "validate_compile", return_value=None):
                     GradleAdapter(repo_root).inspect()
 
+    def test_supported_fixture_writes_expected_source_file_list(self) -> None:
+        adapter = GradleAdapter(FIXTURES_ROOT / "gradle-pipeline-baseline")
+        project = adapter.inspect()
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            output_path = Path(temp_dir) / "sources.txt"
+            written_path = adapter.write_source_files_file(project, output_path)
+
+            self.assertEqual(written_path, output_path)
+            self.assertEqual(
+                written_path.read_text().splitlines(),
+                [
+                    str(
+                        (
+                            FIXTURES_ROOT
+                            / "gradle-pipeline-baseline"
+                            / "src/main/java/com/arodnap/fixture/BaselineSmoke.java"
+                        ).resolve()
+                    ),
+                    str(
+                        (
+                            FIXTURES_ROOT
+                            / "gradle-pipeline-baseline"
+                            / "src/main/java/com/arodnap/fixture/DirectLeakExample.java"
+                        ).resolve()
+                    ),
+                    str(
+                        (
+                            FIXTURES_ROOT
+                            / "gradle-pipeline-baseline"
+                            / "src/main/java/com/arodnap/fixture/OwningFieldReassignment.java"
+                        ).resolve()
+                    ),
+                    str(
+                        (
+                            FIXTURES_ROOT
+                            / "gradle-pipeline-baseline"
+                            / "src/main/java/com/arodnap/fixture/TryCatchLeakExample.java"
+                        ).resolve()
+                    ),
+                    str(
+                        (
+                            FIXTURES_ROOT
+                            / "gradle-pipeline-baseline"
+                            / "src/main/java/com/arodnap/fixture/WrapperMissingClose.java"
+                        ).resolve()
+                    ),
+                ],
+            )
+
+    def test_source_file_list_excludes_tests_and_generated_sources(self) -> None:
+        adapter = GradleAdapter(FIXTURES_ROOT / "gradle-source-file-filtering")
+
+        with patch.object(GradleAdapter, "validate_compile", return_value=None):
+            project = adapter.inspect()
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            output_path = Path(temp_dir) / "sources.txt"
+            adapter.write_source_files_file(project, output_path)
+            source_files = output_path.read_text().splitlines()
+
+        self.assertEqual(
+            source_files,
+            [
+                str(
+                    (
+                        FIXTURES_ROOT
+                        / "gradle-source-file-filtering"
+                        / "src/main/java/com/arodnap/fixture/MainApp.java"
+                    ).resolve()
+                )
+            ],
+        )
+
     def _make_minimal_repo(self, *, with_wrapper: bool) -> Path:
         temp_dir = tempfile.TemporaryDirectory()
         self.addCleanup(temp_dir.cleanup)
