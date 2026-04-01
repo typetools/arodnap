@@ -1,7 +1,8 @@
-from .base import GradleProject, MissingBuildToolError, UnsupportedProjectError
+from .base import AdapterExecutionError, GradleProject, MissingBuildToolError, UnsupportedProjectError
 from .gradle import GradleAdapter
 
 __all__ = [
+    "AdapterExecutionError",
     "GradleAdapter",
     "GradleProject",
     "MissingBuildToolError",

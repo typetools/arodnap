@@ -12,6 +12,10 @@ class MissingBuildToolError(RuntimeError):
     pass
 
 
+class AdapterExecutionError(RuntimeError):
+    pass
+
+
 @dataclass(frozen=True)
 class GradleProject:
     repo_root: Path
@@ -19,3 +23,4 @@ class GradleProject:
     build_tool: tuple[str, ...]
     compile_target: str
     source_root: Path
+    compiled_classes_root: Path

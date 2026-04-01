@@ -1,10 +1,17 @@
+import json
 import os
+import subprocess
 import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from arodnap.build_adapters import GradleAdapter, MissingBuildToolError, UnsupportedProjectError
+from arodnap.build_adapters import (
+    AdapterExecutionError,
+    GradleAdapter,
+    MissingBuildToolError,
+    UnsupportedProjectError,
+)
 
 
 FIXTURES_ROOT = Path(__file__).resolve().parent / "fixtures"
@@ -19,6 +26,10 @@ class GradleAdapterTest(unittest.TestCase):
         self.assertEqual(project.build_tool, ("gradle",))
         self.assertEqual(project.compile_target, "classes")
         self.assertEqual(project.source_root, project.repo_root / "src" / "main" / "java")
+        self.assertEqual(
+            project.compiled_classes_root,
+            project.repo_root / "build" / "classes" / "java" / "main",
+        )
 
     def test_multimodule_fixture_is_rejected(self) -> None:
         with self.assertRaisesRegex(UnsupportedProjectError, "Multi-module"):
@@ -126,6 +137,148 @@ class GradleAdapterTest(unittest.TestCase):
                 )
             ],
         )
+
+    def test_supported_fixture_writes_expected_app_class_list(self) -> None:
+        adapter = GradleAdapter(FIXTURES_ROOT / "gradle-pipeline-baseline")
+        project = adapter.inspect()
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            output_path = Path(temp_dir) / "app-classes.txt"
+            written_path = adapter.write_app_classes_file(project, output_path)
+
+            self.assertEqual(written_path, output_path)
+            self.assertEqual(
+                written_path.read_text().splitlines(),
+                [
+                    "com.arodnap.fixture.BaselineSmoke",
+                    "com.arodnap.fixture.DirectLeakExample",
+                    "com.arodnap.fixture.OwningFieldReassignment",
+                    "com.arodnap.fixture.TryCatchLeakExample",
+                    "com.arodnap.fixture.WrapperMissingClose",
+                ],
+            )
+
+    def test_app_class_list_preserves_nested_classes_and_excludes_module_info(self) -> None:
+        adapter = GradleAdapter(FIXTURES_ROOT / "gradle-app-classes")
+        project = adapter.inspect()
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            output_path = Path(temp_dir) / "app-classes.txt"
+            adapter.write_app_classes_file(project, output_path)
+            class_names = output_path.read_text().splitlines()
+
+        self.assertEqual(
+            class_names,
+            [
+                "com.arodnap.fixture.Helper",
+                "com.arodnap.fixture.Outer",
+                "com.arodnap.fixture.Outer$Nested",
+            ],
+        )
+
+    def test_supported_fixture_writes_expected_classpath_entries(self) -> None:
+        adapter = GradleAdapter(FIXTURES_ROOT / "gradle-pipeline-baseline")
+        project = adapter.inspect()
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            output_path = Path(temp_dir) / "classpath.txt"
+            written_path = adapter.write_classpath_entries_file(project, output_path)
+            entries = written_path.read_text().splitlines()
+
+        self.assertEqual(written_path, output_path)
+        self.assertTrue(entries)
+        self.assertEqual(entries, sorted(set(entries)))
+        self.assertTrue(all(Path(entry).is_absolute() for entry in entries))
+        self.assertIn(str(project.compiled_classes_root.resolve()), entries)
+        self.assertIn(
+            str(
+                (
+                    FIXTURES_ROOT.parents[1]
+                    / "checker_framework"
+                    / "checker-framework-3.49.0"
+                    / "checker"
+                    / "dist"
+                    / "checker-qual.jar"
+                ).resolve()
+            ),
+            entries,
+        )
+
+    def test_supported_fixture_writes_adapter_metadata(self) -> None:
+        adapter = GradleAdapter(FIXTURES_ROOT / "gradle-pipeline-baseline")
+        project = adapter.inspect()
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_root = Path(temp_dir)
+            source_files_file = adapter.write_source_files_file(project, temp_root / "sources.txt")
+            app_classes_file = adapter.write_app_classes_file(project, temp_root / "classes.txt")
+            classpath_entries_file = adapter.write_classpath_entries_file(project, temp_root / "classpath.txt")
+            metadata_path = adapter.write_adapter_metadata_file(
+                project,
+                source_files_file=source_files_file,
+                app_classes_file=app_classes_file,
+                classpath_entries_file=classpath_entries_file,
+                output_path=temp_root / "adapter.json",
+            )
+            metadata = json.loads(metadata_path.read_text())
+
+        self.assertEqual(metadata_path, temp_root / "adapter.json")
+        self.assertEqual(metadata["repo_root"], str(project.repo_root))
+        self.assertEqual(metadata["build_file"], str(project.build_file))
+        self.assertEqual(metadata["build_tool"], list(project.build_tool))
+        self.assertEqual(metadata["compile_target"], project.compile_target)
+        self.assertEqual(metadata["source_root"], str(project.source_root))
+        self.assertEqual(metadata["compiled_classes_root"], str(project.compiled_classes_root))
+        self.assertEqual(metadata["source_files_file"], str(source_files_file))
+        self.assertEqual(metadata["app_classes_file"], str(app_classes_file))
+        self.assertEqual(metadata["classpath_entries_file"], str(classpath_entries_file))
+
+    def test_classpath_extraction_uses_init_script_task_flow(self) -> None:
+        adapter = GradleAdapter(FIXTURES_ROOT / "gradle-source-file-filtering")
+
+        with patch.object(GradleAdapter, "validate_compile", return_value=None):
+            project = adapter.inspect()
+
+        completed = subprocess.CompletedProcess(
+            args=[],
+            returncode=0,
+            stdout=f"{project.compiled_classes_root.resolve()}\n",
+            stderr="",
+        )
+        with tempfile.TemporaryDirectory() as temp_dir:
+            output_path = Path(temp_dir) / "classpath.txt"
+            with patch("subprocess.run", return_value=completed) as run_mock:
+                adapter.write_classpath_entries_file(project, output_path)
+                written_entries = output_path.read_text().splitlines()
+
+        command = run_mock.call_args.kwargs.get("args") or run_mock.call_args.args[0]
+        self.assertIn("-I", command)
+        self.assertIn("arodnapPrintMainClasspath", command)
+        self.assertEqual(written_entries, [str(project.compiled_classes_root.resolve())])
+
+    def test_classpath_extraction_rejects_empty_output(self) -> None:
+        adapter = GradleAdapter(FIXTURES_ROOT / "gradle-source-file-filtering")
+
+        with patch.object(GradleAdapter, "validate_compile", return_value=None):
+            project = adapter.inspect()
+
+        completed = subprocess.CompletedProcess(args=[], returncode=0, stdout="", stderr="")
+        with tempfile.TemporaryDirectory() as temp_dir:
+            with patch("subprocess.run", return_value=completed):
+                with self.assertRaisesRegex(AdapterExecutionError, "produced no entries"):
+                    adapter.write_classpath_entries_file(project, Path(temp_dir) / "classpath.txt")
+
+    def test_classpath_extraction_rejects_gradle_task_failure(self) -> None:
+        adapter = GradleAdapter(FIXTURES_ROOT / "gradle-source-file-filtering")
+
+        with patch.object(GradleAdapter, "validate_compile", return_value=None):
+            project = adapter.inspect()
+
+        completed = subprocess.CompletedProcess(args=[], returncode=1, stdout="", stderr="boom")
+        with tempfile.TemporaryDirectory() as temp_dir:
+            with patch("subprocess.run", return_value=completed):
+                with self.assertRaisesRegex(AdapterExecutionError, "classpath extraction failed"):
+                    adapter.write_classpath_entries_file(project, Path(temp_dir) / "classpath.txt")
 
     def _make_minimal_repo(self, *, with_wrapper: bool) -> Path:
         temp_dir = tempfile.TemporaryDirectory()
