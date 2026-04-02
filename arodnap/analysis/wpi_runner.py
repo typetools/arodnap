@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 import os
 import re
 import shutil
 import subprocess
+import sys
+import tempfile
 
 from arodnap.contracts import RunConfig
 
@@ -18,6 +21,16 @@ class WpiRunResult:
 
 class WpiRunError(RuntimeError):
     pass
+
+
+DLJC_PYTHON_ENV = "ARODNAP_WPI_PYTHON"
+_PYTHON_CANDIDATE_NAMES = (
+    "python3",
+    "python3.12",
+    "python3.11",
+    "python3.10",
+    "python3.9",
+)
 
 
 def run_wpi(
@@ -33,17 +46,15 @@ def run_wpi(
 
     _prepare_wpi_support_files(config.cf_root)
     command = _build_wpi_command(config, workspace_root)
-    env = os.environ.copy()
-    env["CHECKERFRAMEWORK"] = str(config.cf_root)
-
-    completed = subprocess.run(
-        command,
-        cwd=workspace_root,
-        env=env,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
+    with _wpi_environment(config.cf_root) as env:
+        completed = subprocess.run(
+            command,
+            cwd=workspace_root,
+            env=env,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
 
     log_path.parent.mkdir(parents=True, exist_ok=True)
     log_path.write_text(_render_log(command, completed))
@@ -87,6 +98,29 @@ def _build_wpi_command(config: RunConfig, workspace_root: Path) -> list[str]:
     return command
 
 
+@contextmanager
+def _wpi_environment(cf_root: Path):
+    env = os.environ.copy()
+    env["CHECKERFRAMEWORK"] = str(cf_root)
+
+    compatible_python = _resolve_dljc_python3()
+    if compatible_python is None:
+        raise WpiRunError(
+            "Whole-program inference requires a python3 interpreter with distutils for Checker Framework dljc."
+        )
+
+    with tempfile.TemporaryDirectory(prefix="arodnap-wpi-python-") as shim_dir:
+        shim_path = Path(shim_dir) / "python3"
+        shim_path.symlink_to(compatible_python)
+        current_path = env.get("PATH", "")
+        env["PATH"] = (
+            f"{shim_dir}{os.pathsep}{current_path}"
+            if current_path
+            else shim_dir
+        )
+        yield env
+
+
 def _prepare_wpi_support_files(cf_root: Path) -> None:
     _ensure_executable(cf_root / "checker" / "bin" / "wpi.sh")
     _ensure_executable(cf_root / "checker" / "bin" / ".do-like-javac" / "dljc")
@@ -122,6 +156,49 @@ def _locate_generated_inference_dir(
         return legacy_candidate
 
     return None
+
+
+def _resolve_dljc_python3() -> Path | None:
+    candidates = []
+    override = os.environ.get(DLJC_PYTHON_ENV)
+    if override:
+        candidates.append(override)
+    candidates.append(sys.executable)
+    candidates.extend(_PYTHON_CANDIDATE_NAMES)
+    candidates.append("/usr/bin/python3")
+
+    seen: set[Path] = set()
+    for candidate in candidates:
+        resolved = _resolve_python_candidate(candidate)
+        if resolved is None or resolved in seen:
+            continue
+        seen.add(resolved)
+        if _python_supports_distutils(resolved):
+            return resolved
+    return None
+
+
+def _resolve_python_candidate(candidate: str) -> Path | None:
+    if not candidate:
+        return None
+    candidate_path = Path(candidate).expanduser()
+    if candidate_path.is_absolute():
+        return candidate_path.resolve() if candidate_path.is_file() else None
+    resolved = shutil.which(candidate)
+    return Path(resolved).resolve() if resolved else None
+
+
+def _python_supports_distutils(python_executable: Path) -> bool:
+    try:
+        completed = subprocess.run(
+            [str(python_executable), "-c", "import distutils"],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+    except OSError:
+        return False
+    return completed.returncode == 0
 
 
 def _render_log(command: list[str], completed: subprocess.CompletedProcess[str]) -> str:
