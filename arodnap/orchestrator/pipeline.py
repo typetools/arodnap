@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 from arodnap.apply_support import apply_patch_bundle
+from arodnap.analysis.analyze import analyze_once
 from arodnap.analysis.reanalyze import reanalyze
 from arodnap.compat.rlfixer_inputs import generate_rlfixer_compatibility_bundle
 from arodnap.contracts import PipelineState, RunConfig
@@ -16,11 +17,11 @@ from arodnap.stages.rlpatcher import run_rlpatcher_stage
 
 
 def run_analyze(config: RunConfig) -> int:
-    return 0
+    return _run_analysis_command(config, analysis_runner=analyze_once)
 
 
 def run_infer(config: RunConfig) -> int:
-    return 0
+    return _run_analysis_command(config, analysis_runner=reanalyze)
 
 
 def run_repair(config: RunConfig) -> int:
@@ -28,17 +29,7 @@ def run_repair(config: RunConfig) -> int:
     output_layout.ensure()
 
     with copied_workspace(config.repo_root, keep_workspace=config.keep_workspace) as workspace:
-        state = PipelineState(
-            config=config,
-            workspace_root=workspace.workspace_root,
-            build_system="gradle",
-            adapter_name="gradle-v1",
-            current_analysis=None,
-            stage_history=[],
-            artifacts_root=output_layout.root,
-            final_patch_manifest=None,
-            legacy_regression_enabled=False,
-        )
+        state = _initial_state(config, workspace_root=workspace.workspace_root, artifacts_root=output_layout.root)
 
         try:
             current_analysis = reanalyze(
@@ -126,6 +117,48 @@ def run_repair(config: RunConfig) -> int:
 def run_apply(config: RunConfig) -> int:
     apply_patch_bundle(config)
     return 0
+
+
+def _run_analysis_command(
+    config: RunConfig,
+    *,
+    analysis_runner,
+) -> int:
+    output_layout = OutputLayout.from_root(config.out_dir)
+    output_layout.ensure()
+
+    with copied_workspace(config.repo_root, keep_workspace=config.keep_workspace) as workspace:
+        state = _initial_state(config, workspace_root=workspace.workspace_root, artifacts_root=output_layout.root)
+
+        try:
+            state.current_analysis = analysis_runner(
+                config,
+                workspace_root=workspace.workspace_root,
+                label="initial",
+                artifacts_root=output_layout.root,
+            )
+            write_run_manifest(output_layout, state, success=True)
+            write_report(output_layout, state, success=True)
+        except Exception as exc:
+            write_run_manifest(output_layout, state, success=False, error=str(exc))
+            write_report(output_layout, state, success=False, error=str(exc))
+            raise
+
+    return 0
+
+
+def _initial_state(config: RunConfig, *, workspace_root: Path, artifacts_root: Path) -> PipelineState:
+    return PipelineState(
+        config=config,
+        workspace_root=workspace_root,
+        build_system="gradle",
+        adapter_name="gradle-v1",
+        current_analysis=None,
+        stage_history=[],
+        artifacts_root=artifacts_root,
+        final_patch_manifest=None,
+        legacy_regression_enabled=False,
+    )
 
 
 def _load_compiled_outputs_root(adapter_metadata_path: Path) -> Path:

@@ -64,6 +64,21 @@ class GradleAdapterTest(unittest.TestCase):
                 with patch.object(GradleAdapter, "validate_compile", return_value=None):
                     GradleAdapter(repo_root).inspect()
 
+    def test_compile_validation_forwards_build_args(self) -> None:
+        repo_root = self._make_minimal_repo(with_wrapper=False)
+        adapter = GradleAdapter(repo_root, build_args=["--info", "-x=test"])
+
+        completed = subprocess.CompletedProcess(args=[], returncode=0, stdout="", stderr="")
+        with patch("shutil.which", return_value="/usr/bin/gradle"):
+            with patch("subprocess.run", return_value=completed) as run_mock:
+                adapter.inspect()
+
+        command = run_mock.call_args.kwargs.get("args") or run_mock.call_args.args[0]
+        self.assertEqual(
+            command,
+            ["gradle", "--no-daemon", "--console=plain", "--info", "-x=test", "classes"],
+        )
+
     def test_supported_fixture_writes_expected_source_file_list(self) -> None:
         adapter = GradleAdapter(FIXTURES_ROOT / "gradle-pipeline-baseline")
         project = adapter.inspect()
@@ -255,6 +270,26 @@ class GradleAdapterTest(unittest.TestCase):
         self.assertIn("-I", command)
         self.assertIn("arodnapPrintMainClasspath", command)
         self.assertEqual(written_entries, [str(project.compiled_classes_root.resolve())])
+
+    def test_classpath_extraction_forwards_build_args(self) -> None:
+        adapter = GradleAdapter(FIXTURES_ROOT / "gradle-source-file-filtering", build_args=["--info", "-x=test"])
+
+        with patch.object(GradleAdapter, "validate_compile", return_value=None):
+            project = adapter.inspect()
+
+        completed = subprocess.CompletedProcess(
+            args=[],
+            returncode=0,
+            stdout=f"{project.compiled_classes_root.resolve()}\n",
+            stderr="",
+        )
+        with tempfile.TemporaryDirectory() as temp_dir:
+            output_path = Path(temp_dir) / "classpath.txt"
+            with patch("subprocess.run", return_value=completed) as run_mock:
+                adapter.write_classpath_entries_file(project, output_path)
+
+        command = run_mock.call_args.kwargs.get("args") or run_mock.call_args.args[0]
+        self.assertEqual(command[:7], ["gradle", "--no-daemon", "--console=plain", "--info", "-x=test", "-q", "-I"])
 
     def test_classpath_extraction_rejects_empty_output(self) -> None:
         adapter = GradleAdapter(FIXTURES_ROOT / "gradle-source-file-filtering")

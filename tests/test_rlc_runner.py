@@ -56,6 +56,34 @@ class RlcRunnerTest(unittest.TestCase):
                 self.assertIn(f"-Aajava={inference_dir.resolve()}", command)
                 self.assertIn(f"@{source_files_file.resolve()}", command)
 
+    def test_non_wpi_analysis_can_run_without_inference_dir(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_root = Path(temp_dir)
+            config = self._make_config(temp_root)
+            workspace_root, source_files_file, classpath_entries_file, _ = self._make_inputs(temp_root)
+            diagnostics_path = temp_root / "diagnostics.txt"
+            completed = subprocess.CompletedProcess(
+                args=[],
+                returncode=0,
+                stdout="",
+                stderr="src/A.java:10: warning: [required.method.not.called] first",
+            )
+
+            with patch("subprocess.run", return_value=completed) as run_mock:
+                result = run_resource_leak_checker(
+                    config,
+                    workspace_root=workspace_root,
+                    source_files_file=source_files_file,
+                    classpath_entries_file=classpath_entries_file,
+                    inference_dir=None,
+                    diagnostics_path=diagnostics_path,
+                )
+
+            self.assertEqual(result.warning_count, 1)
+            command = run_mock.call_args.args[0]
+            self.assertNotIn("-Aajava=None", command)
+            self.assertFalse(any(str(item).startswith("-Aajava=") for item in command))
+
     def test_missing_artifacts_fail_clearly(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_root = Path(temp_dir)

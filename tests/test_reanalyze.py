@@ -1,16 +1,19 @@
 import tempfile
 import unittest
 from pathlib import Path
+import importlib
 from unittest.mock import patch
 
-from arodnap.analysis import ReanalyzeError, reanalyze
+from arodnap.analysis.reanalyze import ReanalyzeError, reanalyze
 from arodnap.analysis.rlc_runner import RlcRunError, RlcRunResult
 from arodnap.analysis.wpi_runner import WpiRunResult
 from arodnap.contracts import RunConfig, Timeouts
 from arodnap.orchestrator.results import OutputLayout
+from tests.fixture_helpers import FixtureGradleAdapter
 
 
 FIXTURES_ROOT = Path(__file__).resolve().parent / "fixtures"
+REANALYZE_MODULE = importlib.import_module("arodnap.analysis.reanalyze")
 
 
 class ReanalyzeTest(unittest.TestCase):
@@ -50,24 +53,25 @@ class ReanalyzeTest(unittest.TestCase):
                 diagnostics_path.write_text("src/A.java:10: warning: [required.method.not.called] leak\n")
                 return RlcRunResult(diagnostics_path=diagnostics_path.resolve(), warning_count=1)
 
-            with patch("arodnap.analysis.reanalyze.run_wpi", side_effect=fake_run_wpi):
-                with patch("arodnap.analysis.reanalyze.run_resource_leak_checker", side_effect=fake_run_rlc):
-                    result = reanalyze(
-                        config,
-                        workspace_root=workspace_root,
-                        label="initial",
-                        artifacts_root=artifacts_root,
-                    )
-                    self.assertEqual(result.workspace_root, workspace_root.resolve())
-                    self.assertEqual(result.label, "initial")
-                    self.assertEqual(result.warning_count, 1)
-                    self.assertTrue(result.wpi_log_path.is_file())
-                    self.assertTrue(result.inference_dir.is_dir())
-                    self.assertTrue(result.diagnostics_path.is_file())
-                    self.assertTrue(result.source_files_file.is_file())
-                    self.assertTrue(result.app_classes_file.is_file())
-                    self.assertTrue(result.classpath_entries_file.is_file())
-                    self.assertTrue(result.adapter_metadata_path.is_file())
+            with patch.object(REANALYZE_MODULE, "GradleAdapter", FixtureGradleAdapter):
+                with patch.object(REANALYZE_MODULE, "run_wpi", side_effect=fake_run_wpi):
+                    with patch.object(REANALYZE_MODULE, "run_resource_leak_checker", side_effect=fake_run_rlc):
+                        result = reanalyze(
+                            config,
+                            workspace_root=workspace_root,
+                            label="initial",
+                            artifacts_root=artifacts_root,
+                        )
+                        self.assertEqual(result.workspace_root, workspace_root.resolve())
+                        self.assertEqual(result.label, "initial")
+                        self.assertEqual(result.warning_count, 1)
+                        self.assertTrue(result.wpi_log_path.is_file())
+                        self.assertTrue(result.inference_dir.is_dir())
+                        self.assertTrue(result.diagnostics_path.is_file())
+                        self.assertTrue(result.source_files_file.is_file())
+                        self.assertTrue(result.app_classes_file.is_file())
+                        self.assertTrue(result.classpath_entries_file.is_file())
+                        self.assertTrue(result.adapter_metadata_path.is_file())
 
     def test_reanalyze_wraps_rlc_failure(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -85,18 +89,20 @@ class ReanalyzeTest(unittest.TestCase):
                 inference_root.mkdir(parents=True, exist_ok=True)
                 return WpiRunResult(log_path=log_path.resolve(), inference_dir=inference_root.resolve())
 
-            with patch("arodnap.analysis.reanalyze.run_wpi", side_effect=fake_run_wpi):
-                with patch(
-                    "arodnap.analysis.reanalyze.run_resource_leak_checker",
-                    side_effect=RlcRunError("rlc boom"),
-                ):
-                    with self.assertRaisesRegex(ReanalyzeError, "rlc boom"):
-                        reanalyze(
-                            config,
-                            workspace_root=workspace_root,
-                            label="initial",
-                            artifacts_root=temp_root / "analysis",
-                        )
+            with patch.object(REANALYZE_MODULE, "GradleAdapter", FixtureGradleAdapter):
+                with patch.object(REANALYZE_MODULE, "run_wpi", side_effect=fake_run_wpi):
+                    with patch.object(
+                        REANALYZE_MODULE,
+                        "run_resource_leak_checker",
+                        side_effect=RlcRunError("rlc boom"),
+                    ):
+                        with self.assertRaisesRegex(ReanalyzeError, "rlc boom"):
+                            reanalyze(
+                                config,
+                                workspace_root=workspace_root,
+                                label="initial",
+                                artifacts_root=temp_root / "analysis",
+                            )
 
     def _make_config(self, root: Path) -> RunConfig:
         return RunConfig(
