@@ -1,3 +1,4 @@
+import os
 import tempfile
 import unittest
 from pathlib import Path
@@ -27,16 +28,68 @@ class WpiRunnerTest(unittest.TestCase):
                 stderr="",
             )
 
-            with patch("subprocess.run", return_value=completed):
-                result = run_wpi(
-                    config,
-                    workspace_root=workspace_root,
-                    log_path=log_path,
-                    inference_root=inference_root,
-                )
+            with patch("arodnap.analysis.wpi_runner._resolve_dljc_python3", return_value=Path("/usr/bin/python3")):
+                with patch("subprocess.run", return_value=completed):
+                    result = run_wpi(
+                        config,
+                        workspace_root=workspace_root,
+                        log_path=log_path,
+                        inference_root=inference_root,
+                    )
 
             self.assertEqual(result.inference_dir, inference_root.resolve())
             self.assertTrue(result.inference_dir.is_dir())
+
+    def test_runner_raises_when_no_distutils_capable_python3_is_available(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_root = Path(temp_dir)
+            workspace_root = temp_root / "workspace"
+            workspace_root.mkdir()
+            log_path = temp_root / "logs" / "wpi.log"
+            inference_root = temp_root / "inference" / "initial"
+            config = self._make_config(temp_root)
+
+            with patch("arodnap.analysis.wpi_runner._resolve_dljc_python3", return_value=None):
+                with self.assertRaisesRegex(WpiRunError, "requires a python3 interpreter with distutils"):
+                    run_wpi(
+                        config,
+                        workspace_root=workspace_root,
+                        log_path=log_path,
+                        inference_root=inference_root,
+                    )
+
+    def test_runner_prepends_python3_shim_for_checker_framework_dljc(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_root = Path(temp_dir)
+            workspace_root = temp_root / "workspace"
+            generated_inference_dir = workspace_root / "build" / "whole-program-inference"
+            generated_inference_dir.mkdir(parents=True)
+            (generated_inference_dir / "inference.jaif").write_text("annotated\n")
+            log_path = temp_root / "logs" / "wpi.log"
+            inference_root = temp_root / "inference" / "initial"
+            config = self._make_config(temp_root)
+
+            completed = subprocess.CompletedProcess(
+                args=[],
+                returncode=0,
+                stdout="Starting wpi.sh.\n",
+                stderr="",
+            )
+
+            with patch("arodnap.analysis.wpi_runner._resolve_dljc_python3", return_value=Path("/usr/bin/python3")):
+                with patch("subprocess.run", return_value=completed) as run_mock:
+                    result = run_wpi(
+                        config,
+                        workspace_root=workspace_root,
+                        log_path=log_path,
+                        inference_root=inference_root,
+                    )
+
+            path_entries = run_mock.call_args.kwargs["env"]["PATH"].split(os.pathsep)
+            shim_dir = Path(path_entries[0])
+            self.assertTrue(shim_dir.name.startswith("arodnap-wpi-python-"))
+            self.assertFalse(shim_dir.exists())
+            self.assertEqual(result.inference_dir, inference_root.resolve())
 
     def test_runner_marks_wpi_support_scripts_executable(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -65,13 +118,14 @@ class WpiRunnerTest(unittest.TestCase):
                 stderr="",
             )
 
-            with patch("subprocess.run", return_value=completed):
-                run_wpi(
-                    config,
-                    workspace_root=workspace_root,
-                    log_path=log_path,
-                    inference_root=inference_root,
-                )
+            with patch("arodnap.analysis.wpi_runner._resolve_dljc_python3", return_value=Path("/usr/bin/python3")):
+                with patch("subprocess.run", return_value=completed):
+                    run_wpi(
+                        config,
+                        workspace_root=workspace_root,
+                        log_path=log_path,
+                        inference_root=inference_root,
+                    )
 
             self.assertTrue(wpi_script.stat().st_mode & 0o111)
             self.assertTrue(dljc.stat().st_mode & 0o111)
@@ -93,13 +147,14 @@ class WpiRunnerTest(unittest.TestCase):
                 stdout="Starting wpi.sh.\n",
                 stderr="",
             )
-            with patch("subprocess.run", return_value=completed) as run_mock:
-                result = run_wpi(
-                    config,
-                    workspace_root=workspace_root,
-                    log_path=log_path,
-                    inference_root=inference_root,
-                )
+            with patch("arodnap.analysis.wpi_runner._resolve_dljc_python3", return_value=Path("/usr/bin/python3")):
+                with patch("subprocess.run", return_value=completed) as run_mock:
+                    result = run_wpi(
+                        config,
+                        workspace_root=workspace_root,
+                        log_path=log_path,
+                        inference_root=inference_root,
+                    )
                 self.assertEqual(result.log_path, log_path.resolve())
                 self.assertEqual(result.inference_dir, inference_root.resolve())
                 self.assertTrue(result.log_path.is_file())
@@ -145,16 +200,17 @@ class WpiRunnerTest(unittest.TestCase):
                 stderr="boom\n",
             )
 
-            with patch("subprocess.run", return_value=completed):
-                with self.assertRaisesRegex(WpiRunError, "WPI failed"):
-                    run_wpi(
-                        config,
-                        workspace_root=workspace_root,
-                        log_path=log_path,
-                        inference_root=temp_root / "inference" / "failed",
-                    )
-                self.assertTrue(log_path.is_file())
-                self.assertIn("boom", log_path.read_text())
+            with patch("arodnap.analysis.wpi_runner._resolve_dljc_python3", return_value=Path("/usr/bin/python3")):
+                with patch("subprocess.run", return_value=completed):
+                    with self.assertRaisesRegex(WpiRunError, "WPI failed"):
+                        run_wpi(
+                            config,
+                            workspace_root=workspace_root,
+                            log_path=log_path,
+                            inference_root=temp_root / "inference" / "failed",
+                        )
+                    self.assertTrue(log_path.is_file())
+                    self.assertIn("boom", log_path.read_text())
 
     def test_runner_raises_when_inference_output_directory_cannot_be_located(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -170,14 +226,15 @@ class WpiRunnerTest(unittest.TestCase):
                 stderr="",
             )
 
-            with patch("subprocess.run", return_value=completed):
-                with self.assertRaisesRegex(WpiRunError, "no inferred output directory"):
-                    run_wpi(
-                        config,
-                        workspace_root=workspace_root,
-                        log_path=log_path,
-                        inference_root=temp_root / "inference" / "missing",
-                    )
+            with patch("arodnap.analysis.wpi_runner._resolve_dljc_python3", return_value=Path("/usr/bin/python3")):
+                with patch("subprocess.run", return_value=completed):
+                    with self.assertRaisesRegex(WpiRunError, "no inferred output directory"):
+                        run_wpi(
+                            config,
+                            workspace_root=workspace_root,
+                            log_path=log_path,
+                            inference_root=temp_root / "inference" / "missing",
+                        )
 
     def _make_config(
         self,
