@@ -1,14 +1,18 @@
-# FieldCanBeLocalWithTryCatch (Error Prone Plugin)
+# FieldCanBeLocalWithTryCatch
 
-This is a custom Error Prone plugin that extends the standard `FieldCanBeLocal` check by adding support for analyzing fields even when they are used inside `try-catch` blocks.  
+Status: internal / experimental. This plugin is not part of the public
+`arodnap analyze|infer|repair|apply` workflow.
 
-Specifically, it identifies private fields that can safely be converted to local variables — including cases where assignments appear inside exception handling — and generates automatic fix suggestions.
+This Maven subproject contains a custom Error Prone rule for exploring
+`FieldCanBeLocal` behavior in the presence of `try` / `catch` control flow. It is
+kept in the repository for research and iteration, not as a supported Arodnap
+stage.
 
+If you work on it directly:
 
-### Notes
+- build it with `mvn clean package`
+- refresh `../prebuilt_plugin_jars/FieldCanBeLocalWithTryCatch-1.0-SNAPSHOT.jar`
+  only if you intentionally want to update the internal experimental artifact
 
-- This plugin integrates seamlessly with Error Prone’s patching system.
-- It can be used in patching mode to automatically rewrite code based on detected improvements.
-- For full details on how to invoke Error Prone plugins and apply patches, refer to the official documentation:  
-  https://errorprone.info/docs/patching  
-  https://errorprone.info/docs/flags
+The prebuilt Error Prone dependency jars under `../prebuilt_plugin_jars/` support
+this module, but they are not standalone Arodnap commands.

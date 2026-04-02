@@ -1,105 +1,138 @@
-# Running Arodnap on a Single Java Project
+# Arodnap
 
-This repository contains the script to run the full Arodnap pipeline. The pipeline runs some code transformations, uses CF RLC to detect resource leaks and RLFixer to generate patches for feasible leaks on a **normalized Java project**.
+Arodnap is a build-backed repair tool for Java resource-leak warnings in supported
+single-module Gradle repositories. It analyzes a temporary workspace copy of the
+target project, keeps the original repository unchanged by default, and emits
+machine-readable diagnostics, inference outputs, stage artifacts, and patch
+bundles under `./arodnap-out`.
 
----
+## What Arodnap Does
 
-## Requirements
+- runs the Checker Framework Resource Leak Checker against a supported Gradle
+  project
+- preserves inferred `.ajava` outputs when you ask for inference or repair
+- applies Java-based repair stages against a workspace copy, not the original
+  repository
+- emits a normalized patch bundle that can be reviewed and applied later
 
-Ensure the following are installed before running:
+## Supported Projects
 
-- **Java 11**
-- **GNU `patch`**
-- **`dos2unix`**
-- Python packages (install via the requirement file: `pip3 install -r requirements.txt`):
-  - `openai`
-  - `jpype1`
+Arodnap currently supports repositories that meet all of these conditions:
 
-### OpenAI API Key
+- the analysis root is the repository root
+- the repository contains `build.gradle` or `build.gradle.kts`
+- the repository is a standard single-module Gradle Java project
+- main Java sources live under `src/main/java`
+- the project builds with a conventional main compile target such as `classes`
 
-To enable LLM-based patch generation, set your OpenAI API key as an environment variable:
+## Unsupported Projects
 
-```bash
-export OPENAI_API_KEY="your-api-key"
-```
+Arodnap fails closed on unsupported shapes. Common unsupported cases are:
 
----
+- Maven projects
+- Ant projects
+- multi-module Gradle builds
+- custom main source-set layouts
+- generated-source-heavy repositories
+- workflows that expect Arodnap to mutate the original repository automatically
 
-## Expected Project Structure
+## Prerequisites
 
-Each project must be in a **normalized format** with the following layout:
+- Python 3.10 or newer
+- Java 11 or newer
+- a Gradle wrapper in the target repository, or `gradle` available on `PATH`
+- GNU `patch`, exposed as `gpatch` or `patch`
 
-```
-<project-root>/
-├── src/                   # Standard Java source structure
-├── lib/                   # Dependencies (JARs or class files)
-└── info/
-    ├── sources            # Relative paths to Java source files (from root)
-    └── classes            # Fully qualified Java class names to analyze
-```
-
-### `info/sources`
-
-Each line lists a Java source file relative to the project root:
-
-```
-src/com/example/Foo.java
-src/com/example/utils/Bar.java
-```
-
-### `info/classes`
-
-Each line lists a fully-qualified Java class. Use `$` to refer to inner/anonymous classes:
-
-```
-com.example.Foo
-com.example.Foo$Helper
-```
-
----
-
-## Running the Script
+Run Arodnap from a checkout of this repository:
 
 ```bash
-python3 run_arodnap.py --source_project_folder <path_to_project>
+python -m arodnap.main <command> [options] /path/to/repo
 ```
 
-### Arguments
+## Commands
 
-| Argument | Short | Description |
-| -------- | ----- | ----------- |
-| `--source_project_folder` | `-s` | **(Required)** Path to the normalized project root |
-| `--rlc_results_folder` | `-r` | Optional: path to store RLC results (default: `tool_results/rlc_results`) |
-| `--rlfixer_results_folder` | `-f` | Optional: path to store RLFixer results (default: `tool_results/rlfixer_results`) |
-| `--patch_and_logs_folder` | `-p` | Optional: path to store LLM-generated patches and logs (default: `tool_results/inference_and_patches`) |
+| Command | Behavior |
+| ------- | -------- |
+| `analyze` | Run one build-backed RLC pass. No WPI loop. No repair stages. Emits diagnostics and adapter metadata. |
+| `infer` | Run one `reanalyze(workspace)` cycle. Preserves inferred outputs, diagnostics, and adapter metadata. Does not run repair stages. |
+| `repair` | Run the full workspace-based repair pipeline: analysis, close injection, owning-field handling, RLFixer, and patch materialization. |
+| `apply` | Validate a previously emitted patch bundle with a dry run, then apply it to the original repository. This is the only public command that mutates the original repository. |
 
----
+Common options:
 
-## Example
+- `--out-dir`: output root. Defaults to `./arodnap-out`.
+- `--keep-workspace`: keep the temporary workspace after the command exits.
+- `--build-args`: repeatable extra build arguments forwarded to the Gradle/WPI flow.
+- `--compile-target`: override the compile target used for Gradle-backed analysis.
+- `apply` also requires `--patch-dir`, usually `./arodnap-out/patches`.
 
-Run with only the required argument:
+Examples:
 
 ```bash
-python3 code/arodnap/run_arodnap.py -s /path/to/project
+python -m arodnap.main analyze /path/to/repo
+python -m arodnap.main infer /path/to/repo
+python -m arodnap.main repair /path/to/repo
+python -m arodnap.main apply --patch-dir ./arodnap-out/patches /path/to/repo
 ```
 
-Run with custom output directories:
+## Output Artifacts
 
-```bash
-python3 code/arodnap/run_arodnap.py \
-  -s /path/to/project \
-  -r results/rlc \
-  -f results/rlfixer \
-  -p results/patches_and_logs
+By default Arodnap writes to `./arodnap-out`:
+
+```text
+arodnap-out/
+  report.json
+  manifest.json
+  diagnostics/
+  inference/
+  logs/
+  stages/
+    close_injector/
+    owning_field/
+    rlfixer/
+    rlpatcher/
+  patches/
+    manifest.json
 ```
 
----
+Important outputs:
 
-## Output
+- `report.json`: top-level run summary
+- `manifest.json`: top-level manifest with config, workspace, and adapter details
+- `diagnostics/*.txt`: one diagnostics file per analysis point
+- `logs/<label>/`: analysis logs and adapter-derived metadata files
+- `inference/<label>/`: preserved inferred outputs for `infer` and `repair`
+- `stages/<name>/stage_result.json`: structured stage results for `repair`
+- `patches/manifest.json`: normalized patch bundle consumed by `apply`
 
-- Patches are **automatically applied** to the project after execution.
-- All patch files and logs are saved in the `--patch_and_logs_folder` (or its default).
-- You can inspect, revert, or reuse the concrete patches from this folder.
+Command-specific behavior:
 
+- `analyze` produces diagnostics and metadata, but no populated inference output
+  and no stage artifacts.
+- `infer` produces one populated inference directory and no stage artifacts.
+- `repair` produces stage-local logs, intermediate artifacts, and the final patch
+  bundle.
 
----
+## Patch / Apply Workflow
+
+`repair` is intentionally non-destructive:
+
+- Arodnap copies the target repository into a temporary workspace.
+- Mutation-capable stages run only against that workspace copy.
+- The final normalized patch bundle is emitted under `./arodnap-out/patches`.
+- `apply` validates the bundle against a clean copy of the original repository
+  before applying it.
+
+That split lets you inspect `report.json`, diagnostics, inference output, and the
+patch manifest before deciding whether to update the original repository.
+
+## Troubleshooting
+
+- If Arodnap says the project shape is unsupported, fix the repository layout or
+  compile target rather than expecting best-effort guessing.
+- If Gradle detection fails, provide a working `./gradlew` in the target
+  repository or install `gradle` on `PATH`.
+- If `repair` or `apply` fails with a patch prerequisite error, install GNU
+  `patch` and expose it as `gpatch` or `patch`.
+- If the default compile target is wrong for the repository, rerun with
+  `--compile-target`.

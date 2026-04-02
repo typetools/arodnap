@@ -16,9 +16,16 @@ _MULTI_MODULE_PATTERN = re.compile(r"^\s*include(?:Build|Flat)?\b|^\s*include\s*
 
 
 class GradleAdapter:
-    def __init__(self, repo_root: Path, *, compile_target: str | None = None) -> None:
+    def __init__(
+        self,
+        repo_root: Path,
+        *,
+        compile_target: str | None = None,
+        build_args: list[str] | None = None,
+    ) -> None:
         self.repo_root = repo_root.resolve()
         self.compile_target = compile_target or "classes"
+        self.build_args = list(build_args or [])
 
     def inspect(self) -> GradleProject:
         build_file = self._detect_build_file()
@@ -49,7 +56,7 @@ class GradleAdapter:
         with tempfile.TemporaryDirectory(prefix="arodnap-gradle-home-") as gradle_home:
             env["GRADLE_USER_HOME"] = gradle_home
             completed = subprocess.run(
-                [*project.build_tool, "--no-daemon", "--console=plain", project.compile_target],
+                [*project.build_tool, "--no-daemon", "--console=plain", *self.build_args, project.compile_target],
                 cwd=project.repo_root,
                 env=env,
                 capture_output=True,
@@ -193,7 +200,7 @@ class GradleAdapter:
         with tempfile.TemporaryDirectory(prefix="arodnap-gradle-home-") as gradle_home:
             env["GRADLE_USER_HOME"] = gradle_home
             return subprocess.run(
-                [*project.build_tool, "--no-daemon", "--console=plain", *args],
+                [*project.build_tool, "--no-daemon", "--console=plain", *self.build_args, *args],
                 cwd=project.repo_root,
                 env=env,
                 capture_output=True,

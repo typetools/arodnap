@@ -1,9 +1,18 @@
-# FieldCanBeFinalWithTryCatch (Error Prone Plugin)
+# FieldCanBeFinalWithTryCatch
 
-This is a custom Error Prone plugin that extends the standard `FieldCanBeFinal` check by adding support for analyzing fields even when assignments occur inside `try-catch` blocks.
+Status: internal / experimental. This plugin is not part of the public
+`arodnap analyze|infer|repair|apply` workflow.
 
-The plugin identifies fields that can be safely marked as `final`, even when their assignments are placed inside complex control-flow structures, and generates automatic fix suggestions to apply the `final` modifier or transform the code accordingly.
+This Maven subproject contains a custom Error Prone rule for exploring
+`FieldCanBeFinal` behavior in the presence of `try` / `catch` control flow. It is
+kept in the repository for research and iteration, not as a supported Arodnap
+stage.
 
-This plugin integrates smoothly with Error Prone’s patching system and can be used to automatically apply suggested fixes. For details on how to invoke Error Prone plugins and use patching mode, refer to the official documentation:  
-https://errorprone.info/docs/patching  
-https://errorprone.info/docs/flags
+If you work on it directly:
+
+- build it with `mvn clean package`
+- refresh `../prebuilt_plugin_jars/FieldCanBeFinalWithTryCatch-1.0-SNAPSHOT.jar`
+  only if you intentionally want to update the internal experimental artifact
+
+The prebuilt Error Prone dependency jars under `../prebuilt_plugin_jars/` support
+this module, but they are not standalone Arodnap commands.

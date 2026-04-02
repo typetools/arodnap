@@ -14,24 +14,24 @@ This checklist:
 
 ## V1 Checklist
 
-- [ ] **1.1** Create the new Python package skeleton and core dataclasses (`RunConfig`, `PipelineState`, `ReanalyzeResult`, `StageResult`); done when imports work and unit tests cover object creation and serialization.
-- [ ] **1.2** Implement the workspace copy and cleanup model; done when a test proves the original repo is untouched and the temp workspace lifecycle is correct.
-- [ ] **1.3** Add CLI command scaffolding for `analyze`, `infer`, `repair`, and `apply`; done when command parsing works and each command reaches a stub orchestrator entrypoint.
-- [ ] **1.4** Implement Gradle project detection and compile validation for the supported single-module shape; done when supported and unsupported fixture repos are classified correctly.
-- [ ] **1.5** Implement Gradle source-file extraction for `src/main/java`; done when the adapter writes the expected source file list for a fixture repo.
-- [ ] **1.6** Implement Gradle app-class extraction from compiled outputs; done when the adapter writes the expected class list including nested classes and excluding `module-info.class`.
-- [ ] **1.7** Implement Gradle classpath extraction and adapter metadata emission using a transient init script or equivalent Gradle-backed mechanism; done when the adapter writes a reproducible classpath file and machine-readable metadata.
-- [ ] **1.8** Implement the official Checker Framework `wpi.sh` runner against the workspace; done when logs and stabilized inference outputs are emitted under the new output layout.
-- [ ] **1.9** Implement the build-backed RLC runner and `reanalyze(workspace)`; done when one call returns diagnostics, inference dir, and adapter-derived metadata with no direct legacy path assumptions.
-- [ ] **1.10** Implement the close-injector stage wrapper with structured `StageResult`; done when raw tool outputs are normalized and patch paths no longer leak `src/` assumptions outside the wrapper.
-- [ ] **1.11** Implement the owning-field stage wrapper with structured `StageResult`; done when it matches the close-injector contract and rerun decisions are driven only by stage results.
-- [ ] **1.12** Implement RLFixer compatibility bundle generation (`info/classes`, `info/sources`, compatibility jar); done when the bundle is produced from the final workspace state and stored under stage-local artifacts.
-- [ ] **1.13** Implement the RLFixer stage wrapper using the compatibility bundle; done when fixes and debug outputs are emitted without direct normalized-layout logic in the orchestrator.
-- [ ] **1.14** Implement the RLPatcher stage wrapper plus patch manifest generation; done when emitted patches are normalized to repo-root-relative artifacts and recorded with strip level, changed files, and preimage hashes.
-- [ ] **1.15** Implement `apply` plus patch dry-run validation against a clean copy of the original repo; done when invalid patch bundles fail closed and valid bundles apply sequentially.
-- [ ] **1.16** Implement `report.json`, `manifest.json`, stage-local artifact layout, and top-level output layout; done when one integration run emits the documented structure under `./arodnap-out`.
-- [ ] **1.17** Add integration fixtures and regression coverage, then update the public README to the new CLI; done when the fixture matrix covers plain analysis, close injection, owning-field handling, and one internal legacy regression path.
-- [ ] **1.18** Harden patch-tool compatibility across Linux and macOS; done when Arodnap prefers GNU `patch` when available, supports `gpatch`-style installations on macOS, records the selected patch binary and version in logs, and fails with a clear prerequisite error when only an incompatible patch implementation is available.
+- [x] **1.1** Create the new Python package skeleton and core dataclasses (`RunConfig`, `PipelineState`, `ReanalyzeResult`, `StageResult`); done when imports work and unit tests cover object creation and serialization.
+- [x] **1.2** Implement the workspace copy and cleanup model; done when a test proves the original repo is untouched and the temp workspace lifecycle is correct.
+- [x] **1.3** Add CLI command scaffolding for `analyze`, `infer`, `repair`, and `apply`; done when command parsing works and each command reaches a stub orchestrator entrypoint.
+- [x] **1.4** Implement Gradle project detection and compile validation for the supported single-module shape; done when supported and unsupported fixture repos are classified correctly.
+- [x] **1.5** Implement Gradle source-file extraction for `src/main/java`; done when the adapter writes the expected source file list for a fixture repo.
+- [x] **1.6** Implement Gradle app-class extraction from compiled outputs; done when the adapter writes the expected class list including nested classes and excluding `module-info.class`.
+- [x] **1.7** Implement Gradle classpath extraction and adapter metadata emission using a transient init script or equivalent Gradle-backed mechanism; done when the adapter writes a reproducible classpath file and machine-readable metadata.
+- [x] **1.8** Implement the official Checker Framework `wpi.sh` runner against the workspace; done when logs and stabilized inference outputs are emitted under the new output layout.
+- [x] **1.9** Implement the build-backed RLC runner and `reanalyze(workspace)`; done when one call returns diagnostics, inference dir, and adapter-derived metadata with no direct legacy path assumptions.
+- [x] **1.10** Implement the close-injector stage wrapper with structured `StageResult`; done when raw tool outputs are normalized and patch paths no longer leak `src/` assumptions outside the wrapper.
+- [x] **1.11** Implement the owning-field stage wrapper with structured `StageResult`; done when it matches the close-injector contract and rerun decisions are driven only by stage results.
+- [x] **1.12** Implement RLFixer compatibility bundle generation (`info/classes`, `info/sources`, compatibility jar); done when the bundle is produced from the final workspace state and stored under stage-local artifacts.
+- [x] **1.13** Implement the RLFixer stage wrapper using the compatibility bundle; done when fixes and debug outputs are emitted without direct normalized-layout logic in the orchestrator.
+- [x] **1.14** Implement the RLPatcher stage wrapper plus patch manifest generation; done when emitted patches are normalized to repo-root-relative artifacts and recorded with strip level, changed files, and preimage hashes.
+- [x] **1.15** Implement `apply` plus patch dry-run validation against a clean copy of the original repo; done when invalid patch bundles fail closed and valid bundles apply sequentially.
+- [x] **1.16** Implement `report.json`, `manifest.json`, stage-local artifact layout, and top-level output layout; done when one integration run emits the documented structure under `./arodnap-out`.
+- [x] **1.17** Add integration fixtures and regression coverage, then update the public README to the new CLI; done when the fixture matrix covers plain analysis, close injection, owning-field handling, and one internal legacy regression path.
+- [x] **1.18** Harden patch-tool compatibility across Linux and macOS; done when Arodnap prefers GNU `patch` when available, supports `gpatch`-style installations on macOS, records the selected patch binary and version in logs, and fails with a clear prerequisite error when only an incompatible patch implementation is available.
 
 ## V2 Checklist
 

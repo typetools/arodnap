@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import shutil
 from pathlib import Path
 
 from arodnap.build_adapters import AdapterExecutionError, GradleAdapter, MissingBuildToolError, UnsupportedProjectError
@@ -7,14 +8,13 @@ from arodnap.contracts import ReanalyzeResult, RunConfig
 from arodnap.orchestrator.results import OutputLayout
 
 from .rlc_runner import RlcRunError, run_resource_leak_checker
-from .wpi_runner import WpiRunError, run_wpi
 
 
-class ReanalyzeError(RuntimeError):
+class AnalyzeError(RuntimeError):
     pass
 
 
-def reanalyze(
+def analyze_once(
     config: RunConfig,
     *,
     workspace_root: Path,
@@ -47,18 +47,14 @@ def reanalyze(
             classpath_entries_file=classpath_entries_file,
             output_path=analysis_paths.adapter_metadata_path,
         )
-        wpi_result = run_wpi(
-            config,
-            workspace_root=workspace_root,
-            log_path=analysis_paths.wpi_log_path,
-            inference_root=analysis_paths.inference_dir,
-        )
+        analysis_paths.wpi_log_path.write_text("SKIPPED: analyze does not run WPI.\n")
+        _reset_directory(analysis_paths.inference_dir)
         rlc_result = run_resource_leak_checker(
             config,
             workspace_root=workspace_root,
             source_files_file=source_files_file,
             classpath_entries_file=classpath_entries_file,
-            inference_dir=wpi_result.inference_dir,
+            inference_dir=None,
             diagnostics_path=analysis_paths.diagnostics_path,
         )
     except (
@@ -66,15 +62,14 @@ def reanalyze(
         MissingBuildToolError,
         RlcRunError,
         UnsupportedProjectError,
-        WpiRunError,
     ) as exc:
-        raise ReanalyzeError(str(exc)) from exc
+        raise AnalyzeError(str(exc)) from exc
 
     return ReanalyzeResult(
         workspace_root=workspace_root,
         label=label,
-        wpi_log_path=wpi_result.log_path,
-        inference_dir=wpi_result.inference_dir,
+        wpi_log_path=analysis_paths.wpi_log_path.resolve(),
+        inference_dir=analysis_paths.inference_dir.resolve(),
         diagnostics_path=rlc_result.diagnostics_path,
         warning_count=rlc_result.warning_count,
         source_files_file=source_files_file,
@@ -82,3 +77,13 @@ def reanalyze(
         classpath_entries_file=classpath_entries_file,
         adapter_metadata_path=adapter_metadata_path,
     )
+
+
+def _reset_directory(path: Path) -> None:
+    path = path.resolve()
+    if path.exists():
+        if path.is_dir():
+            shutil.rmtree(path)
+        else:
+            path.unlink()
+    path.mkdir(parents=True, exist_ok=True)

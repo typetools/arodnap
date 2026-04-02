@@ -35,14 +35,15 @@ def run_resource_leak_checker(
     workspace_root: Path,
     source_files_file: Path,
     classpath_entries_file: Path,
-    inference_dir: Path,
+    inference_dir: Path | None,
     diagnostics_path: Path,
 ) -> RlcRunResult:
     workspace_root = workspace_root.resolve()
     source_files_file = _require_file(source_files_file, "source files file")
     classpath_entries_file = _require_file(classpath_entries_file, "classpath entries file")
-    inference_dir = _require_directory(inference_dir, "inference directory")
     diagnostics_path = diagnostics_path.resolve()
+    if inference_dir is not None:
+        inference_dir = _require_directory(inference_dir, "inference directory")
 
     classpath_entries = [line.strip() for line in classpath_entries_file.read_text().splitlines() if line.strip()]
     if not classpath_entries:
@@ -55,13 +56,18 @@ def run_resource_leak_checker(
             "-processor",
             "org.checkerframework.checker.resourceleak.ResourceLeakChecker",
             *_RLC_FLAGS,
-            f"-Aajava={inference_dir}",
-            "-classpath",
-            os.pathsep.join(classpath_entries),
-            "-d",
-            classes_dir,
-            f"@{source_files_file}",
         ]
+        if inference_dir is not None:
+            command.append(f"-Aajava={inference_dir}")
+        command.extend(
+            [
+                "-classpath",
+                os.pathsep.join(classpath_entries),
+                "-d",
+                classes_dir,
+                f"@{source_files_file}",
+            ]
+        )
         completed = subprocess.run(
             command,
             cwd=workspace_root,

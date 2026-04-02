@@ -9,6 +9,73 @@ from arodnap.contracts import RunConfig, Timeouts
 
 
 class WpiRunnerTest(unittest.TestCase):
+    def test_runner_preserves_reported_inference_directory_even_when_outside_workspace(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_root = Path(temp_dir)
+            workspace_root = temp_root / "workspace"
+            workspace_root.mkdir()
+            generated_inference_dir = temp_root / "wpi-ajava-123"
+            generated_inference_dir.mkdir()
+            log_path = temp_root / "logs" / "wpi.log"
+            inference_root = temp_root / "inference" / "initial"
+            config = self._make_config(temp_root)
+
+            completed = subprocess.CompletedProcess(
+                args=[],
+                returncode=0,
+                stdout=f"Directory for generated annotation files: {generated_inference_dir}\n",
+                stderr="",
+            )
+
+            with patch("subprocess.run", return_value=completed):
+                result = run_wpi(
+                    config,
+                    workspace_root=workspace_root,
+                    log_path=log_path,
+                    inference_root=inference_root,
+                )
+
+            self.assertEqual(result.inference_dir, inference_root.resolve())
+            self.assertTrue(result.inference_dir.is_dir())
+
+    def test_runner_marks_wpi_support_scripts_executable(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_root = Path(temp_dir)
+            cf_root = temp_root / "cf"
+            wpi_script = cf_root / "checker" / "bin" / "wpi.sh"
+            dljc = cf_root / "checker" / "bin" / ".do-like-javac" / "dljc"
+            wpi_script.parent.mkdir(parents=True, exist_ok=True)
+            dljc.parent.mkdir(parents=True, exist_ok=True)
+            wpi_script.write_text("#!/usr/bin/env bash\n")
+            dljc.write_text("#!/usr/bin/env python3\n")
+            wpi_script.chmod(0o644)
+            dljc.chmod(0o644)
+
+            workspace_root = temp_root / "workspace"
+            generated_inference_dir = workspace_root / "build" / "whole-program-inference"
+            generated_inference_dir.mkdir(parents=True)
+            (generated_inference_dir / "inference.jaif").write_text("annotated\n")
+            log_path = temp_root / "logs" / "wpi.log"
+            inference_root = temp_root / "inference" / "initial"
+            config = self._make_config(temp_root, cf_root=cf_root)
+            completed = subprocess.CompletedProcess(
+                args=[],
+                returncode=0,
+                stdout="ok\n",
+                stderr="",
+            )
+
+            with patch("subprocess.run", return_value=completed):
+                run_wpi(
+                    config,
+                    workspace_root=workspace_root,
+                    log_path=log_path,
+                    inference_root=inference_root,
+                )
+
+            self.assertTrue(wpi_script.stat().st_mode & 0o111)
+            self.assertTrue(dljc.stat().st_mode & 0o111)
+
     def test_runner_builds_expected_command_and_preserves_inference(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_root = Path(temp_dir)
@@ -40,15 +107,19 @@ class WpiRunnerTest(unittest.TestCase):
                 self.assertEqual((result.inference_dir / "inference.jaif").read_text(), "annotated\n")
 
                 command = run_mock.call_args.args[0]
+                self.assertEqual(command[0], "bash")
                 self.assertEqual(
-                    command[0],
+                    command[1],
                     str((config.cf_root / "checker" / "bin" / "wpi.sh").resolve()),
                 )
-                self.assertEqual(command[1:3], ["-d", str(workspace_root.resolve())])
+                self.assertEqual(command[2:4], ["-d", str(workspace_root.resolve())])
                 self.assertIn("-b", command)
                 self.assertIn("--info -x=test", command)
                 self.assertIn("-c", command)
                 self.assertIn("classes", command)
+                self.assertIn("--", command)
+                self.assertIn("--checker", command)
+                self.assertIn("resourceleak", command)
                 self.assertNotIn("/helpers/wpi.sh", " ".join(command))
                 self.assertNotIn("src/lib/info", " ".join(command))
 
@@ -85,7 +156,7 @@ class WpiRunnerTest(unittest.TestCase):
                 self.assertTrue(log_path.is_file())
                 self.assertIn("boom", log_path.read_text())
 
-    def test_runner_raises_when_inference_output_is_missing(self) -> None:
+    def test_runner_raises_when_inference_output_directory_cannot_be_located(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_root = Path(temp_dir)
             workspace_root = temp_root / "workspace"
@@ -100,7 +171,7 @@ class WpiRunnerTest(unittest.TestCase):
             )
 
             with patch("subprocess.run", return_value=completed):
-                with self.assertRaisesRegex(WpiRunError, "no inferred output"):
+                with self.assertRaisesRegex(WpiRunError, "no inferred output directory"):
                     run_wpi(
                         config,
                         workspace_root=workspace_root,
@@ -114,6 +185,7 @@ class WpiRunnerTest(unittest.TestCase):
         *,
         build_args: list[str] | None = None,
         compile_target: str | None = None,
+        cf_root: Path | None = None,
     ) -> RunConfig:
         return RunConfig(
             command="infer",
@@ -124,7 +196,7 @@ class WpiRunnerTest(unittest.TestCase):
             build_args=build_args or [],
             compile_target=compile_target,
             patch_dir=None,
-            cf_root=Path("/Users/sanjay/projects/arodnap/checker_framework/checker-framework-3.49.0"),
+            cf_root=(cf_root or Path("/Users/sanjay/projects/arodnap/checker_framework/checker-framework-3.49.0")),
             close_injector_jar=root / "close.jar",
             owning_field_jar=root / "owning.jar",
             rlpatcher_jar=root / "rlpatcher.jar",

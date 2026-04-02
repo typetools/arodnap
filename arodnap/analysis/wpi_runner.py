@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 import os
+import re
 import shutil
 import subprocess
 
@@ -30,6 +31,7 @@ def run_wpi(
     log_path = log_path.resolve()
     inference_root = inference_root.resolve()
 
+    _prepare_wpi_support_files(config.cf_root)
     command = _build_wpi_command(config, workspace_root)
     env = os.environ.copy()
     env["CHECKERFRAMEWORK"] = str(config.cf_root)
@@ -51,10 +53,13 @@ def run_wpi(
             f"WPI failed for {workspace_root}. See log: {log_path}"
         )
 
-    generated_inference_dir = workspace_root / "build" / "whole-program-inference"
-    if not generated_inference_dir.is_dir():
+    generated_inference_dir = _locate_generated_inference_dir(
+        workspace_root=workspace_root,
+        completed=completed,
+    )
+    if generated_inference_dir is None:
         raise WpiRunError(
-            f"WPI succeeded but no inferred output was found at {generated_inference_dir}."
+            "WPI succeeded but no inferred output directory could be located."
         )
 
     if inference_root.exists():
@@ -68,12 +73,55 @@ def run_wpi(
 
 
 def _build_wpi_command(config: RunConfig, workspace_root: Path) -> list[str]:
-    command = [str(config.cf_root / "checker" / "bin" / "wpi.sh"), "-d", str(workspace_root)]
+    command = [
+        "bash",
+        str((config.cf_root / "checker" / "bin" / "wpi.sh").resolve()),
+        "-d",
+        str(workspace_root),
+    ]
     if config.build_args:
         command.extend(["-b", " ".join(config.build_args)])
     if config.compile_target:
         command.extend(["-c", config.compile_target])
+    command.extend(["--", "--checker", "resourceleak"])
     return command
+
+
+def _prepare_wpi_support_files(cf_root: Path) -> None:
+    _ensure_executable(cf_root / "checker" / "bin" / "wpi.sh")
+    _ensure_executable(cf_root / "checker" / "bin" / ".do-like-javac" / "dljc")
+
+
+def _ensure_executable(path: Path) -> None:
+    path = path.resolve()
+    if not path.is_file():
+        raise WpiRunError(f"Missing required WPI support file: {path}")
+    current_mode = path.stat().st_mode
+    if current_mode & 0o111:
+        return
+    path.chmod(current_mode | 0o111)
+
+
+def _locate_generated_inference_dir(
+    *,
+    workspace_root: Path,
+    completed: subprocess.CompletedProcess[str],
+) -> Path | None:
+    match = re.search(
+        r"^Directory for generated annotation files:\s*(?P<path>.+?)\s*$",
+        completed.stdout,
+        flags=re.MULTILINE,
+    )
+    if match:
+        candidate = Path(match.group("path")).expanduser().resolve()
+        if candidate.is_dir():
+            return candidate
+
+    legacy_candidate = workspace_root / "build" / "whole-program-inference"
+    if legacy_candidate.is_dir():
+        return legacy_candidate
+
+    return None
 
 
 def _render_log(command: list[str], completed: subprocess.CompletedProcess[str]) -> str:
