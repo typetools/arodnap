@@ -15,10 +15,14 @@ This directory is the canonical modernization roadmap for Arodnap. The content o
 ## Plan Split
 
 - `v1.md`: first usable productization milestone. Standard single-module Gradle only, temp workspace by default, structured pipeline, legacy path kept internal.
-- `v2.md`: robustness and expansion milestone. Maven, Ant, multi-module support, config, checkpoints, error handling, observability, and safer patch workflows.
-- `v3.md`: publishable tool milestone. Dependency modernization, compatibility policy, release engineering, migration notes, and packaging.
+- `v1_1.md`: cleanup and hardening milestone before build-system expansion. Runtime consolidation, wrapper and adapter cleanup, `doctor`, richer diagnostics, and basic installability while preserving the v1 support boundary.
+- `v2.md`: build-system and project-shape expansion milestone. Maven, Ant, multi-module support, config, checkpoints, resume, and broader patch workflows.
+- `v3.md`: publishable tool milestone. Dependency modernization, compatibility policy, release engineering, migration notes, and release-grade packaging.
 - `testing_v1.md`: engineering validation companion for the current restructured v1 implementation.
 - `testing_v1_rulebook.md`: numbered step-by-step checklist for executing the v1 validation plan during implementation.
+
+`v1_1.md` is an inserted milestone, not a renumbering. Its purpose is to reduce
+the cost and risk of v2 adapter work without widening supported project shape.
 
 ## Locked Decisions
 
@@ -33,7 +37,9 @@ This directory is the canonical modernization roadmap for Arodnap. The content o
 
 ## How To Use These Plans
 
-- Start with `v1.md` for implementation work.
+- Start with `v1.md` for core behavior and public v1 contract work.
+- Use `v1_1.md` for cleanup, hardening, and operability work that preserves the
+  v1 support boundary.
 - Use `AGENTS.md` for repo context, invariants, execution order, and implementation constraints.
 - Treat `v2.md` and `v3.md` as follow-on roadmaps, not as permission to skip unresolved v1 work.
 - If implementation scope changes materially, update the relevant plan file before changing code.
