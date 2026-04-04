@@ -6,11 +6,11 @@ from pathlib import Path
 import os
 import re
 import shutil
-import subprocess
 import sys
 import tempfile
 
 from arodnap.contracts import RunConfig
+from arodnap.runtime import CommandExecutionError, render_command_log, run_command
 
 
 @dataclass(frozen=True)
@@ -47,26 +47,28 @@ def run_wpi(
     _prepare_wpi_support_files(config.cf_root)
     command = _build_wpi_command(config, workspace_root)
     with _wpi_environment(config.cf_root) as env:
-        completed = subprocess.run(
-            command,
-            cwd=workspace_root,
-            env=env,
-            capture_output=True,
-            text=True,
-            check=False,
-        )
+        try:
+            command_result = run_command(command, cwd=workspace_root, env=env)
+        except CommandExecutionError as exc:
+            raise WpiRunError(str(exc)) from exc
 
     log_path.parent.mkdir(parents=True, exist_ok=True)
-    log_path.write_text(_render_log(command, completed))
+    log_path.write_text(
+        render_command_log(
+            command_result,
+            tool_name="wpi",
+            timeout_seconds=config.timeouts.analysis_seconds,
+        )
+    )
 
-    if completed.returncode != 0:
+    if command_result.returncode != 0:
         raise WpiRunError(
             f"WPI failed for {workspace_root}. See log: {log_path}"
         )
 
     generated_inference_dir = _locate_generated_inference_dir(
         workspace_root=workspace_root,
-        completed=completed,
+        stdout=command_result.stdout,
     )
     if generated_inference_dir is None:
         raise WpiRunError(
@@ -139,11 +141,11 @@ def _ensure_executable(path: Path) -> None:
 def _locate_generated_inference_dir(
     *,
     workspace_root: Path,
-    completed: subprocess.CompletedProcess[str],
+    stdout: str,
 ) -> Path | None:
     match = re.search(
         r"^Directory for generated annotation files:\s*(?P<path>.+?)\s*$",
-        completed.stdout,
+        stdout,
         flags=re.MULTILINE,
     )
     if match:
@@ -190,24 +192,7 @@ def _resolve_python_candidate(candidate: str) -> Path | None:
 
 def _python_supports_distutils(python_executable: Path) -> bool:
     try:
-        completed = subprocess.run(
-            [str(python_executable), "-c", "import distutils"],
-            capture_output=True,
-            text=True,
-            check=False,
-        )
-    except OSError:
+        command_result = run_command([str(python_executable), "-c", "import distutils"])
+    except CommandExecutionError:
         return False
-    return completed.returncode == 0
-
-
-def _render_log(command: list[str], completed: subprocess.CompletedProcess[str]) -> str:
-    sections = [
-        f"COMMAND: {' '.join(command)}",
-        f"EXIT_CODE: {completed.returncode}",
-        "STDOUT:",
-        completed.stdout,
-        "STDERR:",
-        completed.stderr,
-    ]
-    return "\n".join(sections)
+    return command_result.returncode == 0

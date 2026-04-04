@@ -3,8 +3,8 @@ import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
-import subprocess
 
+from arodnap.runtime import CommandResult
 from arodnap.contracts import StageResult
 from arodnap.stages.rlfixer import StageExecutionError, run_rlfixer_stage
 
@@ -19,16 +19,22 @@ class RLFixerStageTest(unittest.TestCase):
             )
             stage_output_dir = temp_root / "arodnap-out" / "stages" / "rlfixer"
 
-            def fake_run(command, **kwargs):
+            def fake_run_stage_command(*, command: list[str], cwd: Path) -> CommandResult:
                 output_dir = Path(command[command.index("--output") + 1])
                 debug_dir = Path(command[command.index("--debug_output") + 1])
                 output_dir.mkdir(parents=True, exist_ok=True)
                 debug_dir.mkdir(parents=True, exist_ok=True)
                 (output_dir / "compat_bundle.txt").write_text("fix suggestion\n")
                 (debug_dir / "compat_bundle.txt").write_text("debug info\n")
-                return subprocess.CompletedProcess(command, 0, stdout="rlfixer ok\n", stderr="")
+                return CommandResult(
+                    command=tuple(command),
+                    cwd=cwd.resolve(),
+                    returncode=0,
+                    stdout="rlfixer ok\n",
+                    stderr="",
+                )
 
-            with patch("subprocess.run", side_effect=fake_run):
+            with patch("arodnap.stages.rlfixer.run_stage_command", side_effect=fake_run_stage_command):
                 result = run_rlfixer_stage(
                     workspace_root=workspace_root,
                     diagnostics_path=diagnostics_path,
@@ -66,9 +72,15 @@ class RLFixerStageTest(unittest.TestCase):
             temp_root = Path(temp_dir)
             workspace_root, diagnostics_path, inference_dir, bundle_root = self._make_inputs(temp_root)
             stage_output_dir = temp_root / "arodnap-out" / "stages" / "rlfixer"
-            completed = subprocess.CompletedProcess(["python3"], 0, stdout="", stderr="")
+            completed = CommandResult(
+                command=("python3",),
+                cwd=Path.cwd(),
+                returncode=0,
+                stdout="",
+                stderr="",
+            )
 
-            with patch("subprocess.run", return_value=completed):
+            with patch("arodnap.stages.rlfixer.run_stage_command", return_value=completed):
                 result = run_rlfixer_stage(
                     workspace_root=workspace_root,
                     diagnostics_path=diagnostics_path,
@@ -84,6 +96,32 @@ class RLFixerStageTest(unittest.TestCase):
             self.assertTrue((stage_output_dir / "debug.txt").is_file())
             self.assertEqual((stage_output_dir / "fixes.txt").read_text(), "")
             self.assertEqual((stage_output_dir / "debug.txt").read_text(), "")
+
+    def test_nonzero_runner_exit_fails_with_logged_error(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_root = Path(temp_dir)
+            workspace_root, diagnostics_path, inference_dir, bundle_root = self._make_inputs(temp_root)
+            stage_output_dir = temp_root / "arodnap-out" / "stages" / "rlfixer"
+            completed = CommandResult(
+                command=("python3", "RLFixerRunner.py"),
+                cwd=Path.cwd(),
+                returncode=1,
+                stdout="",
+                stderr="runner failed\n",
+            )
+
+            with patch("arodnap.stages.rlfixer.run_stage_command", return_value=completed):
+                with self.assertRaisesRegex(StageExecutionError, "RLFixer stage failed. See log:"):
+                    run_rlfixer_stage(
+                        workspace_root=workspace_root,
+                        diagnostics_path=diagnostics_path,
+                        inference_dir=inference_dir,
+                        compatibility_bundle_root=bundle_root,
+                        stage_output_dir=stage_output_dir,
+                    )
+
+            self.assertTrue((stage_output_dir / "stage.log").is_file())
+            self.assertIn("EXIT_CODE: 1", (stage_output_dir / "stage.log").read_text())
 
     def test_missing_bundle_fails_clearly(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:

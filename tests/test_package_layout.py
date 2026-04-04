@@ -15,6 +15,8 @@ class PackageLayoutTest(unittest.TestCase):
             "arodnap.cli.commands.infer",
             "arodnap.cli.commands.repair",
             "arodnap.cli.commands.apply",
+            "arodnap.cli.commands.doctor",
+            "arodnap.doctor",
             "arodnap.orchestrator.state",
             "arodnap.orchestrator.results",
             "arodnap.stages.base",

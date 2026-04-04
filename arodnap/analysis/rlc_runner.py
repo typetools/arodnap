@@ -4,10 +4,10 @@ from dataclasses import dataclass
 import os
 from pathlib import Path
 import re
-import subprocess
 import tempfile
 
 from arodnap.contracts import RunConfig
+from arodnap.runtime import CommandExecutionError, render_command_log, run_command
 
 _WARNING_PATTERN = re.compile(r"(?m)^.*: warning:")
 _RLC_FLAGS = [
@@ -68,18 +68,19 @@ def run_resource_leak_checker(
                 f"@{source_files_file}",
             ]
         )
-        completed = subprocess.run(
-            command,
-            cwd=workspace_root,
-            capture_output=True,
-            text=True,
-            check=False,
-        )
+        try:
+            command_result = run_command(command, cwd=workspace_root)
+        except CommandExecutionError as exc:
+            raise RlcRunError(str(exc)) from exc
 
-    diagnostics_text = _render_diagnostics(command, completed)
+    diagnostics_text = render_command_log(
+        command_result,
+        tool_name="rlc",
+        timeout_seconds=config.timeouts.analysis_seconds,
+    )
     diagnostics_path.write_text(diagnostics_text)
 
-    if completed.returncode != 0:
+    if command_result.returncode != 0:
         raise RlcRunError(f"RLC failed for {workspace_root}. See diagnostics: {diagnostics_path}")
 
     return RlcRunResult(
@@ -104,15 +105,3 @@ def _require_directory(path: Path, label: str) -> Path:
     if not resolved.is_dir():
         raise RlcRunError(f"Missing {label}: {resolved}")
     return resolved
-
-
-def _render_diagnostics(command: list[str], completed: subprocess.CompletedProcess[str]) -> str:
-    sections = [
-        f"COMMAND: {' '.join(command)}",
-        f"EXIT_CODE: {completed.returncode}",
-        "STDOUT:",
-        completed.stdout,
-        "STDERR:",
-        completed.stderr,
-    ]
-    return "\n".join(sections)

@@ -9,8 +9,3 @@ java {
     sourceCompatibility = JavaVersion.VERSION_11
     targetCompatibility = JavaVersion.VERSION_11
 }
-
-dependencies {
-    // Needed only so the owning-field fixture can compile offline inside this repo.
-    compileOnly files('../../../checker_framework/checker-framework-3.49.0/checker/dist/checker-qual.jar')
-}

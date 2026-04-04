@@ -10,7 +10,7 @@ import shutil
 from typing import Callable, Iterator
 from unittest.mock import patch
 
-from arodnap.build_adapters.base import GradleProject
+from arodnap.build_adapters.base import BuildToolSelection, GradleProject
 from arodnap.contracts import ReanalyzeResult, StageResult
 from arodnap.orchestrator.results import OutputLayout
 from arodnap.stages.base import write_stage_result
@@ -483,11 +483,21 @@ class FixtureGradleAdapter:
         return GradleProject(
             repo_root=self.repo_root,
             build_file=_detect_build_file(self.repo_root),
+            build_system="gradle",
+            adapter_name="gradle-v1",
             build_tool=("gradle",),
+            build_tool_source="system",
             compile_target=self.compile_target,
             source_root=source_root,
             compiled_classes_root=compiled_classes_root,
         )
+
+    def detect(self) -> BuildToolSelection:
+        _detect_build_file(self.repo_root)
+        return BuildToolSelection(build_system="gradle", adapter_name="gradle-v1")
+
+    def validate_compile(self, project: GradleProject) -> None:
+        _ = project
 
     def write_source_files_file(self, project: GradleProject, output_path: Path) -> Path:
         source_files = sorted(path.resolve() for path in project.source_root.rglob("*.java") if path.is_file())
@@ -522,7 +532,10 @@ class FixtureGradleAdapter:
         payload = {
             "repo_root": str(project.repo_root),
             "build_file": str(project.build_file),
+            "build_system": project.build_system,
+            "adapter_name": project.adapter_name,
             "build_tool": list(project.build_tool),
+            "build_tool_source": project.build_tool_source,
             "compile_target": project.compile_target,
             "source_root": str(project.source_root),
             "compiled_classes_root": str(project.compiled_classes_root.resolve()),

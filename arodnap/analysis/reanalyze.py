@@ -2,7 +2,12 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from arodnap.build_adapters import AdapterExecutionError, GradleAdapter, MissingBuildToolError, UnsupportedProjectError
+from arodnap.build_adapters import (
+    AdapterExecutionError,
+    MissingBuildToolError,
+    UnsupportedProjectError,
+    select_build_adapter,
+)
 from arodnap.contracts import ReanalyzeResult, RunConfig
 from arodnap.orchestrator.results import OutputLayout
 
@@ -28,12 +33,13 @@ def reanalyze(
     analysis_paths.ensure()
 
     try:
-        adapter = GradleAdapter(
+        adapter = select_build_adapter(
             workspace_root,
             compile_target=config.compile_target,
             build_args=config.build_args,
         )
         project = adapter.inspect()
+        adapter.validate_compile(project)
         source_files_file = adapter.write_source_files_file(project, analysis_paths.source_files_file)
         app_classes_file = adapter.write_app_classes_file(project, analysis_paths.app_classes_file)
         classpath_entries_file = adapter.write_classpath_entries_file(

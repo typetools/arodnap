@@ -3,10 +3,10 @@ import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
-import subprocess
 
 from arodnap.analysis import WpiRunError, run_wpi
 from arodnap.contracts import RunConfig, Timeouts
+from arodnap.runtime import CommandResult
 
 
 class WpiRunnerTest(unittest.TestCase):
@@ -21,15 +21,16 @@ class WpiRunnerTest(unittest.TestCase):
             inference_root = temp_root / "inference" / "initial"
             config = self._make_config(temp_root)
 
-            completed = subprocess.CompletedProcess(
-                args=[],
+            completed = CommandResult(
+                command=(),
+                cwd=workspace_root.resolve(),
                 returncode=0,
                 stdout=f"Directory for generated annotation files: {generated_inference_dir}\n",
                 stderr="",
             )
 
             with patch("arodnap.analysis.wpi_runner._resolve_dljc_python3", return_value=Path("/usr/bin/python3")):
-                with patch("subprocess.run", return_value=completed):
+                with patch("arodnap.analysis.wpi_runner.run_command", return_value=completed):
                     result = run_wpi(
                         config,
                         workspace_root=workspace_root,
@@ -69,15 +70,19 @@ class WpiRunnerTest(unittest.TestCase):
             inference_root = temp_root / "inference" / "initial"
             config = self._make_config(temp_root)
 
-            completed = subprocess.CompletedProcess(
-                args=[],
+            completed = CommandResult(
+                command=(),
+                cwd=workspace_root.resolve(),
                 returncode=0,
                 stdout="Starting wpi.sh.\n",
                 stderr="",
             )
 
             with patch("arodnap.analysis.wpi_runner._resolve_dljc_python3", return_value=Path("/usr/bin/python3")):
-                with patch("subprocess.run", return_value=completed) as run_mock:
+                with patch(
+                    "arodnap.analysis.wpi_runner.run_command",
+                    side_effect=self._make_run_command_side_effect(completed),
+                ) as run_mock:
                     result = run_wpi(
                         config,
                         workspace_root=workspace_root,
@@ -111,15 +116,16 @@ class WpiRunnerTest(unittest.TestCase):
             log_path = temp_root / "logs" / "wpi.log"
             inference_root = temp_root / "inference" / "initial"
             config = self._make_config(temp_root, cf_root=cf_root)
-            completed = subprocess.CompletedProcess(
-                args=[],
+            completed = CommandResult(
+                command=(),
+                cwd=workspace_root.resolve(),
                 returncode=0,
                 stdout="ok\n",
                 stderr="",
             )
 
             with patch("arodnap.analysis.wpi_runner._resolve_dljc_python3", return_value=Path("/usr/bin/python3")):
-                with patch("subprocess.run", return_value=completed):
+                with patch("arodnap.analysis.wpi_runner.run_command", return_value=completed):
                     run_wpi(
                         config,
                         workspace_root=workspace_root,
@@ -141,14 +147,18 @@ class WpiRunnerTest(unittest.TestCase):
             inference_root = temp_root / "inference" / "initial"
             config = self._make_config(temp_root, build_args=["--info", "-x=test"], compile_target="classes")
 
-            completed = subprocess.CompletedProcess(
-                args=[],
+            completed = CommandResult(
+                command=(),
+                cwd=workspace_root.resolve(),
                 returncode=0,
                 stdout="Starting wpi.sh.\n",
                 stderr="",
             )
             with patch("arodnap.analysis.wpi_runner._resolve_dljc_python3", return_value=Path("/usr/bin/python3")):
-                with patch("subprocess.run", return_value=completed) as run_mock:
+                with patch(
+                    "arodnap.analysis.wpi_runner.run_command",
+                    side_effect=self._make_run_command_side_effect(completed),
+                ) as run_mock:
                     result = run_wpi(
                         config,
                         workspace_root=workspace_root,
@@ -182,6 +192,9 @@ class WpiRunnerTest(unittest.TestCase):
                 self.assertEqual(kwargs["cwd"], workspace_root.resolve())
                 self.assertEqual(kwargs["env"]["CHECKERFRAMEWORK"], str(config.cf_root))
                 log_text = result.log_path.read_text()
+                self.assertIn("TOOL: wpi", log_text)
+                self.assertIn(f"CWD: {workspace_root.resolve()}", log_text)
+                self.assertIn(f"TIMEOUT_SECONDS: {config.timeouts.analysis_seconds}", log_text)
                 self.assertIn("COMMAND:", log_text)
                 self.assertIn("EXIT_CODE: 0", log_text)
                 self.assertIn("Starting wpi.sh.", log_text)
@@ -193,15 +206,16 @@ class WpiRunnerTest(unittest.TestCase):
             workspace_root.mkdir()
             log_path = temp_root / "logs" / "wpi.log"
             config = self._make_config(temp_root)
-            completed = subprocess.CompletedProcess(
-                args=[],
+            completed = CommandResult(
+                command=(),
+                cwd=workspace_root.resolve(),
                 returncode=1,
                 stdout="",
                 stderr="boom\n",
             )
 
             with patch("arodnap.analysis.wpi_runner._resolve_dljc_python3", return_value=Path("/usr/bin/python3")):
-                with patch("subprocess.run", return_value=completed):
+                with patch("arodnap.analysis.wpi_runner.run_command", return_value=completed):
                     with self.assertRaisesRegex(WpiRunError, "WPI failed"):
                         run_wpi(
                             config,
@@ -219,15 +233,16 @@ class WpiRunnerTest(unittest.TestCase):
             workspace_root.mkdir()
             log_path = temp_root / "logs" / "wpi.log"
             config = self._make_config(temp_root)
-            completed = subprocess.CompletedProcess(
-                args=[],
+            completed = CommandResult(
+                command=(),
+                cwd=workspace_root.resolve(),
                 returncode=0,
                 stdout="ok\n",
                 stderr="",
             )
 
             with patch("arodnap.analysis.wpi_runner._resolve_dljc_python3", return_value=Path("/usr/bin/python3")):
-                with patch("subprocess.run", return_value=completed):
+                with patch("arodnap.analysis.wpi_runner.run_command", return_value=completed):
                     with self.assertRaisesRegex(WpiRunError, "no inferred output directory"):
                         run_wpi(
                             config,
@@ -259,6 +274,18 @@ class WpiRunnerTest(unittest.TestCase):
             rlpatcher_jar=root / "rlpatcher.jar",
             timeouts=Timeouts(build_seconds=1, analysis_seconds=2, stage_seconds=3),
         )
+
+    def _make_run_command_side_effect(self, template: CommandResult):
+        def fake_run(command: list[str], **kwargs) -> CommandResult:
+            return CommandResult(
+                command=tuple(command),
+                cwd=kwargs.get("cwd"),
+                returncode=template.returncode,
+                stdout=template.stdout,
+                stderr=template.stderr,
+            )
+
+        return fake_run
 
 
 if __name__ == "__main__":

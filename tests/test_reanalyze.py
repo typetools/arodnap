@@ -53,7 +53,14 @@ class ReanalyzeTest(unittest.TestCase):
                 diagnostics_path.write_text("src/A.java:10: warning: [required.method.not.called] leak\n")
                 return RlcRunResult(diagnostics_path=diagnostics_path.resolve(), warning_count=1)
 
-            with patch.object(REANALYZE_MODULE, "GradleAdapter", FixtureGradleAdapter):
+            def fake_select_build_adapter(repo_root, *, compile_target, build_args):
+                return FixtureGradleAdapter(
+                    repo_root,
+                    compile_target=compile_target,
+                    build_args=build_args,
+                )
+
+            with patch.object(REANALYZE_MODULE, "select_build_adapter", side_effect=fake_select_build_adapter):
                 with patch.object(REANALYZE_MODULE, "run_wpi", side_effect=fake_run_wpi):
                     with patch.object(REANALYZE_MODULE, "run_resource_leak_checker", side_effect=fake_run_rlc):
                         result = reanalyze(
@@ -89,7 +96,14 @@ class ReanalyzeTest(unittest.TestCase):
                 inference_root.mkdir(parents=True, exist_ok=True)
                 return WpiRunResult(log_path=log_path.resolve(), inference_dir=inference_root.resolve())
 
-            with patch.object(REANALYZE_MODULE, "GradleAdapter", FixtureGradleAdapter):
+            def fake_select_build_adapter(repo_root, *, compile_target, build_args):
+                return FixtureGradleAdapter(
+                    repo_root,
+                    compile_target=compile_target,
+                    build_args=build_args,
+                )
+
+            with patch.object(REANALYZE_MODULE, "select_build_adapter", side_effect=fake_select_build_adapter):
                 with patch.object(REANALYZE_MODULE, "run_wpi", side_effect=fake_run_wpi):
                     with patch.object(
                         REANALYZE_MODULE,

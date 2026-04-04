@@ -31,6 +31,18 @@ class CliTest(unittest.TestCase):
         with self.assertRaises(SystemExit):
             parser.parse_args(["apply", "/tmp/repo"])
 
+    def test_doctor_parses_defaults(self) -> None:
+        parser = build_parser()
+        args = parser.parse_args(["doctor", "/tmp/repo"])
+
+        self.assertEqual(args.command, "doctor")
+        self.assertEqual(args.repo_root, "/tmp/repo")
+        self.assertFalse(args.keep_workspace)
+        self.assertEqual(args.build_args, [])
+        self.assertIsNone(args.compile_target)
+        self.assertIsNone(getattr(args, "patch_dir", None))
+        self.assertTrue(args.out_dir.endswith("arodnap-out"))
+
     def test_analyze_dispatches_to_pipeline(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             repo_root = Path(temp_dir) / "repo"
@@ -86,6 +98,19 @@ class CliTest(unittest.TestCase):
 
         self.assertEqual(run_infer.call_args.args[0].command, "infer")
         self.assertEqual(run_repair.call_args.args[0].command, "repair")
+
+    def test_doctor_dispatches_to_doctor_module(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            repo_root = Path(temp_dir) / "repo"
+            repo_root.mkdir()
+
+            with patch("arodnap.doctor.run_doctor", return_value=0) as run_doctor:
+                self.assertEqual(main(["doctor", str(repo_root)]), 0)
+
+        config = run_doctor.call_args.args[0]
+        self.assertEqual(config.command, "doctor")
+        self.assertEqual(config.repo_root, repo_root.resolve())
+        self.assertIsNone(config.patch_dir)
 
 
 if __name__ == "__main__":
