@@ -200,15 +200,15 @@ class RepairPipelineTest(unittest.TestCase):
                 )
 
             with patch("arodnap.orchestrator.pipeline.reanalyze", side_effect=fake_reanalyze):
-                with patch("arodnap.orchestrator.pipeline.run_close_injector_stage", side_effect=fake_close):
-                    with patch("arodnap.orchestrator.pipeline.run_owning_field_stage", side_effect=fake_owning):
+                with patch("arodnap.stages.registry.run_close_injector_stage", side_effect=fake_close):
+                    with patch("arodnap.stages.registry.run_owning_field_stage", side_effect=fake_owning):
                         with patch(
-                            "arodnap.orchestrator.pipeline.generate_rlfixer_compatibility_bundle",
+                            "arodnap.stages.registry.generate_rlfixer_compatibility_bundle",
                             side_effect=fake_bundle,
                         ):
-                            with patch("arodnap.orchestrator.pipeline.run_rlfixer_stage", side_effect=fake_rlfixer):
+                            with patch("arodnap.stages.registry.run_rlfixer_stage", side_effect=fake_rlfixer):
                                 with patch(
-                                    "arodnap.orchestrator.pipeline.run_rlpatcher_stage",
+                                    "arodnap.stages.registry.run_rlpatcher_stage",
                                     side_effect=fake_rlpatcher,
                                 ):
                                     self.assertEqual(run_repair(config), 0)

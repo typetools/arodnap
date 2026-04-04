@@ -122,7 +122,7 @@ class ResultsTest(unittest.TestCase):
             self.assertTrue(manifest["success"])
             self.assertEqual(manifest["final_patch_manifest"], str(layout.patches_manifest_path))
             self.assertEqual(manifest["adapter_name"], "gradle-v1")
-            self.assertEqual(manifest["run_metadata"]["tool_version"], "0+local")
+            self.assertEqual(manifest["run_metadata"]["tool_version"], "1.1.0")
             self.assertEqual(manifest["run_metadata"]["command"], "repair")
             self.assertEqual(manifest["run_metadata"]["selected_build_tool"], ["./gradlew"])
             self.assertEqual(manifest["run_metadata"]["java_version"], 'openjdk version "21.0.2"')

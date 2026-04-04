@@ -6,7 +6,7 @@ full test-suite reorganization.
 ## Fixture Foundation
 
 Fixture repositories live under
-[`tests/fixtures/`](/Users/sanjay/projects/arodnap/tests/fixtures).
+[`tests/fixtures/`](../tests/fixtures).
 
 Current fixture usage:
 
@@ -20,7 +20,7 @@ many partially maintained ones.
 ## Fixture-Based Integration Tests
 
 Current integration-style tests build on
-[`tests/fixture_helpers.py`](/Users/sanjay/projects/arodnap/tests/fixture_helpers.py).
+[`tests/fixture_helpers.py`](../tests/fixture_helpers.py).
 
 Preferred assertions for fixture-backed flows:
 
@@ -33,13 +33,13 @@ Preferred assertions for fixture-backed flows:
 
 Representative suites:
 
-- [`tests/test_analysis_commands.py`](/Users/sanjay/projects/arodnap/tests/test_analysis_commands.py)
-- [`tests/test_v1_integration.py`](/Users/sanjay/projects/arodnap/tests/test_v1_integration.py)
+- [`tests/test_analysis_commands.py`](../tests/test_analysis_commands.py)
+- [`tests/test_v1_integration.py`](../tests/test_v1_integration.py)
 
 ## Structured Output Regression Tests
 
 Slice 14 added a small structured-output regression layer in
-[`tests/test_structured_output_regressions.py`](/Users/sanjay/projects/arodnap/tests/test_structured_output_regressions.py).
+[`tests/test_structured_output_regressions.py`](../tests/test_structured_output_regressions.py).
 
 These tests intentionally avoid brittle full-file snapshotting. Instead they:
 
@@ -69,10 +69,10 @@ Preferred assertions:
 
 Representative suites:
 
-- [`tests/test_close_injector_stage.py`](/Users/sanjay/projects/arodnap/tests/test_close_injector_stage.py)
-- [`tests/test_owning_field_stage.py`](/Users/sanjay/projects/arodnap/tests/test_owning_field_stage.py)
-- [`tests/test_rlfixer_stage.py`](/Users/sanjay/projects/arodnap/tests/test_rlfixer_stage.py)
-- [`tests/test_rlpatcher_stage.py`](/Users/sanjay/projects/arodnap/tests/test_rlpatcher_stage.py)
+- [`tests/test_close_injector_stage.py`](../tests/test_close_injector_stage.py)
+- [`tests/test_owning_field_stage.py`](../tests/test_owning_field_stage.py)
+- [`tests/test_rlfixer_stage.py`](../tests/test_rlfixer_stage.py)
+- [`tests/test_rlpatcher_stage.py`](../tests/test_rlpatcher_stage.py)
 
 ## Contributor Guidance
 
