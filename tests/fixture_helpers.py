@@ -130,18 +130,21 @@ class FixtureRepairHarness:
 
     @contextmanager
     def patch_pipeline(self) -> Iterator["FixtureRepairHarness"]:
+        # Stage functions are now invoked through runner callables registered in
+        # arodnap.stages.registry, not imported directly into pipeline.py.
+        # Patch them at the registry module so interceptions work correctly.
         with patch("arodnap.orchestrator.pipeline.reanalyze", side_effect=self._fake_reanalyze):
             with patch(
-                "arodnap.orchestrator.pipeline.run_close_injector_stage",
+                "arodnap.stages.registry.run_close_injector_stage",
                 side_effect=self._fake_close_injector,
             ):
                 with patch(
-                    "arodnap.orchestrator.pipeline.run_owning_field_stage",
+                    "arodnap.stages.registry.run_owning_field_stage",
                     side_effect=self._fake_owning_field,
                 ):
-                    with patch("arodnap.orchestrator.pipeline.run_rlfixer_stage", side_effect=self._fake_rlfixer):
+                    with patch("arodnap.stages.registry.run_rlfixer_stage", side_effect=self._fake_rlfixer):
                         with patch(
-                            "arodnap.orchestrator.pipeline.run_rlpatcher_stage",
+                            "arodnap.stages.registry.run_rlpatcher_stage",
                             side_effect=self._fake_rlpatcher,
                         ):
                             yield self

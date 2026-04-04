@@ -9,7 +9,7 @@ description = "Build-backed repair tooling for Java resource-leak warnings in su
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "Proprietary" }
-authors = [{ name = "OpenAI Codex" }]
+authors = [{ name = "Arodnap Contributors" }]
 dependencies = []
 
 [project.optional-dependencies]

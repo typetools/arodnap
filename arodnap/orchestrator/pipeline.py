@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
-import json
 from dataclasses import dataclass
 from pathlib import Path
 import time
@@ -9,16 +8,11 @@ import time
 from arodnap.apply_support import apply_patch_bundle
 from arodnap.analysis.analyze import analyze_once
 from arodnap.analysis.reanalyze import reanalyze
-from arodnap.build_adapters import default_build_tool_selection
-from arodnap.compat.rlfixer_inputs import RLFixerCompatibilityBundle, generate_rlfixer_compatibility_bundle
+from arodnap.build_adapters import default_build_tool_selection, select_build_adapter, UnsupportedProjectError
 from arodnap.contracts import PipelineState, ReanalyzeResult, RunConfig, StageResult
 from arodnap.orchestrator.results import OutputLayout, write_report, write_run_manifest
 from arodnap.orchestrator.workspace import copied_workspace
-from arodnap.stages.close_injector import run_close_injector_stage
-from arodnap.stages.owning_field import run_owning_field_stage
-from arodnap.stages.registry import REPAIR_STAGE_REGISTRY, RepairStageDefinition
-from arodnap.stages.rlfixer import run_rlfixer_stage
-from arodnap.stages.rlpatcher import run_rlpatcher_stage
+from arodnap.stages.registry import REPAIR_STAGE_REGISTRY, StageRunInput
 
 
 def run_analyze(config: RunConfig) -> int:
@@ -55,22 +49,23 @@ def run_repair(config: RunConfig) -> int:
             repair_state = _RepairExecutionState(current_analysis=current_analysis)
 
             for stage_definition in REPAIR_STAGE_REGISTRY:
+                stage_input = StageRunInput(
+                    config=config,
+                    workspace_root=workspace.workspace_root,
+                    output_layout=output_layout,
+                    current_analysis=repair_state.current_analysis,
+                    rlfixer_result=repair_state.rlfixer_result,
+                )
                 stage_result = _run_timed_stage(
                     stage_timings,
                     stage_name=stage_definition.name,
-                    runner=lambda stage_definition=stage_definition: _execute_repair_stage(
-                        stage_definition,
-                        config=config,
-                        workspace_root=workspace.workspace_root,
-                        output_layout=output_layout,
-                        repair_state=repair_state,
-                    ),
+                    runner=lambda sd=stage_definition, si=stage_input: sd.runner(si),
                 )
                 state.stage_history.append(stage_result)
 
-                if stage_definition.name == "rlfixer":
+                if stage_definition.captures_rlfixer_result:
                     repair_state.rlfixer_result = stage_result
-                if stage_definition.name == "rlpatcher":
+                if stage_definition.promotes_patch_manifest:
                     state.final_patch_manifest = output_layout.promote_patch_manifest(
                         Path(stage_result.artifacts["patch_manifest"])
                     )
@@ -324,7 +319,15 @@ def _elapsed_seconds(started_perf: float) -> float:
 
 
 def _initial_state(config: RunConfig, *, workspace_root: Path, artifacts_root: Path) -> PipelineState:
-    selection = default_build_tool_selection()
+    try:
+        adapter = select_build_adapter(
+            workspace_root,
+            compile_target=config.compile_target,
+            build_args=config.build_args,
+        )
+        selection = adapter.detect()
+    except UnsupportedProjectError:
+        selection = default_build_tool_selection()
     return PipelineState(
         config=config,
         workspace_root=workspace_root,
@@ -344,88 +347,3 @@ class _RepairExecutionState:
     rlfixer_result: StageResult | None = None
 
 
-def _execute_repair_stage(
-    stage_definition: RepairStageDefinition,
-    *,
-    config: RunConfig,
-    workspace_root: Path,
-    output_layout: OutputLayout,
-    repair_state: _RepairExecutionState,
-) -> StageResult:
-    if stage_definition.name == "close_injector":
-        return run_close_injector_stage(
-            config,
-            workspace_root=workspace_root,
-            diagnostics_path=repair_state.current_analysis.diagnostics_path,
-            stage_output_dir=output_layout.stage_dir(stage_definition.name),
-        )
-
-    if stage_definition.name == "owning_field":
-        return run_owning_field_stage(
-            config,
-            workspace_root=workspace_root,
-            diagnostics_path=repair_state.current_analysis.diagnostics_path,
-            stage_output_dir=output_layout.stage_dir(stage_definition.name),
-        )
-
-    if stage_definition.name == "rlfixer":
-        compiled_outputs_root = _load_compiled_outputs_root(
-            repair_state.current_analysis.adapter_metadata_path
-        )
-        compatibility_bundle = generate_rlfixer_compatibility_bundle(
-            workspace_root=workspace_root,
-            source_files_file=repair_state.current_analysis.source_files_file,
-            app_classes_file=repair_state.current_analysis.app_classes_file,
-            classpath_entries_file=repair_state.current_analysis.classpath_entries_file,
-            compiled_outputs_root=compiled_outputs_root,
-            stage_output_dir=output_layout.stage_dir(stage_definition.name),
-        )
-        return _run_registered_rlfixer_stage(
-            workspace_root=workspace_root,
-            repair_state=repair_state,
-            compatibility_bundle=compatibility_bundle,
-            stage_output_dir=output_layout.stage_dir(stage_definition.name),
-        )
-
-    if stage_definition.name == "rlpatcher":
-        if repair_state.rlfixer_result is None:
-            raise RuntimeError("RLFixer result is required before running RLPatcher.")
-        return run_rlpatcher_stage(
-            workspace_root=workspace_root,
-            diagnostics_path=repair_state.current_analysis.diagnostics_path,
-            inference_dir=repair_state.current_analysis.inference_dir,
-            fixes_path=Path(repair_state.rlfixer_result.artifacts["fixes"]),
-            debug_path=Path(repair_state.rlfixer_result.artifacts["debug"]),
-            stage_output_dir=output_layout.stage_dir(stage_definition.name),
-            rlpatcher_jar=config.rlpatcher_jar,
-        )
-
-    raise RuntimeError(f"Unsupported registered repair stage: {stage_definition.name}")
-
-
-def _run_registered_rlfixer_stage(
-    *,
-    workspace_root: Path,
-    repair_state: _RepairExecutionState,
-    compatibility_bundle: RLFixerCompatibilityBundle,
-    stage_output_dir: Path,
-) -> StageResult:
-    return run_rlfixer_stage(
-        workspace_root=workspace_root,
-        diagnostics_path=repair_state.current_analysis.diagnostics_path,
-        inference_dir=repair_state.current_analysis.inference_dir,
-        compatibility_bundle_root=compatibility_bundle.root,
-        stage_output_dir=stage_output_dir,
-    )
-
-
-def _load_compiled_outputs_root(adapter_metadata_path: Path) -> Path:
-    try:
-        payload = json.loads(adapter_metadata_path.read_text())
-    except json.JSONDecodeError as exc:
-        raise RuntimeError(f"Malformed adapter metadata JSON: {adapter_metadata_path}") from exc
-
-    compiled_outputs_root = payload.get("compiled_classes_root")
-    if not isinstance(compiled_outputs_root, str) or not compiled_outputs_root:
-        raise RuntimeError(f"Adapter metadata missing compiled_classes_root: {adapter_metadata_path}")
-    return Path(compiled_outputs_root).resolve()

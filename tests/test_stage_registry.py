@@ -24,6 +24,23 @@ class StageRegistryTest(unittest.TestCase):
             "post_close_injector",
         )
 
+    def test_repair_stage_registry_captures_rlfixer_result_flag(self) -> None:
+        self.assertEqual(
+            [stage.captures_rlfixer_result for stage in REPAIR_STAGE_REGISTRY],
+            [False, False, True, False],
+        )
+
+    def test_repair_stage_registry_promotes_patch_manifest_flag(self) -> None:
+        self.assertEqual(
+            [stage.promotes_patch_manifest for stage in REPAIR_STAGE_REGISTRY],
+            [False, False, False, True],
+        )
+
+    def test_repair_stage_registry_all_stages_have_runners(self) -> None:
+        for stage in REPAIR_STAGE_REGISTRY:
+            self.assertIsNotNone(stage.runner, f"Stage {stage.name!r} has no runner")
+            self.assertTrue(callable(stage.runner), f"Stage {stage.name!r} runner is not callable")
+
     def test_unknown_stage_lookup_fails_closed(self) -> None:
         with self.assertRaisesRegex(KeyError, "Unknown repair stage"):
             get_repair_stage_definition("unknown")

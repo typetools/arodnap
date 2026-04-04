@@ -111,7 +111,7 @@ class StructuredOutputRegressionTest(unittest.TestCase):
                     "stages_dir": "<out>/stages",
                 },
                 "run_metadata": {
-                    "tool_version": "0+local",
+                    "tool_version": "1.1.0",
                     "command": "repair",
                     "repo_root": "<repo>",
                     "workspace_root": "<workspace>",
@@ -301,7 +301,7 @@ class StructuredOutputRegressionTest(unittest.TestCase):
                     "adapter_metadata_path": "<out>/logs/initial/adapter-metadata.json",
                 },
                 "run_metadata": {
-                    "tool_version": "0+local",
+                    "tool_version": "1.1.0",
                     "command": "repair",
                     "repo_root": "<repo>",
                     "workspace_root": "<workspace>",
