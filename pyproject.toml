@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "arodnap"
+dynamic = ["version"]
+description = "Build-backed repair tooling for Java resource-leak warnings in supported single-module Gradle repositories."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Proprietary" }
+authors = [{ name = "Arodnap Contributors" }]
+dependencies = []
+
+[project.optional-dependencies]
+dev = []
+test = []
+
+[project.scripts]
+arodnap = "arodnap.main:main"
+
+[tool.setuptools.dynamic]
+version = { attr = "arodnap.version.__version__" }
+
+[tool.setuptools.packages.find]
+include = ["arodnap*"]

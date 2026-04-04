@@ -3,8 +3,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 import shutil
-import subprocess
 from typing import Literal
+
+from arodnap.runtime import CommandExecutionError, CommandResult, render_command_log, run_command
 
 
 PatchFlavor = Literal["gnu", "bsd", "unknown"]
@@ -25,7 +26,7 @@ class PatchTool:
 class PatchExecution:
     tool: PatchTool
     command: list[str]
-    completed: subprocess.CompletedProcess[str]
+    completed: CommandResult
 
 
 def discover_patch_tool(*, require_gnu: bool, operation_label: str) -> PatchTool:
@@ -78,13 +79,10 @@ def run_patch(
     if ignore_whitespace:
         command.append("--ignore-whitespace")
     command.extend(["-i", str(patch_path)])
-    completed = subprocess.run(
-        command,
-        cwd=cwd,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
+    try:
+        completed = run_command(command, cwd=cwd)
+    except CommandExecutionError as exc:
+        raise PatchToolError(str(exc)) from exc
     return PatchExecution(tool=tool, command=command, completed=completed)
 
 
@@ -94,12 +92,7 @@ def append_patch_execution_log(log_path: Path, *, title: str, execution: PatchEx
         f"PATCH_BINARY: {execution.tool.binary}",
         f"PATCH_FLAVOR: {execution.tool.flavor}",
         f"PATCH_VERSION: {execution.tool.version}",
-        f"COMMAND: {' '.join(execution.command)}",
-        f"EXIT_CODE: {execution.completed.returncode}",
-        "STDOUT:",
-        execution.completed.stdout,
-        "STDERR:",
-        execution.completed.stderr,
+        render_command_log(execution.completed, tool_name="patch"),
         "",
     ]
     with log_path.open("a", encoding="utf-8") as handle:
@@ -112,13 +105,8 @@ def _probe_patch_tool(candidate: str) -> PatchTool | None:
         return None
 
     try:
-        completed = subprocess.run(
-            [binary, "--version"],
-            capture_output=True,
-            text=True,
-            check=False,
-        )
-    except FileNotFoundError:
+        completed = run_command([binary, "--version"])
+    except CommandExecutionError:
         return None
 
     version_output = "\n".join(part for part in (completed.stdout, completed.stderr) if part).strip()

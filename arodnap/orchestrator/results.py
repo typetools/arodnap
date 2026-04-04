@@ -1,11 +1,15 @@
 from __future__ import annotations
 
+from datetime import datetime, timezone
 import json
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 from arodnap.contracts import PipelineState, ReanalyzeResult, StageResult
+from arodnap.patch_tool import PatchToolError, discover_patch_tool
+from arodnap.runtime import CommandExecutionError, run_command
+from arodnap.version import __version__
 
 
 @dataclass(frozen=True)
@@ -103,11 +107,28 @@ def write_run_manifest(
     *,
     success: bool,
     error: str | None = None,
+    error_type: str | None = None,
+    run_metadata: dict[str, Any] | None = None,
+    analysis_runs: list[dict[str, Any]] | None = None,
+    stage_timings: list[dict[str, Any]] | None = None,
 ) -> Path:
+    adapter_summary = _build_adapter_summary(state)
     payload = {
         **state.to_dict(),
         "error": error,
+        "error_type": error_type,
         "success": success,
+        "artifacts": _artifact_payload(output_layout, state),
+        "run_metadata": _build_enriched_run_metadata(
+            state=state,
+            output_layout=output_layout,
+            run_metadata=run_metadata or {},
+            adapter_summary=adapter_summary,
+        ),
+        "adapter": adapter_summary,
+        "analysis_runs": analysis_runs or [],
+        "stage_timings": stage_timings or [],
+        "stage_execution_summary": _stage_execution_summary(state, stage_timings or []),
     }
     return write_json(output_layout.manifest_path, payload)
 
@@ -118,20 +139,15 @@ def write_report(
     *,
     success: bool,
     error: str | None = None,
+    error_type: str | None = None,
+    run_metadata: dict[str, Any] | None = None,
+    analysis_runs: list[dict[str, Any]] | None = None,
+    stage_timings: list[dict[str, Any]] | None = None,
 ) -> Path:
     current_analysis = state.current_analysis
+    adapter_summary = _build_adapter_summary(state)
     payload = {
-        "artifacts": {
-            "diagnostics_dir": str(output_layout.diagnostics_dir),
-            "inference_dir": str(output_layout.inference_dir),
-            "logs_dir": str(output_layout.logs_dir),
-            "manifest": str(output_layout.manifest_path),
-            "patches_manifest": (
-                str(state.final_patch_manifest) if state.final_patch_manifest is not None else None
-            ),
-            "report": str(output_layout.report_path),
-            "stages_dir": str(output_layout.stages_dir),
-        },
+        "artifacts": _artifact_payload(output_layout, state),
         "diagnostics": {
             "final_diagnostics_path": (
                 str(current_analysis.diagnostics_path) if current_analysis is not None else None
@@ -139,6 +155,7 @@ def write_report(
             "final_warning_count": current_analysis.warning_count if current_analysis is not None else None,
         },
         "error": error,
+        "error_type": error_type,
         "executed_stages": [
             {
                 "artifacts": dict(stage.artifacts),
@@ -152,8 +169,141 @@ def write_report(
         "final_analysis": current_analysis.to_dict() if current_analysis is not None else None,
         "success": success,
         "workspace_root": str(state.workspace_root),
+        "repo_root": str(state.config.repo_root),
+        "run_metadata": _build_enriched_run_metadata(
+            state=state,
+            output_layout=output_layout,
+            run_metadata=run_metadata or {},
+            adapter_summary=adapter_summary,
+        ),
+        "adapter": adapter_summary,
+        "analysis_runs": analysis_runs or [],
+        "stage_timings": stage_timings or [],
+        "stage_execution_summary": _stage_execution_summary(state, stage_timings or []),
     }
     return write_json(output_layout.report_path, payload)
+
+
+def _artifact_payload(output_layout: OutputLayout, state: PipelineState) -> dict[str, Any]:
+    return {
+        "diagnostics_dir": str(output_layout.diagnostics_dir),
+        "inference_dir": str(output_layout.inference_dir),
+        "logs_dir": str(output_layout.logs_dir),
+        "manifest": str(output_layout.manifest_path),
+        "patch_bundle_dir": str(output_layout.patches_dir),
+        "patches_manifest": (
+            str(state.final_patch_manifest) if state.final_patch_manifest is not None else None
+        ),
+        "report": str(output_layout.report_path),
+        "stages_dir": str(output_layout.stages_dir),
+    }
+
+
+def _build_enriched_run_metadata(
+    *,
+    state: PipelineState,
+    output_layout: OutputLayout,
+    run_metadata: dict[str, Any],
+    adapter_summary: dict[str, Any],
+) -> dict[str, Any]:
+    payload = {
+        "tool_version": __version__,
+        "command": state.config.command,
+        "repo_root": str(state.config.repo_root),
+        "workspace_root": str(state.workspace_root),
+        "keep_workspace": state.config.keep_workspace,
+        "build_args": list(state.config.build_args),
+        "compile_target": state.config.compile_target,
+        "timeouts": state.config.timeouts.to_dict(),
+        "generated_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+        "output_dir": str(output_layout.root),
+        "adapter_name": adapter_summary.get("adapter_name"),
+        "selected_build_tool": adapter_summary.get("selected_build_tool"),
+        "build_tool_source": adapter_summary.get("build_tool_source"),
+        "java_version": _probe_java_version_summary(),
+        "patch_tool": _probe_patch_tool_summary(include_patch_tool=state.config.command == "repair"),
+    }
+    payload.update(run_metadata)
+    return payload
+
+
+def _build_adapter_summary(state: PipelineState) -> dict[str, Any]:
+    current_analysis = state.current_analysis
+    adapter_payload = _load_json_file(current_analysis.adapter_metadata_path) if current_analysis is not None else None
+    return {
+        "build_system": _value_or_default(adapter_payload, "build_system", state.build_system),
+        "adapter_name": _value_or_default(adapter_payload, "adapter_name", state.adapter_name),
+        "selected_build_tool": _value_or_default(adapter_payload, "build_tool", None),
+        "build_tool_source": _value_or_default(adapter_payload, "build_tool_source", None),
+        "compile_target": _value_or_default(adapter_payload, "compile_target", state.config.compile_target),
+        "source_root": _value_or_default(adapter_payload, "source_root", None),
+        "compiled_classes_root": _value_or_default(adapter_payload, "compiled_classes_root", None),
+        "classpath_entries_file": _value_or_default(adapter_payload, "classpath_entries_file", None),
+        "adapter_metadata_path": (
+            str(current_analysis.adapter_metadata_path) if current_analysis is not None else None
+        ),
+    }
+
+
+def _load_json_file(path: Path) -> dict[str, Any] | None:
+    resolved = path.resolve()
+    if not resolved.is_file():
+        return None
+    try:
+        payload = json.loads(resolved.read_text())
+    except json.JSONDecodeError:
+        return None
+    return payload if isinstance(payload, dict) else None
+
+
+def _value_or_default(
+    payload: dict[str, Any] | None,
+    key: str,
+    default: Any,
+) -> Any:
+    if payload is None:
+        return default
+    value = payload.get(key)
+    return default if value is None else value
+
+
+def _probe_java_version_summary() -> str | None:
+    try:
+        completed = run_command(["java", "-version"])
+    except CommandExecutionError:
+        return None
+    output = "\n".join(part for part in (completed.stdout, completed.stderr) if part).strip()
+    for line in output.splitlines():
+        if line.strip():
+            return line.strip()
+    return None
+
+
+def _probe_patch_tool_summary(*, include_patch_tool: bool) -> dict[str, Any] | None:
+    if not include_patch_tool:
+        return None
+    try:
+        tool = discover_patch_tool(require_gnu=False, operation_label="report metadata probe")
+    except PatchToolError:
+        return None
+    return {
+        "binary": tool.binary,
+        "flavor": tool.flavor,
+        "version": tool.version,
+    }
+
+
+def _stage_execution_summary(
+    state: PipelineState,
+    stage_timings: list[dict[str, Any]],
+) -> dict[str, Any]:
+    return {
+        "executed": len(state.stage_history),
+        "changed": sum(1 for stage in state.stage_history if stage.changed),
+        "reruns_requested": sum(1 for stage in state.stage_history if stage.rerun_required),
+        "successful": sum(1 for stage in state.stage_history if stage.success),
+        "failed_attempts": sum(1 for timing in stage_timings if timing.get("success") is False),
+    }
 
 
 __all__ = [

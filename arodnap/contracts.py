@@ -39,7 +39,7 @@ class Timeouts:
 
 @dataclass(frozen=True)
 class RunConfig:
-    command: Literal["analyze", "infer", "repair", "apply"]
+    command: Literal["analyze", "infer", "repair", "apply", "doctor"]
     repo_root: Path
     out_dir: Path
     keep_workspace: bool

@@ -5,10 +5,19 @@ import os
 from pathlib import Path
 import re
 import shutil
-import subprocess
 import tempfile
 
-from .base import AdapterExecutionError, GradleProject, MissingBuildToolError, UnsupportedProjectError
+from arodnap.runtime import CommandExecutionError, CommandResult, environment_with_overrides, run_command
+
+from .base import (
+    AdapterExecutionError,
+    AdapterMetadata,
+    BuildToolSelection,
+    MissingBuildToolError,
+    ProjectModel,
+    UnsupportedProjectError,
+    build_tool_source,
+)
 
 _BUILD_FILES = ("build.gradle", "build.gradle.kts")
 _SETTINGS_FILES = ("settings.gradle", "settings.gradle.kts")
@@ -16,6 +25,9 @@ _MULTI_MODULE_PATTERN = re.compile(r"^\s*include(?:Build|Flat)?\b|^\s*include\s*
 
 
 class GradleAdapter:
+    adapter_name = "gradle-v1"
+    build_system = "gradle"
+
     def __init__(
         self,
         repo_root: Path,
@@ -27,20 +39,30 @@ class GradleAdapter:
         self.compile_target = compile_target or "classes"
         self.build_args = list(build_args or [])
 
-    def inspect(self) -> GradleProject:
+    def detect(self) -> BuildToolSelection:
+        self._detect_build_file()
+        return BuildToolSelection(
+            build_system=self.build_system,
+            adapter_name=self.adapter_name,
+        )
+
+    def inspect(self) -> ProjectModel:
+        selection = self.detect()
         build_file = self._detect_build_file()
         self._reject_multi_module()
         source_root = self._detect_source_root()
         build_tool = self.detect_build_tool()
-        project = GradleProject(
+        project = ProjectModel(
             repo_root=self.repo_root,
             build_file=build_file,
+            build_system=selection.build_system,
+            adapter_name=selection.adapter_name,
             build_tool=build_tool,
+            build_tool_source=build_tool_source(build_tool),
             compile_target=self.compile_target,
             source_root=source_root,
             compiled_classes_root=self.repo_root / "build" / "classes" / "java" / "main",
         )
-        self.validate_compile(project)
         return project
 
     def detect_build_tool(self) -> tuple[str, ...]:
@@ -51,18 +73,8 @@ class GradleAdapter:
             return ("gradle",)
         raise MissingBuildToolError("Gradle executable not found. Install gradle or provide ./gradlew.")
 
-    def validate_compile(self, project: GradleProject) -> None:
-        env = os.environ.copy()
-        with tempfile.TemporaryDirectory(prefix="arodnap-gradle-home-") as gradle_home:
-            env["GRADLE_USER_HOME"] = gradle_home
-            completed = subprocess.run(
-                [*project.build_tool, "--no-daemon", "--console=plain", *self.build_args, project.compile_target],
-                cwd=project.repo_root,
-                env=env,
-                capture_output=True,
-                text=True,
-                check=False,
-            )
+    def validate_compile(self, project: ProjectModel) -> None:
+        completed = self._run_gradle(project, project.compile_target)
         if completed.returncode == 0:
             return
         output = (completed.stdout + completed.stderr).strip()
@@ -70,7 +82,7 @@ class GradleAdapter:
             f"Gradle compile target '{project.compile_target}' failed for {project.repo_root}.\n{output}"
         )
 
-    def write_source_files_file(self, project: GradleProject, output_path: Path) -> Path:
+    def write_source_files_file(self, project: ProjectModel, output_path: Path) -> Path:
         source_files = sorted(
             path.resolve()
             for path in project.source_root.rglob("*.java")
@@ -81,7 +93,7 @@ class GradleAdapter:
         output_path.write_text(f"{contents}\n" if contents else "")
         return output_path
 
-    def write_app_classes_file(self, project: GradleProject, output_path: Path) -> Path:
+    def write_app_classes_file(self, project: ProjectModel, output_path: Path) -> Path:
         classes_root = project.compiled_classes_root
         if not classes_root.is_dir():
             raise UnsupportedProjectError(
@@ -101,7 +113,7 @@ class GradleAdapter:
         output_path.write_text(f"{contents}\n" if contents else "")
         return output_path
 
-    def write_classpath_entries_file(self, project: GradleProject, output_path: Path) -> Path:
+    def write_classpath_entries_file(self, project: ProjectModel, output_path: Path) -> Path:
         with tempfile.TemporaryDirectory(
             prefix=".arodnap-gradle-init-",
             dir=project.repo_root,
@@ -140,26 +152,29 @@ class GradleAdapter:
 
     def write_adapter_metadata_file(
         self,
-        project: GradleProject,
+        project: ProjectModel,
         *,
         source_files_file: Path,
         app_classes_file: Path,
         classpath_entries_file: Path,
         output_path: Path,
     ) -> Path:
-        metadata = {
-            "repo_root": str(project.repo_root),
-            "build_file": str(project.build_file),
-            "build_tool": list(project.build_tool),
-            "compile_target": project.compile_target,
-            "source_root": str(project.source_root),
-            "compiled_classes_root": str(project.compiled_classes_root),
-            "source_files_file": str(source_files_file),
-            "app_classes_file": str(app_classes_file),
-            "classpath_entries_file": str(classpath_entries_file),
-        }
+        metadata = AdapterMetadata(
+            repo_root=project.repo_root,
+            build_file=project.build_file,
+            build_system=project.build_system,
+            adapter_name=project.adapter_name,
+            build_tool=project.build_tool,
+            build_tool_source=project.build_tool_source,
+            compile_target=project.compile_target,
+            source_root=project.source_root,
+            compiled_classes_root=project.compiled_classes_root,
+            source_files_file=source_files_file,
+            app_classes_file=app_classes_file,
+            classpath_entries_file=classpath_entries_file,
+        )
         output_path.parent.mkdir(parents=True, exist_ok=True)
-        output_path.write_text(json.dumps(metadata, indent=2, sort_keys=True) + "\n")
+        output_path.write_text(json.dumps(metadata.to_payload(), indent=2, sort_keys=True) + "\n")
         return output_path
 
     def _detect_build_file(self) -> Path:
@@ -195,18 +210,17 @@ class GradleAdapter:
             return source_root
         raise UnsupportedProjectError("Gradle repo must use src/main/java in v1.")
 
-    def _run_gradle(self, project: GradleProject, *args: str) -> subprocess.CompletedProcess[str]:
-        env = os.environ.copy()
+    def _run_gradle(self, project: ProjectModel, *args: str) -> CommandResult:
         with tempfile.TemporaryDirectory(prefix="arodnap-gradle-home-") as gradle_home:
-            env["GRADLE_USER_HOME"] = gradle_home
-            return subprocess.run(
-                [*project.build_tool, "--no-daemon", "--console=plain", *self.build_args, *args],
-                cwd=project.repo_root,
-                env=env,
-                capture_output=True,
-                text=True,
-                check=False,
-            )
+            env = environment_with_overrides({"GRADLE_USER_HOME": gradle_home})
+            try:
+                return run_command(
+                    [*project.build_tool, "--no-daemon", "--console=plain", *self.build_args, *args],
+                    cwd=project.repo_root,
+                    env=env,
+                )
+            except CommandExecutionError as exc:
+                raise AdapterExecutionError(str(exc)) from exc
 
 
 def _classpath_init_script() -> str:

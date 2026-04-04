@@ -1,0 +1,86 @@
+# Testing Conventions
+
+This note documents the current v1/v1.1 test conventions without attempting a
+full test-suite reorganization.
+
+## Fixture Foundation
+
+Fixture repositories live under
+[`tests/fixtures/`](/Users/sanjay/projects/arodnap/tests/fixtures).
+
+Current fixture usage:
+
+- `gradle-pipeline-baseline/` is the main supported single-module Gradle fixture
+- unsupported-shape fixtures cover fail-closed validation paths
+- the legacy normalized fixture remains internal regression coverage only
+
+Keep fixtures intentionally small. A single high-signal fixture is preferred to
+many partially maintained ones.
+
+## Fixture-Based Integration Tests
+
+Current integration-style tests build on
+[`tests/fixture_helpers.py`](/Users/sanjay/projects/arodnap/tests/fixture_helpers.py).
+
+Preferred assertions for fixture-backed flows:
+
+- the original fixture repo is not mutated by `analyze`, `infer`, `repair`, or
+  `doctor`
+- the workspace-copy behavior is preserved
+- expected top-level artifacts are emitted under `arodnap-out/`
+- stage-local artifacts exist where the v1 contract expects them
+- patch bundles remain normalized and consumable by `apply`
+
+Representative suites:
+
+- [`tests/test_analysis_commands.py`](/Users/sanjay/projects/arodnap/tests/test_analysis_commands.py)
+- [`tests/test_v1_integration.py`](/Users/sanjay/projects/arodnap/tests/test_v1_integration.py)
+
+## Structured Output Regression Tests
+
+Slice 14 added a small structured-output regression layer in
+[`tests/test_structured_output_regressions.py`](/Users/sanjay/projects/arodnap/tests/test_structured_output_regressions.py).
+
+These tests intentionally avoid brittle full-file snapshotting. Instead they:
+
+- run a fixture-backed command flow
+- normalize temp paths, timestamps, and elapsed-time values
+- compare only deterministic fields from:
+  - `manifest.json`
+  - `report.json`
+  - representative `stage_result.json` files
+
+When adding new machine-readable fields:
+
+- keep the schema additive where practical
+- normalize unstable values in test helpers
+- assert only the parts of the contract that are meant to be stable
+
+## Stage-Level Tests
+
+Stage tests should verify the wrapper boundary, not just subprocess calls.
+
+Preferred assertions:
+
+- raw tool outputs are normalized inside the wrapper
+- `stage_result.json` matches the returned `StageResult`
+- stage-local logs and artifacts are written where expected
+- invalid outputs fail closed with clear errors
+
+Representative suites:
+
+- [`tests/test_close_injector_stage.py`](/Users/sanjay/projects/arodnap/tests/test_close_injector_stage.py)
+- [`tests/test_owning_field_stage.py`](/Users/sanjay/projects/arodnap/tests/test_owning_field_stage.py)
+- [`tests/test_rlfixer_stage.py`](/Users/sanjay/projects/arodnap/tests/test_rlfixer_stage.py)
+- [`tests/test_rlpatcher_stage.py`](/Users/sanjay/projects/arodnap/tests/test_rlpatcher_stage.py)
+
+## Contributor Guidance
+
+When adding tests for post-v1.1 work:
+
+- start from the smallest fixture or helper that exercises the real contract
+- prefer adapter-driven and stage-driven assertions over path-assumption tests
+- keep the original-repo non-mutation property explicit
+- do not turn the internal legacy normalized path into the preferred public
+  story
+- only add golden-style coverage after unstable fields are normalized first

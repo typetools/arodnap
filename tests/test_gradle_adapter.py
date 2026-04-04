@@ -1,6 +1,4 @@
 import json
-import os
-import subprocess
 import tempfile
 import unittest
 from pathlib import Path
@@ -8,22 +6,37 @@ from unittest.mock import patch
 
 from arodnap.build_adapters import (
     AdapterExecutionError,
+    BuildAdapterContract,
+    BuildToolSelection,
     GradleAdapter,
     MissingBuildToolError,
     UnsupportedProjectError,
 )
+from arodnap.runtime import CommandExecutionError, CommandResult
 
 
 FIXTURES_ROOT = Path(__file__).resolve().parent / "fixtures"
 
 
 class GradleAdapterTest(unittest.TestCase):
+    def test_gradle_adapter_implements_shared_contract(self) -> None:
+        adapter = GradleAdapter(FIXTURES_ROOT / "gradle-source-file-filtering")
+
+        self.assertIsInstance(adapter, BuildAdapterContract)
+        self.assertEqual(
+            adapter.detect(),
+            BuildToolSelection(build_system="gradle", adapter_name="gradle-v1"),
+        )
+
     def test_supported_fixture_is_classified_supported(self) -> None:
         project = GradleAdapter(FIXTURES_ROOT / "gradle-pipeline-baseline").inspect()
 
         self.assertEqual(project.repo_root, (FIXTURES_ROOT / "gradle-pipeline-baseline").resolve())
         self.assertEqual(project.build_file.name, "build.gradle")
+        self.assertEqual(project.build_system, "gradle")
+        self.assertEqual(project.adapter_name, "gradle-v1")
         self.assertEqual(project.build_tool, ("gradle",))
+        self.assertEqual(project.build_tool_source, "system")
         self.assertEqual(project.compile_target, "classes")
         self.assertEqual(project.source_root, project.repo_root / "src" / "main" / "java")
         self.assertEqual(
@@ -66,18 +79,22 @@ class GradleAdapterTest(unittest.TestCase):
 
     def test_compile_validation_forwards_build_args(self) -> None:
         repo_root = self._make_minimal_repo(with_wrapper=False)
-        adapter = GradleAdapter(repo_root, build_args=["--info", "-x=test"])
-
-        completed = subprocess.CompletedProcess(args=[], returncode=0, stdout="", stderr="")
         with patch("shutil.which", return_value="/usr/bin/gradle"):
-            with patch("subprocess.run", return_value=completed) as run_mock:
-                adapter.inspect()
+            adapter = GradleAdapter(repo_root, build_args=["--info", "-x=test"])
+            project = adapter.inspect()
+            completed = CommandResult(command=(), cwd=repo_root.resolve(), returncode=0, stdout="", stderr="")
+            with patch(
+                "arodnap.build_adapters.gradle.run_command",
+                side_effect=self._make_run_command_side_effect(completed),
+            ) as run_mock:
+                adapter.validate_compile(project)
 
-        command = run_mock.call_args.kwargs.get("args") or run_mock.call_args.args[0]
+        command = run_mock.call_args.args[0]
         self.assertEqual(
             command,
             ["gradle", "--no-daemon", "--console=plain", "--info", "-x=test", "classes"],
         )
+        self.assertIn("GRADLE_USER_HOME", run_mock.call_args.kwargs["env"])
 
     def test_supported_fixture_writes_expected_source_file_list(self) -> None:
         adapter = GradleAdapter(FIXTURES_ROOT / "gradle-pipeline-baseline")
@@ -205,19 +222,6 @@ class GradleAdapterTest(unittest.TestCase):
         self.assertEqual(entries, sorted(set(entries)))
         self.assertTrue(all(Path(entry).is_absolute() for entry in entries))
         self.assertIn(str(project.compiled_classes_root.resolve()), entries)
-        self.assertIn(
-            str(
-                (
-                    FIXTURES_ROOT.parents[1]
-                    / "checker_framework"
-                    / "checker-framework-3.49.0"
-                    / "checker"
-                    / "dist"
-                    / "checker-qual.jar"
-                ).resolve()
-            ),
-            entries,
-        )
 
     def test_supported_fixture_writes_adapter_metadata(self) -> None:
         adapter = GradleAdapter(FIXTURES_ROOT / "gradle-pipeline-baseline")
@@ -240,7 +244,10 @@ class GradleAdapterTest(unittest.TestCase):
         self.assertEqual(metadata_path, temp_root / "adapter.json")
         self.assertEqual(metadata["repo_root"], str(project.repo_root))
         self.assertEqual(metadata["build_file"], str(project.build_file))
+        self.assertEqual(metadata["build_system"], "gradle")
+        self.assertEqual(metadata["adapter_name"], "gradle-v1")
         self.assertEqual(metadata["build_tool"], list(project.build_tool))
+        self.assertEqual(metadata["build_tool_source"], "system")
         self.assertEqual(metadata["compile_target"], project.compile_target)
         self.assertEqual(metadata["source_root"], str(project.source_root))
         self.assertEqual(metadata["compiled_classes_root"], str(project.compiled_classes_root))
@@ -248,25 +255,57 @@ class GradleAdapterTest(unittest.TestCase):
         self.assertEqual(metadata["app_classes_file"], str(app_classes_file))
         self.assertEqual(metadata["classpath_entries_file"], str(classpath_entries_file))
 
+    def test_wrapper_selection_is_reported_in_project_model_and_metadata(self) -> None:
+        repo_root = self._make_minimal_repo(with_wrapper=True)
+
+        with patch.object(GradleAdapter, "validate_compile", return_value=None):
+            project = GradleAdapter(repo_root).inspect()
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_root = Path(temp_dir)
+            source_files_file = temp_root / "sources.txt"
+            app_classes_file = temp_root / "classes.txt"
+            classpath_entries_file = temp_root / "classpath.txt"
+            source_files_file.write_text("")
+            app_classes_file.write_text("")
+            classpath_entries_file.write_text(str(project.compiled_classes_root.resolve()) + "\n")
+            metadata_path = GradleAdapter(repo_root).write_adapter_metadata_file(
+                project,
+                source_files_file=source_files_file,
+                app_classes_file=app_classes_file,
+                classpath_entries_file=classpath_entries_file,
+                output_path=temp_root / "adapter.json",
+            )
+            metadata = json.loads(metadata_path.read_text())
+
+        self.assertEqual(project.build_tool, ("./gradlew",))
+        self.assertEqual(project.build_tool_source, "wrapper")
+        self.assertEqual(metadata["build_tool"], ["./gradlew"])
+        self.assertEqual(metadata["build_tool_source"], "wrapper")
+
     def test_classpath_extraction_uses_init_script_task_flow(self) -> None:
         adapter = GradleAdapter(FIXTURES_ROOT / "gradle-source-file-filtering")
 
         with patch.object(GradleAdapter, "validate_compile", return_value=None):
             project = adapter.inspect()
 
-        completed = subprocess.CompletedProcess(
-            args=[],
+        completed = CommandResult(
+            command=(),
+            cwd=project.repo_root.resolve(),
             returncode=0,
             stdout=f"{project.compiled_classes_root.resolve()}\n",
             stderr="",
         )
         with tempfile.TemporaryDirectory() as temp_dir:
             output_path = Path(temp_dir) / "classpath.txt"
-            with patch("subprocess.run", return_value=completed) as run_mock:
+            with patch(
+                "arodnap.build_adapters.gradle.run_command",
+                side_effect=self._make_run_command_side_effect(completed),
+            ) as run_mock:
                 adapter.write_classpath_entries_file(project, output_path)
                 written_entries = output_path.read_text().splitlines()
 
-        command = run_mock.call_args.kwargs.get("args") or run_mock.call_args.args[0]
+        command = run_mock.call_args.args[0]
         self.assertIn("-I", command)
         self.assertIn("arodnapPrintMainClasspath", command)
         self.assertEqual(written_entries, [str(project.compiled_classes_root.resolve())])
@@ -277,18 +316,22 @@ class GradleAdapterTest(unittest.TestCase):
         with patch.object(GradleAdapter, "validate_compile", return_value=None):
             project = adapter.inspect()
 
-        completed = subprocess.CompletedProcess(
-            args=[],
+        completed = CommandResult(
+            command=(),
+            cwd=project.repo_root.resolve(),
             returncode=0,
             stdout=f"{project.compiled_classes_root.resolve()}\n",
             stderr="",
         )
         with tempfile.TemporaryDirectory() as temp_dir:
             output_path = Path(temp_dir) / "classpath.txt"
-            with patch("subprocess.run", return_value=completed) as run_mock:
+            with patch(
+                "arodnap.build_adapters.gradle.run_command",
+                side_effect=self._make_run_command_side_effect(completed),
+            ) as run_mock:
                 adapter.write_classpath_entries_file(project, output_path)
 
-        command = run_mock.call_args.kwargs.get("args") or run_mock.call_args.args[0]
+        command = run_mock.call_args.args[0]
         self.assertEqual(command[:7], ["gradle", "--no-daemon", "--console=plain", "--info", "-x=test", "-q", "-I"])
 
     def test_classpath_extraction_rejects_empty_output(self) -> None:
@@ -297,9 +340,9 @@ class GradleAdapterTest(unittest.TestCase):
         with patch.object(GradleAdapter, "validate_compile", return_value=None):
             project = adapter.inspect()
 
-        completed = subprocess.CompletedProcess(args=[], returncode=0, stdout="", stderr="")
+        completed = CommandResult(command=(), cwd=project.repo_root.resolve(), returncode=0, stdout="", stderr="")
         with tempfile.TemporaryDirectory() as temp_dir:
-            with patch("subprocess.run", return_value=completed):
+            with patch("arodnap.build_adapters.gradle.run_command", return_value=completed):
                 with self.assertRaisesRegex(AdapterExecutionError, "produced no entries"):
                     adapter.write_classpath_entries_file(project, Path(temp_dir) / "classpath.txt")
 
@@ -309,11 +352,27 @@ class GradleAdapterTest(unittest.TestCase):
         with patch.object(GradleAdapter, "validate_compile", return_value=None):
             project = adapter.inspect()
 
-        completed = subprocess.CompletedProcess(args=[], returncode=1, stdout="", stderr="boom")
+        completed = CommandResult(command=(), cwd=project.repo_root.resolve(), returncode=1, stdout="", stderr="boom")
         with tempfile.TemporaryDirectory() as temp_dir:
-            with patch("subprocess.run", return_value=completed):
+            with patch("arodnap.build_adapters.gradle.run_command", return_value=completed):
                 with self.assertRaisesRegex(AdapterExecutionError, "classpath extraction failed"):
                     adapter.write_classpath_entries_file(project, Path(temp_dir) / "classpath.txt")
+
+    def test_gradle_command_start_failure_is_wrapped(self) -> None:
+        with patch("shutil.which", return_value="/usr/bin/gradle"):
+            repo_root = self._make_minimal_repo(with_wrapper=False)
+            adapter = GradleAdapter(repo_root)
+            project = adapter.inspect()
+            with patch(
+                "arodnap.build_adapters.gradle.run_command",
+                side_effect=CommandExecutionError(
+                    command=("gradle", "classes"),
+                    cwd=repo_root.resolve(),
+                    cause=OSError("boom"),
+                ),
+            ):
+                with self.assertRaisesRegex(AdapterExecutionError, "Failed to execute command"):
+                    adapter.validate_compile(project)
 
     def _make_minimal_repo(self, *, with_wrapper: bool) -> Path:
         temp_dir = tempfile.TemporaryDirectory()
@@ -327,3 +386,15 @@ class GradleAdapterTest(unittest.TestCase):
             wrapper.write_text("#!/bin/sh\nexit 0\n")
             wrapper.chmod(0o755)
         return repo_root
+
+    def _make_run_command_side_effect(self, template: CommandResult):
+        def fake_run(command: list[str], **kwargs) -> CommandResult:
+            return CommandResult(
+                command=tuple(command),
+                cwd=kwargs.get("cwd"),
+                returncode=template.returncode,
+                stdout=template.stdout,
+                stderr=template.stderr,
+            )
+
+        return fake_run

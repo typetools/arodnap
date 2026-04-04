@@ -85,9 +85,17 @@ class AnalysisCommandsTest(unittest.TestCase):
         self.assertEqual(report["diagnostics"]["final_warning_count"], expected_warning_count)
         self.assertEqual(report["executed_stages"], [])
         self.assertIsNone(report["artifacts"]["patches_manifest"])
+        self.assertEqual(report["artifacts"]["patch_bundle_dir"], str(layout.patches_dir))
         self.assertEqual(report["final_analysis"]["label"], "initial")
         self.assertTrue(Path(report["final_analysis"]["adapter_metadata_path"]).is_file())
         self.assertTrue(Path(report["final_analysis"]["diagnostics_path"]).is_file())
+        self.assertEqual(report["run_metadata"]["command"], "analyze" if not expect_inference_files else "infer")
+        self.assertEqual(report["adapter"]["adapter_name"], "gradle-v1")
+        self.assertEqual(report["adapter"]["selected_build_tool"], ["gradle"])
+        self.assertEqual(len(report["analysis_runs"]), 1)
+        self.assertEqual(report["analysis_runs"][0]["label"], "initial")
+        self.assertEqual(report["stage_timings"], [])
+        self.assertEqual(report["stage_execution_summary"]["executed"], 0)
         inference_dir = Path(report["final_analysis"]["inference_dir"])
         self.assertTrue(inference_dir.is_dir())
         if expect_inference_files:
@@ -167,7 +175,16 @@ class AnalysisCommandsTest(unittest.TestCase):
         analysis_paths.classpath_entries_file.write_text(str(compiled_outputs_root.resolve()) + "\n")
         analysis_paths.adapter_metadata_path.write_text(
             json.dumps(
-                {"compiled_classes_root": str(compiled_outputs_root.resolve())},
+                {
+                    "adapter_name": "gradle-v1",
+                    "build_system": "gradle",
+                    "build_tool": ["gradle"],
+                    "build_tool_source": "system",
+                    "classpath_entries_file": str(analysis_paths.classpath_entries_file.resolve()),
+                    "compile_target": "classes",
+                    "compiled_classes_root": str(compiled_outputs_root.resolve()),
+                    "source_root": str(source_root.resolve()),
+                },
                 indent=2,
                 sort_keys=True,
             )

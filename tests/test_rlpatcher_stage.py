@@ -4,8 +4,8 @@ import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
-import subprocess
 
+from arodnap.runtime import CommandResult
 from arodnap.stages.rlpatcher import StageExecutionError, run_rlpatcher_stage
 
 
@@ -24,8 +24,7 @@ class RLPatcherStageTest(unittest.TestCase):
             ) = self._make_inputs(temp_root)
             stage_output_dir = temp_root / "arodnap-out" / "stages" / "rlpatcher"
 
-            def fake_run(command, **kwargs):
-                cwd = Path(kwargs["cwd"])
+            def fake_run_stage_command(*, command: list[str], cwd: Path) -> CommandResult:
                 raw_patch_path = cwd / "rlfixer.patch"
                 raw_patch_path.write_text(
                     "\n".join(
@@ -39,14 +38,15 @@ class RLPatcherStageTest(unittest.TestCase):
                     )
                     + "\n"
                 )
-                return subprocess.CompletedProcess(
-                    command,
-                    0,
+                return CommandResult(
+                    command=tuple(command),
+                    cwd=cwd.resolve(),
+                    returncode=0,
                     stdout="✅ Patch applied successfully: App.java\n",
                     stderr="",
                 )
 
-            with patch("subprocess.run", side_effect=fake_run):
+            with patch("arodnap.stages.rlpatcher.run_stage_command", side_effect=fake_run_stage_command):
                 result = run_rlpatcher_stage(
                     workspace_root=workspace_root,
                     diagnostics_path=diagnostics_path,
@@ -91,8 +91,7 @@ class RLPatcherStageTest(unittest.TestCase):
             ) = self._make_inputs(temp_root)
             stage_output_dir = temp_root / "arodnap-out" / "stages" / "rlpatcher"
 
-            def fake_run(command, **kwargs):
-                cwd = Path(kwargs["cwd"])
+            def fake_run_stage_command(*, command: list[str], cwd: Path) -> CommandResult:
                 (cwd / "rlfixer.patch").write_text(
                     "\n".join(
                         [
@@ -105,14 +104,15 @@ class RLPatcherStageTest(unittest.TestCase):
                     )
                     + "\n"
                 )
-                return subprocess.CompletedProcess(
-                    command,
-                    0,
+                return CommandResult(
+                    command=tuple(command),
+                    cwd=cwd.resolve(),
+                    returncode=0,
                     stdout="✅ Patch applied successfully: App.java\n",
                     stderr="",
                 )
 
-            with patch("subprocess.run", side_effect=fake_run):
+            with patch("arodnap.stages.rlpatcher.run_stage_command", side_effect=fake_run_stage_command):
                 run_rlpatcher_stage(
                     workspace_root=workspace_root,
                     diagnostics_path=diagnostics_path,
@@ -154,7 +154,7 @@ class RLPatcherStageTest(unittest.TestCase):
             fixes_path.write_text("")
             stage_output_dir = temp_root / "arodnap-out" / "stages" / "rlpatcher"
 
-            with patch("subprocess.run") as mocked_run:
+            with patch("arodnap.stages.rlpatcher.run_stage_command") as mocked_run:
                 result = run_rlpatcher_stage(
                     workspace_root=workspace_root,
                     diagnostics_path=diagnostics_path,
@@ -187,8 +187,7 @@ class RLPatcherStageTest(unittest.TestCase):
             ) = self._make_inputs(temp_root)
             stage_output_dir = temp_root / "arodnap-out" / "stages" / "rlpatcher"
 
-            def fake_run(command, **kwargs):
-                cwd = Path(kwargs["cwd"])
+            def fake_run_stage_command(*, command: list[str], cwd: Path) -> CommandResult:
                 (cwd / "rlfixer.patch").write_text(
                     "\n".join(
                         [
@@ -201,18 +200,53 @@ class RLPatcherStageTest(unittest.TestCase):
                     )
                     + "\n"
                 )
-                return subprocess.CompletedProcess(
-                    command,
-                    0,
+                return CommandResult(
+                    command=tuple(command),
+                    cwd=cwd.resolve(),
+                    returncode=0,
                     stdout="✅ Patch applied successfully: App.java\n",
                     stderr="",
                 )
 
-            with patch("subprocess.run", side_effect=fake_run):
+            with patch("arodnap.stages.rlpatcher.run_stage_command", side_effect=fake_run_stage_command):
                 with self.assertRaisesRegex(
                     StageExecutionError,
                     "did not reference a file under workspace root",
                 ):
+                    run_rlpatcher_stage(
+                        workspace_root=workspace_root,
+                        diagnostics_path=diagnostics_path,
+                        inference_dir=inference_dir,
+                        fixes_path=fixes_path,
+                        debug_path=debug_path,
+                        stage_output_dir=stage_output_dir,
+                        rlpatcher_jar=rlpatcher_jar,
+                    )
+
+    def test_missing_raw_patch_fails_clearly(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_root = Path(temp_dir)
+            (
+                workspace_root,
+                diagnostics_path,
+                inference_dir,
+                fixes_path,
+                debug_path,
+                rlpatcher_jar,
+                _source_file,
+            ) = self._make_inputs(temp_root)
+            stage_output_dir = temp_root / "arodnap-out" / "stages" / "rlpatcher"
+
+            completed = CommandResult(
+                command=("java", "-jar", str(rlpatcher_jar)),
+                cwd=stage_output_dir.resolve(),
+                returncode=0,
+                stdout="✅ Patch applied successfully: App.java\n",
+                stderr="",
+            )
+
+            with patch("arodnap.stages.rlpatcher.run_stage_command", return_value=completed):
+                with self.assertRaisesRegex(StageExecutionError, "RLPatcher did not emit rlfixer.patch"):
                     run_rlpatcher_stage(
                         workspace_root=workspace_root,
                         diagnostics_path=diagnostics_path,

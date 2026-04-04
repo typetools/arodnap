@@ -1,4 +1,3 @@
-import subprocess
 import tempfile
 import unittest
 from pathlib import Path
@@ -12,6 +11,7 @@ from arodnap.patch_tool import (
     discover_patch_tool,
     run_patch,
 )
+from arodnap.runtime import CommandExecutionError, CommandResult
 
 
 class PatchToolTest(unittest.TestCase):
@@ -23,7 +23,7 @@ class PatchToolTest(unittest.TestCase):
                 "patch": "/usr/bin/patch",
             }.get(name),
         ):
-            with patch("arodnap.patch_tool.subprocess.run", side_effect=self._fake_version_run):
+            with patch("arodnap.patch_tool.run_command", side_effect=self._fake_version_run):
                 tool = discover_patch_tool(require_gnu=False, operation_label="apply")
 
         self.assertEqual(tool.binary, "/opt/homebrew/bin/gpatch")
@@ -37,7 +37,7 @@ class PatchToolTest(unittest.TestCase):
                 "patch": "/usr/local/bin/patch",
             }.get(name),
         ):
-            with patch("arodnap.patch_tool.subprocess.run", side_effect=self._fake_version_run):
+            with patch("arodnap.patch_tool.run_command", side_effect=self._fake_version_run):
                 tool = discover_patch_tool(require_gnu=False, operation_label="apply")
 
         self.assertEqual(tool.binary, "/usr/local/bin/patch")
@@ -51,10 +51,11 @@ class PatchToolTest(unittest.TestCase):
             }.get(name),
         ):
             with patch(
-                "arodnap.patch_tool.subprocess.run",
-                return_value=subprocess.CompletedProcess(
-                    ["/usr/bin/patch", "--version"],
-                    0,
+                "arodnap.patch_tool.run_command",
+                return_value=CommandResult(
+                    command=("/usr/bin/patch", "--version"),
+                    cwd=None,
+                    returncode=0,
                     stdout="patch 2.0-12u11-Apple\n",
                     stderr="",
                 ),
@@ -72,9 +73,10 @@ class PatchToolTest(unittest.TestCase):
                     version="GNU patch 2.7.6",
                 ),
                 command=["/opt/homebrew/bin/gpatch", "-p", "0", "-u", "-i", "demo.patch"],
-                completed=subprocess.CompletedProcess(
-                    ["/opt/homebrew/bin/gpatch", "-p", "0", "-u", "-i", "demo.patch"],
-                    0,
+                completed=CommandResult(
+                    command=("/opt/homebrew/bin/gpatch", "-p", "0", "-u", "-i", "demo.patch"),
+                    cwd=log_path.parent.resolve(),
+                    returncode=0,
                     stdout="applied\n",
                     stderr="",
                 ),
@@ -86,6 +88,8 @@ class PatchToolTest(unittest.TestCase):
             self.assertIn("PATCH_BINARY: /opt/homebrew/bin/gpatch", log_contents)
             self.assertIn("PATCH_FLAVOR: gnu", log_contents)
             self.assertIn("PATCH_VERSION: GNU patch 2.7.6", log_contents)
+            self.assertIn("TOOL: patch", log_contents)
+            self.assertIn(f"CWD: {log_path.parent.resolve()}", log_contents)
 
     def test_run_patch_uses_gnu_dry_run_flag(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -98,10 +102,11 @@ class PatchToolTest(unittest.TestCase):
                 ),
             ):
                 with patch(
-                    "arodnap.patch_tool.subprocess.run",
-                    return_value=subprocess.CompletedProcess(
-                        ["/opt/homebrew/bin/gpatch", "--dry-run"],
-                        0,
+                    "arodnap.patch_tool.run_command",
+                    return_value=CommandResult(
+                        command=("/opt/homebrew/bin/gpatch", "--dry-run"),
+                        cwd=Path(temp_dir).resolve(),
+                        returncode=0,
                         stdout="ok\n",
                         stderr="",
                     ),
@@ -129,10 +134,11 @@ class PatchToolTest(unittest.TestCase):
                 ),
             ):
                 with patch(
-                    "arodnap.patch_tool.subprocess.run",
-                    return_value=subprocess.CompletedProcess(
-                        ["/usr/bin/patch", "-C"],
-                        0,
+                    "arodnap.patch_tool.run_command",
+                    return_value=CommandResult(
+                        command=("/usr/bin/patch", "-C"),
+                        cwd=Path(temp_dir).resolve(),
+                        returncode=0,
                         stdout="ok\n",
                         stderr="",
                     ),
@@ -149,12 +155,52 @@ class PatchToolTest(unittest.TestCase):
         self.assertIn("-C", execution.command)
         self.assertNotIn("--dry-run", execution.command)
 
+    def test_run_patch_wraps_command_start_failure(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            with patch(
+                "arodnap.patch_tool.discover_patch_tool",
+                return_value=PatchTool(
+                    binary="/opt/homebrew/bin/gpatch",
+                    flavor="gnu",
+                    version="GNU patch 2.7.6",
+                ),
+            ):
+                with patch(
+                    "arodnap.patch_tool.run_command",
+                    side_effect=CommandExecutionError(
+                        command=("/opt/homebrew/bin/gpatch", "-p", "0"),
+                        cwd=Path(temp_dir).resolve(),
+                        cause=OSError("boom"),
+                    ),
+                ):
+                    with self.assertRaisesRegex(PatchToolError, "Failed to execute command"):
+                        run_patch(
+                            cwd=Path(temp_dir),
+                            patch_path=Path(temp_dir) / "demo.patch",
+                            strip_level=0,
+                            check_only=False,
+                            require_gnu=False,
+                            operation_label="apply",
+                        )
+
     def _fake_version_run(self, command, **kwargs):
         binary = Path(command[0]).name
         if binary == "gpatch":
-            return subprocess.CompletedProcess(command, 0, stdout="GNU patch 2.7.6\n", stderr="")
+            return CommandResult(
+                command=tuple(command),
+                cwd=kwargs.get("cwd"),
+                returncode=0,
+                stdout="GNU patch 2.7.6\n",
+                stderr="",
+            )
         if binary == "patch":
-            return subprocess.CompletedProcess(command, 0, stdout="GNU patch 2.5.9\n", stderr="")
+            return CommandResult(
+                command=tuple(command),
+                cwd=kwargs.get("cwd"),
+                returncode=0,
+                stdout="GNU patch 2.5.9\n",
+                stderr="",
+            )
         raise AssertionError(f"Unexpected version probe: {command}")
 
 

@@ -4,7 +4,7 @@ import argparse
 from collections.abc import Sequence
 from pathlib import Path
 
-from arodnap.cli.commands import analyze, apply, infer, repair
+from arodnap.cli.commands import analyze, apply, doctor, infer, repair
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -27,6 +27,10 @@ def build_parser() -> argparse.ArgumentParser:
     _add_shared_arguments(apply_parser)
     apply_parser.add_argument("--patch-dir", required=True)
     apply_parser.set_defaults(handler=apply.run)
+
+    doctor_parser = subparsers.add_parser("doctor")
+    _add_shared_arguments(doctor_parser)
+    doctor_parser.set_defaults(handler=doctor.run)
 
     return parser
 

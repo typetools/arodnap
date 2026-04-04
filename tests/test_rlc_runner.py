@@ -2,10 +2,10 @@ import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
-import subprocess
 
 from arodnap.analysis import RlcRunError, count_warnings, run_resource_leak_checker
 from arodnap.contracts import RunConfig, Timeouts
+from arodnap.runtime import CommandResult
 
 
 class RlcRunnerTest(unittest.TestCase):
@@ -25,8 +25,9 @@ class RlcRunnerTest(unittest.TestCase):
             config = self._make_config(temp_root)
             workspace_root, source_files_file, classpath_entries_file, inference_dir = self._make_inputs(temp_root)
             diagnostics_path = temp_root / "diagnostics.txt"
-            completed = subprocess.CompletedProcess(
-                args=[],
+            completed = CommandResult(
+                command=(),
+                cwd=workspace_root.resolve(),
                 returncode=0,
                 stdout="",
                 stderr="\n".join(
@@ -37,7 +38,10 @@ class RlcRunnerTest(unittest.TestCase):
                 ),
             )
 
-            with patch("subprocess.run", return_value=completed) as run_mock:
+            with patch(
+                "arodnap.analysis.rlc_runner.run_command",
+                side_effect=self._make_run_command_side_effect(completed),
+            ) as run_mock:
                 result = run_resource_leak_checker(
                     config,
                     workspace_root=workspace_root,
@@ -62,14 +66,18 @@ class RlcRunnerTest(unittest.TestCase):
             config = self._make_config(temp_root)
             workspace_root, source_files_file, classpath_entries_file, _ = self._make_inputs(temp_root)
             diagnostics_path = temp_root / "diagnostics.txt"
-            completed = subprocess.CompletedProcess(
-                args=[],
+            completed = CommandResult(
+                command=(),
+                cwd=workspace_root.resolve(),
                 returncode=0,
                 stdout="",
                 stderr="src/A.java:10: warning: [required.method.not.called] first",
             )
 
-            with patch("subprocess.run", return_value=completed) as run_mock:
+            with patch(
+                "arodnap.analysis.rlc_runner.run_command",
+                side_effect=self._make_run_command_side_effect(completed),
+            ) as run_mock:
                 result = run_resource_leak_checker(
                     config,
                     workspace_root=workspace_root,
@@ -106,9 +114,15 @@ class RlcRunnerTest(unittest.TestCase):
             temp_root = Path(temp_dir)
             config = self._make_config(temp_root)
             workspace_root, source_files_file, classpath_entries_file, inference_dir = self._make_inputs(temp_root)
-            completed = subprocess.CompletedProcess(args=[], returncode=1, stdout="", stderr="boom")
+            completed = CommandResult(
+                command=(),
+                cwd=workspace_root.resolve(),
+                returncode=1,
+                stdout="",
+                stderr="boom",
+            )
 
-            with patch("subprocess.run", return_value=completed):
+            with patch("arodnap.analysis.rlc_runner.run_command", return_value=completed):
                 with self.assertRaisesRegex(RlcRunError, "RLC failed"):
                     run_resource_leak_checker(
                         config,
@@ -146,6 +160,18 @@ class RlcRunnerTest(unittest.TestCase):
             rlpatcher_jar=root / "rlpatcher.jar",
             timeouts=Timeouts(build_seconds=1, analysis_seconds=2, stage_seconds=3),
         )
+
+    def _make_run_command_side_effect(self, template: CommandResult):
+        def fake_run(command: list[str], **kwargs) -> CommandResult:
+            return CommandResult(
+                command=tuple(command),
+                cwd=kwargs.get("cwd"),
+                returncode=template.returncode,
+                stdout=template.stdout,
+                stderr=template.stderr,
+            )
+
+        return fake_run
 
 
 if __name__ == "__main__":

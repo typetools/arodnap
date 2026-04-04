@@ -37,7 +37,16 @@ class RepairPipelineTest(unittest.TestCase):
                 analysis_paths.classpath_entries_file.write_text(str(compiled_outputs_root.resolve()) + "\n")
                 analysis_paths.adapter_metadata_path.write_text(
                     json.dumps(
-                        {"compiled_classes_root": str(compiled_outputs_root.resolve())},
+                        {
+                            "adapter_name": "gradle-v1",
+                            "build_system": "gradle",
+                            "build_tool": ["gradle"],
+                            "build_tool_source": "system",
+                            "classpath_entries_file": str(analysis_paths.classpath_entries_file.resolve()),
+                            "compile_target": "classes",
+                            "compiled_classes_root": str(compiled_outputs_root.resolve()),
+                            "source_root": str((workspace_root / "src" / "main" / "java").resolve()),
+                        },
                         indent=2,
                         sort_keys=True,
                     )
@@ -228,6 +237,10 @@ class RepairPipelineTest(unittest.TestCase):
             self.assertTrue(manifest["success"])
             self.assertEqual(manifest["final_patch_manifest"], str(layout.patches_manifest_path))
             self.assertEqual(len(manifest["stage_history"]), 4)
+            self.assertEqual(manifest["run_metadata"]["command"], "repair")
+            self.assertEqual(manifest["adapter"]["selected_build_tool"], ["gradle"])
+            self.assertEqual(len(manifest["analysis_runs"]), 2)
+            self.assertEqual(len(manifest["stage_timings"]), 4)
 
             report = json.loads(layout.report_path.read_text())
             self.assertTrue(report["success"])
@@ -237,6 +250,9 @@ class RepairPipelineTest(unittest.TestCase):
                 ["close_injector", "owning_field", "rlfixer", "rlpatcher"],
             )
             self.assertEqual(report["artifacts"]["patches_manifest"], str(layout.patches_manifest_path))
+            self.assertEqual(report["artifacts"]["patch_bundle_dir"], str(layout.patches_dir))
+            self.assertEqual(report["stage_execution_summary"]["executed"], 4)
+            self.assertEqual(report["stage_execution_summary"]["reruns_requested"], 1)
 
     def _make_config(self, root: Path, *, repo_root: Path) -> RunConfig:
         return RunConfig(
