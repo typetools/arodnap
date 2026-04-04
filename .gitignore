@@ -5,4 +5,5 @@ plans/*
 !plans/testing_v1.md
 !plans/testing_v1_rulebook.md
 !plans/v1.md
+arodnap.egg-info/
 __pycache__/

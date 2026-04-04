@@ -43,7 +43,7 @@ class AnalysisCommandsTest(unittest.TestCase):
 
             with patch("arodnap.orchestrator.pipeline.reanalyze", side_effect=self._fake_infer(repo_root)):
                 with patch(
-                    "arodnap.orchestrator.pipeline.run_close_injector_stage",
+                    "arodnap.stages.registry.run_close_injector_stage",
                     side_effect=AssertionError("infer should not run close injector"),
                 ):
                     self.assertEqual(main(["infer", "--out-dir", str(out_dir), str(repo_root)]), 0)

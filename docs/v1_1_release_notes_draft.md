@@ -54,6 +54,6 @@ Standard single-module Gradle remains the only supported public project shape.
 
 - Install with `python -m pip install -e .`
 - Use `arodnap <command>` as the preferred invocation style
-- See [`docs/architecture.md`](/Users/sanjay/projects/arodnap/docs/architecture.md)
-  and [`docs/testing.md`](/Users/sanjay/projects/arodnap/docs/testing.md) for
+- See [`docs/architecture.md`](architecture.md)
+  and [`docs/testing.md`](testing.md) for
   the contributor-facing architecture and testing guidance

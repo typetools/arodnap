@@ -36,12 +36,12 @@ That gives Arodnap a fail-closed default:
 - keep the original repo untouched until `apply`
 
 The relevant orchestration lives under
-[`arodnap/orchestrator/`](/Users/sanjay/projects/arodnap/arodnap/orchestrator).
+[`arodnap/orchestrator/`](../arodnap/orchestrator).
 
 ## Runtime Layer
 
 The runtime layer lives under
-[`arodnap/runtime/`](/Users/sanjay/projects/arodnap/arodnap/runtime).
+[`arodnap/runtime/`](../arodnap/runtime).
 
 Current v1.1 responsibilities:
 
@@ -57,16 +57,16 @@ tools.
 ## Adapter Model
 
 The build-adapter boundary lives under
-[`arodnap/build_adapters/`](/Users/sanjay/projects/arodnap/arodnap/build_adapters).
+[`arodnap/build_adapters/`](../arodnap/build_adapters).
 
 Key pieces:
 
-- [`base.py`](/Users/sanjay/projects/arodnap/arodnap/build_adapters/base.py)
+- [`base.py`](../arodnap/build_adapters/base.py)
   defines the `BuildAdapterContract`, `ProjectModel`, `AdapterMetadata`, and
   adapter error types.
-- [`registry.py`](/Users/sanjay/projects/arodnap/arodnap/build_adapters/registry.py)
+- [`registry.py`](../arodnap/build_adapters/registry.py)
   owns adapter registration and selection.
-- [`gradle.py`](/Users/sanjay/projects/arodnap/arodnap/build_adapters/gradle.py)
+- [`gradle.py`](../arodnap/build_adapters/gradle.py)
   is the only registered backend in v1.1.
 
 Current adapter responsibilities:
@@ -92,15 +92,15 @@ that will be revisited when multi-adapter support is introduced in v2.
 ## Stage Wrapper Lifecycle
 
 Repair-stage contracts live under
-[`arodnap/stages/`](/Users/sanjay/projects/arodnap/arodnap/stages).
+[`arodnap/stages/`](../arodnap/stages).
 
 Shared structure:
 
-- [`base.py`](/Users/sanjay/projects/arodnap/arodnap/stages/base.py)
+- [`base.py`](../arodnap/stages/base.py)
   defines the common wrapper lifecycle:
   `validate_inputs(...)`, `invoke_tool(...)`, `normalize_outputs(...)`,
   `validate_outputs(...)`, and `run(...)`.
-- [`registry.py`](/Users/sanjay/projects/arodnap/arodnap/stages/registry.py)
+- [`registry.py`](../arodnap/stages/registry.py)
   owns repair-stage ordering and per-stage post-run behavior flags.
 
 Wrapper rules in the current implementation:

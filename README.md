@@ -177,13 +177,31 @@ Important outputs:
   `arodnap-out/stages/<stage>/stage_result.json` and `stage.log` before
   rerunning the command.
 
+## Running Tests
+
+Run the full test suite:
+
+```bash
+python -m unittest discover -s tests -p "test_*.py"
+```
+
+Run focused suites:
+
+```bash
+python -m unittest tests.test_doctor
+python -m unittest tests.test_v1_integration
+python -m unittest tests.test_structured_output_regressions
+```
+
+See [`docs/testing.md`](docs/testing.md) for conventions, fixture guidance, and the full representative suite list.
+
 ## Contributor Notes
 
 Contributor-facing architecture and test guidance lives in:
 
-- [`docs/architecture.md`](/Users/sanjay/projects/arodnap/docs/architecture.md)
-- [`docs/testing.md`](/Users/sanjay/projects/arodnap/docs/testing.md)
-- [`docs/v1_1_release_notes_draft.md`](/Users/sanjay/projects/arodnap/docs/v1_1_release_notes_draft.md)
+- [`docs/architecture.md`](docs/architecture.md)
+- [`docs/testing.md`](docs/testing.md)
+- [`docs/v1_1_release_notes_draft.md`](docs/v1_1_release_notes_draft.md)
 
 The legacy normalized-layout benchmark path is still preserved internally for
 regression coverage, but it is not the preferred public usage story and should
