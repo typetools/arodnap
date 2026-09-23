@@ -3,11 +3,18 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from arodnap.doctor import _check_java_runtime, _check_wpi_gradle_jdk, _check_wpi_python
-from arodnap.analysis.wpi_runner import wpi_supported_jdk_majors
+from arodnap.analysis.checker_framework import (
+    CheckerFrameworkError,
+    minimum_jdk_major,
+    resolve_analysis_jdk,
+    tested_jdk_majors,
+)
+from arodnap.doctor import _check_java_runtime
 from arodnap.runtime import CommandResult, Jdk, JdkResolutionError, resolve_jdk
 
-_CF_3_49 = Path(__file__).resolve().parents[1] / "checker_framework" / "checker-framework-3.49.0"
+_CHECKER_FRAMEWORK = Path(__file__).resolve().parents[1] / "checker_framework"
+_CF_4_2_3 = _CHECKER_FRAMEWORK / "checker-framework-4.2.3"
+_CF_3_49 = _CHECKER_FRAMEWORK / "checker-framework-3.49.0"
 
 
 def _settings(home: str, version: str) -> CommandResult:
@@ -44,57 +51,53 @@ class ResolveJdkTest(unittest.TestCase):
             resolve_jdk({"JAVA_HOME": "/does/not/exist"})
 
 
-class WpiSupportedJdksTest(unittest.TestCase):
-    def test_reads_supported_majors_from_wpi_script(self) -> None:
-        self.assertEqual(wpi_supported_jdk_majors(_CF_3_49), (8, 11, 17, 20, 21))
+class CheckerFrameworkJdkTest(unittest.TestCase):
+    def test_minimum_jdk_is_read_from_checker_jar(self) -> None:
+        self.assertEqual(minimum_jdk_major(_CF_4_2_3), 17)
+        self.assertEqual(minimum_jdk_major(_CF_3_49), 8)
 
-        with tempfile.TemporaryDirectory() as temp_dir:
-            cf_root = Path(temp_dir)
-            (cf_root / "checker" / "bin").mkdir(parents=True)
-            (cf_root / "checker" / "bin" / "wpi.sh").write_text(
-                '  if [ "${has_java21}" = "no" ] && [ "${java_version}" = 21 ]; then\n'
-                '  if [ "${has_java25}" = "no" ] && [ "${java_version}" = 25 ]; then\n'
-            )
-            self.assertEqual(wpi_supported_jdk_majors(cf_root), (21, 25))
-            self.assertEqual(wpi_supported_jdk_majors(cf_root / "missing"), ())
+    def test_tested_jdks_are_read_from_the_distributions_wpi_script(self) -> None:
+        self.assertEqual(tested_jdk_majors(_CF_4_2_3), (8, 11, 17, 21, 24, 25, 26))
+        self.assertEqual(tested_jdk_majors(_CF_3_49), (8, 11, 17, 20, 21))
+        self.assertEqual(tested_jdk_majors(_CHECKER_FRAMEWORK / "missing"), ())
+
+    def test_analysis_jdk_must_satisfy_checker_framework_and_rlfixer(self) -> None:
+        # CF 3.49 runs on JDK 8, but RLFixer needs 17.
+        for cf_root, major, ok in ((_CF_4_2_3, 17, True), (_CF_4_2_3, 27, True), (_CF_3_49, 11, False)):
+            with self.subTest(cf=cf_root.name, major=major):
+                with patch(
+                    "arodnap.analysis.checker_framework.resolve_jdk",
+                    return_value=Jdk(Path("/jdk"), major, "PATH"),
+                ):
+                    if ok:
+                        self.assertEqual(resolve_analysis_jdk(cf_root).major_version, major)
+                    else:
+                        with self.assertRaisesRegex(CheckerFrameworkError, "needs JDK 17 or newer"):
+                            resolve_analysis_jdk(cf_root)
 
 
-class DoctorJdkChecksTest(unittest.TestCase):
-    def test_supported_jdk_is_ok(self) -> None:
-        with patch("arodnap.doctor.resolve_jdk", return_value=Jdk(Path("/jdk"), 21, "PATH")):
-            self.assertEqual(_check_java_runtime(_CF_3_49).status, "ok")
+class DoctorJdkCheckTest(unittest.TestCase):
+    def _check(self, major: int):
+        with patch(
+            "arodnap.analysis.checker_framework.resolve_jdk",
+            return_value=Jdk(Path("/jdk"), major, "JAVA_HOME"),
+        ):
+            return _check_java_runtime(_CF_4_2_3)
 
-    def test_jdk_without_wpi_or_rlfixer_support_is_an_error(self) -> None:
-        for major in (11, 24):
+    def test_tested_jdks_are_ok(self) -> None:
+        for major in (17, 21, 24, 26):
             with self.subTest(major=major):
-                with patch("arodnap.doctor.resolve_jdk", return_value=Jdk(Path("/jdk"), major, "PATH")):
-                    check = _check_java_runtime(_CF_3_49)
-                self.assertEqual(check.status, "error")
-                self.assertIn("Set JAVA_HOME to JDK 17 or 20 or 21", check.message)
+                self.assertEqual(self._check(major).status, "ok")
 
-    def test_gradle_on_newer_jdk_needs_java21_home_when_wpi_hardcodes_it(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
-            cf_root = Path(temp_dir)
-            (cf_root / "checker" / "bin").mkdir(parents=True)
-            (cf_root / "checker" / "bin" / "wpi.sh").write_text(
-                'CLEAN_CMD="${GRADLE_EXEC} clean -Dorg.gradle.java.home=${JAVA21_HOME}"\n'
-            )
-            with patch("arodnap.doctor.resolve_jdk", return_value=Jdk(Path("/jdk-24"), 24, "JAVA_HOME")):
-                with patch.dict("os.environ", {}, clear=False) as env:
-                    env.pop("JAVA21_HOME", None)
-                    self.assertEqual(_check_wpi_gradle_jdk(cf_root).status, "error")
-                with patch.dict("os.environ", {"JAVA21_HOME": "/jdk-21"}):
-                    self.assertEqual(_check_wpi_gradle_jdk(cf_root).status, "ok")
-            with patch("arodnap.doctor.resolve_jdk", return_value=Jdk(Path("/jdk-21"), 21, "PATH")):
-                self.assertEqual(_check_wpi_gradle_jdk(cf_root).status, "ok")
-        # A wpi.sh that runs Gradle on JAVA_HOME needs nothing extra.
-        self.assertEqual(_check_wpi_gradle_jdk(_CF_3_49).status, "ok")
+    def test_jdk_newer_than_tested_is_only_a_warning(self) -> None:
+        check = self._check(27)
+        self.assertEqual(check.status, "warning")
+        self.assertIn("newer than the JDKs checker-framework-4.2.3 is tested on", check.message)
 
-    def test_missing_distutils_python_is_an_error(self) -> None:
-        with patch("arodnap.doctor.resolve_dljc_python", return_value=None):
-            check = _check_wpi_python()
+    def test_too_old_jdk_is_an_error(self) -> None:
+        check = self._check(11)
         self.assertEqual(check.status, "error")
-        self.assertIn("ARODNAP_WPI_PYTHON", check.message)
+        self.assertIn("needs JDK 17 or newer", check.message)
 
 
 if __name__ == "__main__":

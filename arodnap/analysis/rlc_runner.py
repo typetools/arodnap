@@ -9,6 +9,13 @@ import tempfile
 from arodnap.contracts import RunConfig
 from arodnap.runtime import CommandExecutionError, render_command_log, run_command
 
+from .checker_framework import (
+    RESOURCE_LEAK_CHECKER,
+    CheckerFrameworkError,
+    checker_javac_command,
+    resolve_analysis_jdk,
+)
+
 _WARNING_PATTERN = re.compile(r"(?m)^.*: warning:")
 # Same flags as the paper's final Resource Leak Checker pass (legacy RLCRunner.py),
 # minus JVM heap and assertion settings.
@@ -55,12 +62,17 @@ def run_resource_leak_checker(
     if not classpath_entries:
         raise RlcRunError(f"Classpath entries file is empty: {classpath_entries_file}")
 
+    try:
+        checker_command = checker_javac_command(config.cf_root, resolve_analysis_jdk(config.cf_root))
+    except CheckerFrameworkError as exc:
+        raise RlcRunError(str(exc)) from exc
+
     diagnostics_path.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix="arodnap-rlc-classes-") as classes_dir:
         command = [
-            str((config.cf_root / "checker" / "bin" / "javac").resolve()),
+            *checker_command,
             "-processor",
-            "org.checkerframework.checker.resourceleak.ResourceLeakChecker",
+            RESOURCE_LEAK_CHECKER,
             *_RLC_FLAGS,
             f"-Astubs={RLC_STUBS_DIR}",
         ]

@@ -26,14 +26,14 @@ class ReanalyzeTest(unittest.TestCase):
             output_layout = OutputLayout.from_root(artifacts_root)
             analysis_paths = output_layout.analysis_paths("initial")
 
-            def fake_run_wpi(config, *, workspace_root, log_path, inference_root):
+            def fake_run_wpi(config, *, workspace_root, log_path, inference_root, **_kwargs):
                 self.assertEqual(log_path, analysis_paths.wpi_log_path)
                 self.assertEqual(inference_root, analysis_paths.inference_dir)
                 log_path.parent.mkdir(parents=True, exist_ok=True)
                 log_path.write_text("wpi ok\n")
                 inference_root.mkdir(parents=True, exist_ok=True)
                 (inference_root / "Sample.ajava").write_text("inferred\n")
-                return WpiRunResult(log_path=log_path.resolve(), inference_dir=inference_root.resolve())
+                return WpiRunResult(log_path=log_path.resolve(), inference_dir=inference_root.resolve(), iterations=2)
 
             def fake_run_rlc(
                 config,
@@ -88,13 +88,13 @@ class ReanalyzeTest(unittest.TestCase):
             output_layout = OutputLayout.from_root(temp_root / "analysis")
             analysis_paths = output_layout.analysis_paths("initial")
 
-            def fake_run_wpi(config, *, workspace_root, log_path, inference_root):
+            def fake_run_wpi(config, *, workspace_root, log_path, inference_root, **_kwargs):
                 self.assertEqual(log_path, analysis_paths.wpi_log_path)
                 self.assertEqual(inference_root, analysis_paths.inference_dir)
                 log_path.parent.mkdir(parents=True, exist_ok=True)
                 log_path.write_text("wpi ok\n")
                 inference_root.mkdir(parents=True, exist_ok=True)
-                return WpiRunResult(log_path=log_path.resolve(), inference_dir=inference_root.resolve())
+                return WpiRunResult(log_path=log_path.resolve(), inference_dir=inference_root.resolve(), iterations=2)
 
             def fake_select_build_adapter(repo_root, *, compile_target, build_args):
                 return FixtureGradleAdapter(

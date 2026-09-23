@@ -29,17 +29,12 @@ python -m arodnap.main analyze /path/to/repo
 ## Prerequisites
 
 - Python 3.10 or newer
-- JDK 17 or newer, as `JAVA_HOME` or as the first `java` on `PATH`. RLFixer
-  needs 17+, and the bundled Checker Framework 4.2.3's whole-program inference
-  accepts 17, 21, 24, 25 and 26. Your project itself may target any release
-  this JDK can compile.
-- for Gradle projects on a JDK newer than 21: a JDK 21 as `JAVA21_HOME`. The
-  Checker Framework's `wpi.sh` runs Gradle builds on `JAVA21_HOME`
-  (an upstream limitation in 4.2.3 and current master).
-- a Python with `distutils` for the Checker Framework's do-like-javac helper:
-  Python 3.11 or older, or a newer Python with `setuptools` installed. Arodnap
-  finds one automatically (macOS's `/usr/bin/python3` works); set
-  `ARODNAP_WPI_PYTHON` to choose one explicitly.
+- JDK 17 or newer, as `JAVA_HOME` or as the first `java` on `PATH`. The whole
+  analysis (whole-program inference, the Resource Leak Checker, RLFixer and the
+  repair tools) runs on this one JDK; it has been tested on 17, 21, 23 and 24.
+  The bundled Checker Framework 4.2.3 is tested upstream up to JDK 26, and
+  `doctor` warns (but does not stop you) on newer JDKs. Your project itself may
+  target any release this JDK can compile.
 - a Gradle wrapper in the target repository, or `gradle` available on `PATH`
 - GNU `patch`, exposed as `gpatch` or `patch`
 
@@ -74,12 +69,11 @@ Common options:
 
 - `--out-dir`: output root. Defaults to `./arodnap-out`.
 - `--keep-workspace`: keep the temporary workspace after the command exits.
-- `--build-args`: repeatable extra build arguments forwarded to the Gradle/WPI
-  flow.
+- `--build-args`: repeatable extra build arguments forwarded to Gradle.
 - `--compile-target`: override the compile target used for adapter-backed
   validation and analysis.
 - `--checker-framework`: use another Checker Framework distribution (the
-  directory containing `checker/bin/wpi.sh`). Defaults to
+  directory containing `checker/dist/checker.jar`). Defaults to
   `$ARODNAP_CHECKER_FRAMEWORK`, then the bundled 4.2.3.
 - `apply` also requires `--patch-dir`, usually `./arodnap-out/patches`.
 
@@ -194,9 +188,9 @@ Important outputs:
   `patch` and expose it as `gpatch` or `patch`.
 - If the default compile target is wrong for the repository, rerun with
   `--compile-target`.
-- If whole-program inference fails with a JDK message, run `arodnap doctor`:
-  it names the JDKs the configured Checker Framework accepts and whether
-  Gradle builds need `JAVA21_HOME`.
+- If analysis fails on a very new JDK, run `arodnap doctor`: it says whether
+  the JDK is newer than the Checker Framework is tested on. Use a tested JDK
+  via `JAVA_HOME`, or a newer Checker Framework via `--checker-framework`.
 - If you need to inspect how a stage behaved, look at
   `arodnap-out/stages/<stage>/stage_result.json` and `stage.log` before
   rerunning the command.

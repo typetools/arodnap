@@ -54,10 +54,18 @@ Current v1.1 responsibilities:
 The Checker Framework distribution comes from `--checker-framework`, then
 `$ARODNAP_CHECKER_FRAMEWORK`, then the bundled
 `checker_framework/checker-framework-4.2.3` (a trimmed release; see its
-`VENDORED.md`). The JDKs WPI accepts are read from that distribution's
-`wpi.sh`, since they change between releases. The final Resource Leak Checker
-pass uses the same flags as the paper's runs, including
-`-Astubs=checker_framework/stubs` and `-Xmaxwarns 10000`.
+`VENDORED.md`). Arodnap runs it as `<JDK>/bin/java -jar checker/dist/checker.jar`
+on the resolved JDK, which must be at least the distribution's own minimum (read
+from `checker.jar`) and RLFixer's 17 (`analysis/checker_framework.py`).
+
+Whole-program inference does not use the distribution's `wpi.sh`.
+`analysis/wpi_runner.py` runs the same fixpoint loop as do-like-javac's WPI tool
+(`-Ainfer=ajava -Awarns`, each iteration reading the previous one via `-Aajava`)
+directly on the adapter's source list and classpath, and keeps only the final
+iteration. `tests/test_wpi_upstream_parity.py` pins the upstream loop it
+mirrors, so a Checker Framework upgrade that changes it fails until reviewed.
+The final Resource Leak Checker pass uses the same flags as the paper's runs,
+including `-Astubs=checker_framework/stubs` and `-Xmaxwarns 10000`.
 
 The runtime layer is intentionally narrow. It centralizes the behavior Arodnap
 actually reuses today instead of introducing a larger framework for future
@@ -254,8 +262,7 @@ Each check object minimum keys:
 | `message` | string | human-readable summary |
 | `details` | object \| null | optional structured detail |
 
-Stable `name` values: `python_runtime`, `java_runtime`, `wpi_gradle_jdk`,
-`wpi_python`,
+Stable `name` values: `python_runtime`, `java_runtime`,
 `patch_binary`, `checker_framework_path`, `checker_framework_tools`,
 `plugin_jars`, `repo_path`, `adapter_selection`, `repo_support`,
 `source_root`, `compile_target`.

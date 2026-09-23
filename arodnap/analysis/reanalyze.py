@@ -56,6 +56,8 @@ def reanalyze(
         wpi_result = run_wpi(
             config,
             workspace_root=workspace_root,
+            source_files_file=source_files_file,
+            classpath_entries_file=classpath_entries_file,
             log_path=analysis_paths.wpi_log_path,
             inference_root=analysis_paths.inference_dir,
         )

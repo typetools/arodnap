@@ -5,10 +5,19 @@ from unittest.mock import patch
 
 from arodnap.analysis import RlcRunError, count_warnings, run_resource_leak_checker
 from arodnap.contracts import RunConfig, Timeouts
-from arodnap.runtime import CommandResult
+from arodnap.runtime import CommandResult, Jdk
 
 
 class RlcRunnerTest(unittest.TestCase):
+    def setUp(self) -> None:
+        # Run the checker on a fixed JDK so the command does not depend on this machine.
+        jdk_patcher = patch(
+            "arodnap.analysis.rlc_runner.resolve_analysis_jdk",
+            return_value=Jdk(home=Path("/jdk-21"), major_version=21, source="PATH"),
+        )
+        jdk_patcher.start()
+        self.addCleanup(jdk_patcher.stop)
+
     def test_warning_count_is_deterministic(self) -> None:
         diagnostics_text = "\n".join(
             [
@@ -54,7 +63,10 @@ class RlcRunnerTest(unittest.TestCase):
                 self.assertEqual(result.diagnostics_path, diagnostics_path.resolve())
                 self.assertTrue(result.diagnostics_path.is_file())
                 command = run_mock.call_args.args[0]
-                self.assertIn(str((config.cf_root / "checker" / "bin" / "javac").resolve()), command[0])
+                self.assertEqual(
+                    command[:3],
+                    ["/jdk-21/bin/java", "-jar", str(config.cf_root / "checker" / "dist" / "checker.jar")],
+                )
                 self.assertIn("-processor", command)
                 self.assertIn("org.checkerframework.checker.resourceleak.ResourceLeakChecker", command)
                 self.assertIn(f"-Aajava={inference_dir.resolve()}", command)

@@ -1,344 +1,135 @@
-import os
 import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
 
 from arodnap.analysis import WpiRunError, run_wpi
-from arodnap.analysis.wpi_runner import _gradle_user_home
+from arodnap.analysis.checker_framework import CheckerFrameworkError
+from arodnap.analysis.wpi_runner import MAX_WPI_ITERATIONS, WPI_ITERATION_FLAGS
 from arodnap.contracts import RunConfig, Timeouts
 from arodnap.runtime import CommandResult, Jdk
+
+_JDK = Jdk(home=Path("/jdk-24"), major_version=24, source="JAVA_HOME")
 
 
 class WpiRunnerTest(unittest.TestCase):
     def setUp(self) -> None:
-        # Resolve a fixed JDK so the tests do not depend on the machine's Java installation.
-        jdk_patcher = patch(
-            "arodnap.analysis.wpi_runner.resolve_jdk",
-            return_value=Jdk(home=Path("/jdk-21"), major_version=21, source="PATH"),
-        )
+        jdk_patcher = patch("arodnap.analysis.wpi_runner.resolve_analysis_jdk", return_value=_JDK)
         self.resolve_jdk = jdk_patcher.start()
         self.addCleanup(jdk_patcher.stop)
-        majors_patcher = patch("arodnap.analysis.wpi_runner.wpi_supported_jdk_majors", return_value=(17, 21))
-        majors_patcher.start()
-        self.addCleanup(majors_patcher.stop)
 
-    def test_runner_exports_resolved_java_home_for_wpi(self) -> None:
+    def test_iterates_to_a_fixpoint_and_keeps_only_the_final_iteration(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
-            temp_root = Path(temp_dir)
-            workspace_root = temp_root / "workspace"
-            (workspace_root / "build" / "whole-program-inference").mkdir(parents=True)
-            config = self._make_config(temp_root)
-            completed = CommandResult(command=(), cwd=workspace_root, returncode=0, stdout="", stderr="")
+            inputs = self._make_inputs(Path(temp_dir))
+            # Iteration 1 infers one annotation, iteration 2 adds another, iteration 3 repeats it.
+            outputs = ["@A", "@A @B", "@A @B"]
+            commands: list[list[str]] = []
 
-            with patch("arodnap.analysis.wpi_runner.resolve_dljc_python", return_value=Path("/usr/bin/python3")):
-                with patch("arodnap.analysis.wpi_runner._prepare_wpi_support_files"):
-                    with patch("arodnap.analysis.wpi_runner.run_command", return_value=completed) as run_mock:
-                        run_wpi(
-                            config,
-                            workspace_root=workspace_root,
-                            log_path=temp_root / "wpi.log",
-                            inference_root=temp_root / "inference",
-                        )
+            def fake_run(command, *, cwd, **kwargs):
+                commands.append(command)
+                generated = Path(cwd) / "build" / "whole-program-inference" / "demo"
+                generated.mkdir(parents=True)
+                (generated / "Demo-RLC.ajava").write_text(outputs[len(commands) - 1])
+                return CommandResult(tuple(command), Path(cwd), 0, "", "")
 
-            self.assertEqual(run_mock.call_args.kwargs["env"]["JAVA_HOME"], "/jdk-21")
+            with patch("arodnap.analysis.wpi_runner.run_command", side_effect=fake_run):
+                result = run_wpi(inputs["config"], **inputs["paths"])
 
-    def test_unsupported_jdk_fails_with_actionable_message(self) -> None:
-        self.resolve_jdk.return_value = Jdk(home=Path("/jdk-24"), major_version=24, source="PATH")
+            self.assertEqual(result.iterations, 3)
+            self.assertEqual(len(commands), 3)
+            self.assertEqual(
+                commands[0][:5],
+                ["/jdk-24/bin/java", "-jar", str(inputs["cf_root"] / "checker" / "dist" / "checker.jar"),
+                 "-processor", "org.checkerframework.checker.resourceleak.ResourceLeakChecker"],
+            )
+            for command in commands:
+                for flag in WPI_ITERATION_FLAGS:
+                    self.assertIn(flag, command)
+                self.assertEqual(command[command.index("-classpath") + 1], "/deps/a.jar:/out/classes")
+                self.assertEqual(command[-1], f"@{inputs['sources'].resolve()}")
+            self.assertFalse(any(arg.startswith("-Aajava=") for arg in commands[0]))
+            # Each later iteration reads only the previous iteration's output.
+            self.assertTrue(any(arg.startswith("-Aajava=") and arg.endswith("iteration1") for arg in commands[1]))
+            self.assertTrue(any(arg.startswith("-Aajava=") and arg.endswith("iteration2") for arg in commands[2]))
+
+            inferred = inputs["paths"]["inference_root"]
+            self.assertEqual([p.name for p in inferred.iterdir()], ["demo"])
+            self.assertEqual((inferred / "demo" / "Demo-RLC.ajava").read_text(), "@A @B")
+            self.assertIn("FIXPOINT_AFTER_ITERATIONS: 3", result.log_path.read_text())
+
+    def test_compile_failure_fails_closed(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
-            temp_root = Path(temp_dir)
-            (temp_root / "workspace").mkdir()
-            with patch("arodnap.analysis.wpi_runner._prepare_wpi_support_files"):
-                with patch("arodnap.analysis.wpi_runner.run_command") as run_mock:
-                    with self.assertRaisesRegex(WpiRunError, "found JDK 24 at /jdk-24 .*Set JAVA_HOME"):
-                        run_wpi(
-                            self._make_config(temp_root),
-                            workspace_root=temp_root / "workspace",
-                            log_path=temp_root / "wpi.log",
-                            inference_root=temp_root / "inference",
-                        )
+            inputs = self._make_inputs(Path(temp_dir))
+            failed = CommandResult(("java",), None, 1, "", "error: cannot find symbol")
+
+            with patch("arodnap.analysis.wpi_runner.run_command", return_value=failed):
+                with self.assertRaisesRegex(WpiRunError, "WPI iteration 1 failed to compile"):
+                    run_wpi(inputs["config"], **inputs["paths"])
+
+            self.assertIn("cannot find symbol", inputs["paths"]["log_path"].read_text())
+
+    def test_no_fixpoint_fails_closed(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            inputs = self._make_inputs(Path(temp_dir))
+            counter = iter(range(1000))
+
+            def fake_run(command, *, cwd, **kwargs):
+                generated = Path(cwd) / "build" / "whole-program-inference"
+                generated.mkdir(parents=True)
+                (generated / "Demo.ajava").write_text(str(next(counter)))
+                return CommandResult(tuple(command), Path(cwd), 0, "", "")
+
+            with patch("arodnap.analysis.wpi_runner.run_command", side_effect=fake_run):
+                with self.assertRaisesRegex(WpiRunError, f"did not reach a fixpoint after {MAX_WPI_ITERATIONS}"):
+                    run_wpi(inputs["config"], **inputs["paths"])
+
+    def test_unsupported_jdk_fails_before_running(self) -> None:
+        self.resolve_jdk.side_effect = CheckerFrameworkError("needs JDK 17 or newer; found JDK 11")
+        with tempfile.TemporaryDirectory() as temp_dir:
+            inputs = self._make_inputs(Path(temp_dir))
+            with patch("arodnap.analysis.wpi_runner.run_command") as run_mock:
+                with self.assertRaisesRegex(WpiRunError, "needs JDK 17 or newer"):
+                    run_wpi(inputs["config"], **inputs["paths"])
             run_mock.assert_not_called()
 
-    def test_runner_preserves_reported_inference_directory_even_when_outside_workspace(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
-            temp_root = Path(temp_dir)
-            workspace_root = temp_root / "workspace"
-            workspace_root.mkdir()
-            generated_inference_dir = temp_root / "wpi-ajava-123"
-            generated_inference_dir.mkdir()
-            log_path = temp_root / "logs" / "wpi.log"
-            inference_root = temp_root / "inference" / "initial"
-            config = self._make_config(temp_root)
-
-            completed = CommandResult(
-                command=(),
-                cwd=workspace_root.resolve(),
-                returncode=0,
-                stdout=f"Directory for generated annotation files: {generated_inference_dir}\n",
-                stderr="",
-            )
-
-            with patch("arodnap.analysis.wpi_runner.resolve_dljc_python", return_value=Path("/usr/bin/python3")):
-                with patch("arodnap.analysis.wpi_runner.run_command", return_value=completed):
-                    result = run_wpi(
-                        config,
-                        workspace_root=workspace_root,
-                        log_path=log_path,
-                        inference_root=inference_root,
-                    )
-
-            self.assertEqual(result.inference_dir, inference_root.resolve())
-            self.assertTrue(result.inference_dir.is_dir())
-
-    def test_runner_raises_when_no_distutils_capable_python3_is_available(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
-            temp_root = Path(temp_dir)
-            workspace_root = temp_root / "workspace"
-            workspace_root.mkdir()
-            log_path = temp_root / "logs" / "wpi.log"
-            inference_root = temp_root / "inference" / "initial"
-            config = self._make_config(temp_root)
-
-            with patch("arodnap.analysis.wpi_runner.resolve_dljc_python", return_value=None):
-                with self.assertRaisesRegex(WpiRunError, "requires a python3 interpreter with distutils"):
-                    run_wpi(
-                        config,
-                        workspace_root=workspace_root,
-                        log_path=log_path,
-                        inference_root=inference_root,
-                    )
-
-    def test_runner_prepends_python3_shim_for_checker_framework_dljc(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
-            temp_root = Path(temp_dir)
-            workspace_root = temp_root / "workspace"
-            generated_inference_dir = workspace_root / "build" / "whole-program-inference"
-            generated_inference_dir.mkdir(parents=True)
-            (generated_inference_dir / "inference.jaif").write_text("annotated\n")
-            log_path = temp_root / "logs" / "wpi.log"
-            inference_root = temp_root / "inference" / "initial"
-            config = self._make_config(temp_root)
-
-            completed = CommandResult(
-                command=(),
-                cwd=workspace_root.resolve(),
-                returncode=0,
-                stdout="Starting wpi.sh.\n",
-                stderr="",
-            )
-
-            with patch("arodnap.analysis.wpi_runner.resolve_dljc_python", return_value=Path("/usr/bin/python3")):
-                with patch(
-                    "arodnap.analysis.wpi_runner.run_command",
-                    side_effect=self._make_run_command_side_effect(completed),
-                ) as run_mock:
-                    result = run_wpi(
-                        config,
-                        workspace_root=workspace_root,
-                        log_path=log_path,
-                        inference_root=inference_root,
-                    )
-
-            path_entries = run_mock.call_args.kwargs["env"]["PATH"].split(os.pathsep)
-            shim_dir = Path(path_entries[0])
-            self.assertTrue(shim_dir.name.startswith("arodnap-wpi-python-"))
-            self.assertFalse(shim_dir.exists())
-            self.assertEqual(result.inference_dir, inference_root.resolve())
-
-    def test_runner_marks_wpi_support_scripts_executable(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
-            temp_root = Path(temp_dir)
-            cf_root = temp_root / "cf"
-            wpi_script = cf_root / "checker" / "bin" / "wpi.sh"
-            dljc = cf_root / "checker" / "bin" / ".do-like-javac" / "dljc"
-            wpi_script.parent.mkdir(parents=True, exist_ok=True)
-            dljc.parent.mkdir(parents=True, exist_ok=True)
-            wpi_script.write_text("#!/usr/bin/env bash\n")
-            dljc.write_text("#!/usr/bin/env python3\n")
-            wpi_script.chmod(0o644)
-            dljc.chmod(0o644)
-
-            workspace_root = temp_root / "workspace"
-            generated_inference_dir = workspace_root / "build" / "whole-program-inference"
-            generated_inference_dir.mkdir(parents=True)
-            (generated_inference_dir / "inference.jaif").write_text("annotated\n")
-            log_path = temp_root / "logs" / "wpi.log"
-            inference_root = temp_root / "inference" / "initial"
-            config = self._make_config(temp_root, cf_root=cf_root)
-            completed = CommandResult(
-                command=(),
-                cwd=workspace_root.resolve(),
-                returncode=0,
-                stdout="ok\n",
-                stderr="",
-            )
-
-            with patch("arodnap.analysis.wpi_runner.resolve_dljc_python", return_value=Path("/usr/bin/python3")):
-                with patch("arodnap.analysis.wpi_runner.run_command", return_value=completed):
-                    run_wpi(
-                        config,
-                        workspace_root=workspace_root,
-                        log_path=log_path,
-                        inference_root=inference_root,
-                    )
-
-            self.assertTrue(wpi_script.stat().st_mode & 0o111)
-            self.assertTrue(dljc.stat().st_mode & 0o111)
-
-    def test_runner_builds_expected_command_and_preserves_inference(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
-            temp_root = Path(temp_dir)
-            workspace_root = temp_root / "workspace"
-            generated_inference_dir = workspace_root / "build" / "whole-program-inference"
-            generated_inference_dir.mkdir(parents=True)
-            (generated_inference_dir / "inference.jaif").write_text("annotated\n")
-            log_path = temp_root / "logs" / "wpi.log"
-            inference_root = temp_root / "inference" / "initial"
-            config = self._make_config(temp_root, build_args=["--info", "-x=test"], compile_target="classes")
-
-            completed = CommandResult(
-                command=(),
-                cwd=workspace_root.resolve(),
-                returncode=0,
-                stdout="Starting wpi.sh.\n",
-                stderr="",
-            )
-            with patch("arodnap.analysis.wpi_runner.resolve_dljc_python", return_value=Path("/usr/bin/python3")):
-                with patch(
-                    "arodnap.analysis.wpi_runner.run_command",
-                    side_effect=self._make_run_command_side_effect(completed),
-                ) as run_mock:
-                    result = run_wpi(
-                        config,
-                        workspace_root=workspace_root,
-                        log_path=log_path,
-                        inference_root=inference_root,
-                    )
-                self.assertEqual(result.log_path, log_path.resolve())
-                self.assertEqual(result.inference_dir, inference_root.resolve())
-                self.assertTrue(result.log_path.is_file())
-                self.assertTrue(result.inference_dir.is_dir())
-                self.assertEqual((result.inference_dir / "inference.jaif").read_text(), "annotated\n")
-
-                command = run_mock.call_args.args[0]
-                self.assertEqual(command[0], "bash")
-                self.assertEqual(
-                    command[1],
-                    str((config.cf_root / "checker" / "bin" / "wpi.sh").resolve()),
-                )
-                self.assertEqual(command[2:4], ["-d", str(workspace_root.resolve())])
-                self.assertEqual(command[command.index("-b") + 1], "--no-daemon --info -x=test")
-                self.assertEqual(command[command.index("-g") + 1], str(_gradle_user_home()))
-                self.assertIn("-c", command)
-                self.assertIn("classes", command)
-                self.assertIn("--", command)
-                self.assertIn("--checker", command)
-                self.assertIn("resourceleak", command)
-                self.assertNotIn("/helpers/wpi.sh", " ".join(command))
-                self.assertNotIn("src/lib/info", " ".join(command))
-
-                kwargs = run_mock.call_args.kwargs
-                self.assertEqual(kwargs["cwd"], workspace_root.resolve())
-                self.assertEqual(kwargs["env"]["CHECKERFRAMEWORK"], str(config.cf_root))
-                log_text = result.log_path.read_text()
-                self.assertIn("TOOL: wpi", log_text)
-                self.assertIn(f"CWD: {workspace_root.resolve()}", log_text)
-                self.assertIn(f"TIMEOUT_SECONDS: {config.timeouts.analysis_seconds}", log_text)
-                self.assertIn("COMMAND:", log_text)
-                self.assertIn("EXIT_CODE: 0", log_text)
-                self.assertIn("Starting wpi.sh.", log_text)
-
-    def test_runner_raises_on_subprocess_failure(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
-            temp_root = Path(temp_dir)
-            workspace_root = temp_root / "workspace"
-            workspace_root.mkdir()
-            log_path = temp_root / "logs" / "wpi.log"
-            config = self._make_config(temp_root)
-            completed = CommandResult(
-                command=(),
-                cwd=workspace_root.resolve(),
-                returncode=1,
-                stdout="",
-                stderr="boom\n",
-            )
-
-            with patch("arodnap.analysis.wpi_runner.resolve_dljc_python", return_value=Path("/usr/bin/python3")):
-                with patch("arodnap.analysis.wpi_runner.run_command", return_value=completed):
-                    with self.assertRaisesRegex(WpiRunError, "WPI failed"):
-                        run_wpi(
-                            config,
-                            workspace_root=workspace_root,
-                            log_path=log_path,
-                            inference_root=temp_root / "inference" / "failed",
-                        )
-                    self.assertTrue(log_path.is_file())
-                    self.assertIn("boom", log_path.read_text())
-
-    def test_runner_raises_when_inference_output_directory_cannot_be_located(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
-            temp_root = Path(temp_dir)
-            workspace_root = temp_root / "workspace"
-            workspace_root.mkdir()
-            log_path = temp_root / "logs" / "wpi.log"
-            config = self._make_config(temp_root)
-            completed = CommandResult(
-                command=(),
-                cwd=workspace_root.resolve(),
-                returncode=0,
-                stdout="Starting wpi.sh\nwpi.sh: dljc could not run the build successfully: dljc failed to clean\n",
-                stderr="",
-            )
-
-            with patch("arodnap.analysis.wpi_runner.resolve_dljc_python", return_value=Path("/usr/bin/python3")):
-                with patch("arodnap.analysis.wpi_runner.run_command", return_value=completed):
-                    with self.assertRaisesRegex(
-                        WpiRunError,
-                        "no inferred annotations. wpi.sh: dljc could not run the build successfully",
-                    ):
-                        run_wpi(
-                            config,
-                            workspace_root=workspace_root,
-                            log_path=log_path,
-                            inference_root=temp_root / "inference" / "missing",
-                        )
-
-    def _make_config(
-        self,
-        root: Path,
-        *,
-        build_args: list[str] | None = None,
-        compile_target: str | None = None,
-        cf_root: Path | None = None,
-    ) -> RunConfig:
-        return RunConfig(
+    def _make_inputs(self, root: Path) -> dict:
+        cf_root = root / "cf"
+        (cf_root / "checker" / "dist").mkdir(parents=True)
+        (cf_root / "checker" / "dist" / "checker.jar").write_bytes(b"jar")
+        workspace_root = root / "workspace"
+        workspace_root.mkdir()
+        sources = root / "sources.txt"
+        sources.write_text("/workspace/src/Demo.java\n")
+        classpath = root / "classpath.txt"
+        classpath.write_text("/deps/a.jar\n/out/classes\n")
+        config = RunConfig(
             command="infer",
-            repo_root=(root / "repo").resolve(),
-            out_dir=(root / "out").resolve(),
+            repo_root=root / "repo",
+            out_dir=root / "out",
             keep_workspace=False,
             workspace_mode="copy",
-            build_args=build_args or [],
-            compile_target=compile_target,
+            build_args=[],
+            compile_target=None,
             patch_dir=None,
-            cf_root=(cf_root or Path("/Users/sanjay/projects/arodnap/checker_framework/checker-framework-3.49.0")),
+            cf_root=cf_root,
             close_injector_jar=root / "close.jar",
             owning_field_jar=root / "owning.jar",
             rlfixer_jar=root / "rlfixer.jar",
             rlpatcher_jar=root / "rlpatcher.jar",
-            timeouts=Timeouts(build_seconds=1, analysis_seconds=2, stage_seconds=3),
+            timeouts=Timeouts(build_seconds=1, analysis_seconds=1, stage_seconds=1),
         )
-
-    def _make_run_command_side_effect(self, template: CommandResult):
-        def fake_run(command: list[str], **kwargs) -> CommandResult:
-            return CommandResult(
-                command=tuple(command),
-                cwd=kwargs.get("cwd"),
-                returncode=template.returncode,
-                stdout=template.stdout,
-                stderr=template.stderr,
-            )
-
-        return fake_run
+        return {
+            "config": config,
+            "cf_root": cf_root,
+            "sources": sources,
+            "paths": {
+                "workspace_root": workspace_root,
+                "source_files_file": sources,
+                "classpath_entries_file": classpath,
+                "log_path": root / "logs" / "wpi.log",
+                "inference_root": root / "inference" / "initial",
+            },
+        }
 
 
 if __name__ == "__main__":

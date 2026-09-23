@@ -29,8 +29,7 @@ the tools actually work together.
 ARODNAP_E2E=1 python -m unittest tests.test_e2e_real
 ```
 
-It needs a JDK that RLFixer (17+) and the configured Checker Framework's
-`wpi.sh` accept, `gradle` on `PATH`, GNU patch, and network access or a warm
+It needs JDK 17 or newer (it has passed on 17, 21, 23 and 24), `gradle` on `PATH`, GNU patch, and network access or a warm
 Gradle cache for `gradle-dependency-leak`. Set `ARODNAP_CHECKER_FRAMEWORK` to
 run it against another Checker Framework distribution; both the bundled 4.2.3
 and 3.49.0 pass. Add a
