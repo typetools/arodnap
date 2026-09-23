@@ -2,16 +2,23 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable
+from typing import Callable, Sequence
 
 from .base import BuildAdapterContract, BuildToolSelection, UnsupportedProjectError
-from .gradle import GradleAdapter
+from .captured import (
+    AntCaptureAdapter,
+    CommandCaptureAdapter,
+    GradleCaptureAdapter,
+    MavenCaptureAdapter,
+)
 
 
 @dataclass(frozen=True)
 class RegisteredBuildAdapter:
     selection: BuildToolSelection
     factory: Callable[..., BuildAdapterContract]
+    # Executable names (from `-- <command>`) that this adapter knows how to hook into.
+    executables: tuple[str, ...] = ()
 
     def create(
         self,
@@ -19,19 +26,37 @@ class RegisteredBuildAdapter:
         *,
         compile_target: str | None = None,
         build_args: list[str] | None = None,
+        build_command: Sequence[str] = (),
     ) -> BuildAdapterContract:
         return self.factory(
             repo_root,
             compile_target=compile_target,
             build_args=build_args,
+            build_command=build_command,
         )
 
 
+# Detection order when no build command is given: the first adapter whose build file exists.
 BUILD_ADAPTER_REGISTRY: tuple[RegisteredBuildAdapter, ...] = (
     RegisteredBuildAdapter(
-        selection=BuildToolSelection(build_system="gradle", adapter_name="gradle-v1"),
-        factory=GradleAdapter,
+        selection=BuildToolSelection(build_system="gradle", adapter_name="gradle"),
+        factory=GradleCaptureAdapter,
+        executables=("gradle", "gradlew"),
     ),
+    RegisteredBuildAdapter(
+        selection=BuildToolSelection(build_system="maven", adapter_name="maven"),
+        factory=MavenCaptureAdapter,
+        executables=("mvn", "mvnw"),
+    ),
+    RegisteredBuildAdapter(
+        selection=BuildToolSelection(build_system="ant", adapter_name="ant"),
+        factory=AntCaptureAdapter,
+        executables=("ant",),
+    ),
+)
+COMMAND_ADAPTER = RegisteredBuildAdapter(
+    selection=BuildToolSelection(build_system="command", adapter_name="command"),
+    factory=CommandCaptureAdapter,
 )
 
 
@@ -44,29 +69,32 @@ def select_build_adapter(
     *,
     compile_target: str | None = None,
     build_args: list[str] | None = None,
+    build_command: Sequence[str] = (),
 ) -> BuildAdapterContract:
-    last_error: UnsupportedProjectError | None = None
+    options = {"compile_target": compile_target, "build_args": build_args, "build_command": tuple(build_command)}
+    if build_command:
+        executable = Path(build_command[0]).name
+        for registration in BUILD_ADAPTER_REGISTRY:
+            if executable in registration.executables:
+                return registration.create(repo_root, **options)
+        return COMMAND_ADAPTER.create(repo_root, **options)
 
     for registration in BUILD_ADAPTER_REGISTRY:
-        adapter = registration.create(
-            repo_root,
-            compile_target=compile_target,
-            build_args=build_args,
-        )
+        adapter = registration.create(repo_root, **options)
         try:
             adapter.detect()
-        except UnsupportedProjectError as exc:
-            last_error = exc
+        except UnsupportedProjectError:
             continue
         return adapter
-
-    if last_error is not None:
-        raise last_error
-    raise UnsupportedProjectError("No registered build adapter matched the target repository.")
+    raise UnsupportedProjectError(
+        f"No Gradle, Maven or Ant build file found in {repo_root}. "
+        "For other builds, pass the build command after --, e.g. `arodnap repair <repo> -- ./build.sh`."
+    )
 
 
 __all__ = [
     "BUILD_ADAPTER_REGISTRY",
+    "COMMAND_ADAPTER",
     "RegisteredBuildAdapter",
     "default_build_tool_selection",
     "select_build_adapter",

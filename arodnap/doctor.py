@@ -277,6 +277,7 @@ def _run_repo_checks(
             workspace_root,
             compile_target=config.compile_target,
             build_args=config.build_args,
+            build_command=config.build_command,
         )
     except UnsupportedProjectError as exc:
         checks.append(
@@ -321,7 +322,7 @@ def _run_repo_checks(
         DoctorCheck(
             name="repo_support",
             status="ok",
-            message="Repository matches the supported v1 repo shape.",
+            message=_capture_summary(project),
             details=_project_details(project, workspace_root=workspace_root, repo_root=config.repo_root),
         )
     )
@@ -329,7 +330,7 @@ def _run_repo_checks(
         DoctorCheck(
             name="source_root",
             status="ok",
-            message=f"Validated source root: {_display_repo_path(project.source_root, workspace_root=workspace_root, repo_root=config.repo_root)}",
+            message=f"Analysis root: {_display_repo_path(project.source_root, workspace_root=workspace_root, repo_root=config.repo_root)}",
             details={
                 "source_root": _display_repo_path(project.source_root, workspace_root=workspace_root, repo_root=config.repo_root),
                 "compiled_classes_root": _display_repo_path(
@@ -362,10 +363,7 @@ def _run_repo_checks(
         DoctorCheck(
             name="compile_target",
             status="ok",
-            message=(
-                f"Compile target '{project.compile_target}' validated using "
-                f"{project.build_tool_source} Gradle."
-            ),
+            message=f"The project's {project.build_system} build compiled successfully ({project.build_tool_source} {project.build_tool[0]}).",
             details={
                 "compile_target": project.compile_target,
                 "build_tool": list(project.build_tool),
@@ -379,6 +377,17 @@ def _run_repo_checks(
         )
     )
     return checks
+
+
+def _capture_summary(project: ProjectModel) -> str:
+    inputs = getattr(project, "inputs", None)
+    if inputs is None:
+        return f"Repository has a supported {project.build_system} build."
+    generated = f" and {len(inputs.generated_sources)} generated" if inputs.generated_sources else ""
+    return (
+        f"Captured {len(inputs.units)} compile unit(s) with {len(inputs.sources)} source file(s){generated} "
+        f"from the {project.build_system} build."
+    )
 
 
 def _project_details(

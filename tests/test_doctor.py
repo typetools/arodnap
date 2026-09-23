@@ -45,7 +45,7 @@ class DoctorCommandTest(unittest.TestCase):
                 def validate_compile(self_nonlocal, project: ProjectModel) -> None:
                     observed["validated_compile_target"] = project.compile_target
 
-            def fake_select_build_adapter(repo_root, *, compile_target, build_args):
+            def fake_select_build_adapter(repo_root, *, compile_target, build_args, build_command=()):
                 observed["workspace_root"] = repo_root.resolve()
                 observed["compile_target"] = compile_target
                 observed["build_args"] = list(build_args)
@@ -76,15 +76,21 @@ class DoctorCommandTest(unittest.TestCase):
             self.assertIn("Doctor report:", stdout.getvalue())
 
     def test_unsupported_repo_reports_adapter_backed_shape_failure(self) -> None:
-        repo_root = FIXTURES_ROOT / "gradle-nonstandard-layout-unsupported"
         with tempfile.TemporaryDirectory() as temp_dir:
+            repo_root = Path(temp_dir) / "repo"
+            repo_root.mkdir()
+            (repo_root / "build.gradle").write_text("plugins { id 'java' }\n")
             out_dir = Path(temp_dir) / "out"
             config = self._make_config(repo_root=repo_root, out_dir=out_dir)
 
             with patch("arodnap.doctor._run_environment_checks", return_value=[self._ok_env_check()]):
-                stdout = io.StringIO()
-                with redirect_stdout(stdout):
-                    exit_code = run_doctor(config)
+                with patch(
+                    "arodnap.build_adapters.captured.GradleCaptureAdapter.inspect",
+                    side_effect=UnsupportedProjectError("The build compiled no Java sources, so there is nothing to analyze."),
+                ):
+                    stdout = io.StringIO()
+                    with redirect_stdout(stdout):
+                        exit_code = run_doctor(config)
 
             self.assertEqual(exit_code, 1)
             payload = json.loads((out_dir / "doctor.json").read_text())
@@ -92,7 +98,7 @@ class DoctorCommandTest(unittest.TestCase):
             checks = {entry["name"]: entry for entry in payload["checks"]}
             self.assertEqual(checks["adapter_selection"]["status"], "ok")
             self.assertEqual(checks["repo_support"]["status"], "error")
-            self.assertIn("src/main/java", checks["repo_support"]["message"])
+            self.assertIn("compiled no Java sources", checks["repo_support"]["message"])
             self.assertNotIn("compile_target", checks)
             self.assertIn("[ERROR] repo_support", stdout.getvalue())
 
@@ -147,7 +153,7 @@ class DoctorCommandTest(unittest.TestCase):
                         f"Gradle compile target '{project.compile_target}' failed for {project.repo_root}.\nboom"
                     )
 
-            def fake_select_build_adapter(repo_root, *, compile_target, build_args):
+            def fake_select_build_adapter(repo_root, *, compile_target, build_args, build_command=()):
                 observed["workspace_root"] = repo_root.resolve()
                 return FakeAdapter()
 

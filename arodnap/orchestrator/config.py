@@ -31,6 +31,7 @@ def build_run_config(
         rlfixer_jar=_plugin_jars_root() / "RLFixer-1.0-SNAPSHOT.jar",
         rlpatcher_jar=_plugin_jars_root() / "RLPatcher-1.0-SNAPSHOT.jar",
         timeouts=Timeouts(build_seconds=900, analysis_seconds=1800, stage_seconds=900),
+        build_command=tuple(getattr(args, "build_command", None) or ()),
     )
 
 

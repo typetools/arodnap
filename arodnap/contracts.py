@@ -53,6 +53,8 @@ class RunConfig:
     rlfixer_jar: Path
     rlpatcher_jar: Path
     timeouts: Timeouts
+    # The project's build command from `-- <command>`; empty means detect the build system.
+    build_command: tuple[str, ...] = ()
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -70,6 +72,7 @@ class RunConfig:
             "rlfixer_jar": str(self.rlfixer_jar),
             "rlpatcher_jar": str(self.rlpatcher_jar),
             "timeouts": self.timeouts.to_dict(),
+            "build_command": list(self.build_command),
         }
 
     @classmethod
@@ -89,6 +92,7 @@ class RunConfig:
             rlfixer_jar=Path(data["rlfixer_jar"]),
             rlpatcher_jar=Path(data["rlpatcher_jar"]),
             timeouts=Timeouts.from_dict(data["timeouts"]),
+            build_command=tuple(data.get("build_command", ())),
         )
 
 

@@ -34,15 +34,18 @@ def _skip_reason() -> str | None:
         resolve_analysis_jdk(resolve_cf_root())
     except CheckerFrameworkError as exc:
         return str(exc)
-    if shutil.which("gradle") is None:
-        return "gradle is not on PATH"
     return None
+
+
+def _requires(tool: str):
+    return unittest.skipIf(shutil.which(tool) is None, f"{tool} is not on PATH")
 
 
 @unittest.skipIf(_skip_reason() is not None, _skip_reason() or "")
 class RealEndToEndTest(unittest.TestCase):
+    @_requires("gradle")
     def test_baseline_fixture_is_repaired_applied_and_still_compiles(self) -> None:
-        report, bundle_files, repo_root = self._repair_and_apply("gradle-pipeline-baseline")
+        report, bundle_files, repo_root = self._repair_and_apply("gradle-pipeline-baseline", verify=_GRADLE)
 
         fixture = "src/main/java/com/arodnap/fixture"
         self.assertEqual(
@@ -58,26 +61,71 @@ class RealEndToEndTest(unittest.TestCase):
         self.assertIn("try (", (repo_root / fixture / "TryCatchLeakExample.java").read_text())
         self.assertIn("implements AutoCloseable", (repo_root / fixture / "WrapperMissingClose.java").read_text())
 
+    @_requires("gradle")
     def test_leak_through_a_dependency_is_repaired(self) -> None:
-        report, bundle_files, repo_root = self._repair_and_apply("gradle-dependency-leak")
+        report, bundle_files, repo_root = self._repair_and_apply("gradle-dependency-leak", verify=_GRADLE)
 
         source = "src/main/java/com/arodnap/fixture/DependencyLeakExample.java"
         self.assertEqual(bundle_files, [source])
         self.assertIn("try (FileInputStream in = new FileInputStream(path))", (repo_root / source).read_text())
 
-    def _repair_and_apply(self, fixture_name: str) -> tuple[dict, list[str], Path]:
+    @_requires("gradle")
+    def test_every_module_of_a_multi_module_gradle_build_is_repaired(self) -> None:
+        report, bundle_files, repo_root = self._repair_and_apply("gradle-multimodule", verify=_GRADLE)
+
+        core = "core/src/main/java/demo/core/FirstByte.java"
+        app = "app/src/main/java/demo/app/Report.java"
+        self.assertEqual(set(bundle_files), {core, app})
+        self.assertIn("try (FileInputStream in = new FileInputStream(path))", (repo_root / core).read_text())
+        self.assertIn("try (FileInputStream in = new FileInputStream(path))", (repo_root / app).read_text())
+
+    @_requires("mvn")
+    def test_maven_project_is_repaired(self) -> None:
+        report, bundle_files, repo_root = self._repair_and_apply(
+            "maven-dependency-leak", verify=["mvn", "-q", "-B", "compile"]
+        )
+
+        source = "src/main/java/demo/ReadAll.java"
+        self.assertEqual(bundle_files, [source])
+        self.assertIn("try (FileInputStream in = new FileInputStream(path))", (repo_root / source).read_text())
+
+    @_requires("ant")
+    def test_ant_project_with_a_vendored_jar_is_repaired(self) -> None:
+        report, bundle_files, repo_root = self._repair_and_apply("ant-vendored-jar", verify=["ant", "-q", "compile"])
+
+        source = "src/demo/Checksum.java"
+        self.assertEqual(bundle_files, [source])
+        self.assertIn("try (FileInputStream in = new FileInputStream(path))", (repo_root / source).read_text())
+
+    def test_project_built_by_a_javac_script_is_repaired(self) -> None:
+        report, bundle_files, repo_root = self._repair_and_apply(
+            "javac-script", build_command=["./build.sh"], verify=["./build.sh"]
+        )
+
+        source = "src/demo/FirstByte.java"
+        self.assertEqual(bundle_files, [source])
+        self.assertIn("try (FileInputStream in = new FileInputStream(path))", (repo_root / source).read_text())
+
+    def _repair_and_apply(
+        self,
+        fixture_name: str,
+        *,
+        verify: list[str],
+        build_command: list[str] | None = None,
+    ) -> tuple[dict, list[str], Path]:
         temp_root = Path(tempfile.mkdtemp(prefix="arodnap-e2e-"))
         self.addCleanup(shutil.rmtree, temp_root, True)
         repo_root = temp_root / fixture_name
         shutil.copytree(
             FIXTURES_ROOT / fixture_name,
             repo_root,
-            ignore=shutil.ignore_patterns("build", ".gradle"),
+            ignore=shutil.ignore_patterns("build", ".gradle", "target", "out"),
         )
         out_dir = temp_root / "arodnap-out"
         original = _snapshot(repo_root)
 
-        self.assertEqual(main(["repair", "--out-dir", str(out_dir), str(repo_root)]), 0)
+        command_suffix = ["--", *build_command] if build_command else []
+        self.assertEqual(main(["repair", "--out-dir", str(out_dir), str(repo_root), *command_suffix]), 0)
 
         report = json.loads((out_dir / "report.json").read_text())
         self.assertTrue(report["success"], report.get("error"))
@@ -91,7 +139,7 @@ class RealEndToEndTest(unittest.TestCase):
             0,
         )
         compiled = subprocess.run(
-            ["gradle", "--no-daemon", "--console=plain", "-q", "compileJava"],
+            verify,
             cwd=repo_root,
             capture_output=True,
             text=True,
@@ -100,10 +148,13 @@ class RealEndToEndTest(unittest.TestCase):
         return report, entry["changed_files"], repo_root
 
 
+_GRADLE = ["gradle", "--no-daemon", "--console=plain", "-q", "compileJava"]
+
+
 def _snapshot(root: Path) -> dict[str, bytes]:
     return {
         path.relative_to(root).as_posix(): path.read_bytes()
-        for path in sorted((root / "src").rglob("*"))
+        for path in sorted(root.rglob("*.java"))
         if path.is_file()
     }
 

@@ -60,19 +60,23 @@ class BundleStageTest(unittest.TestCase):
             # The original tree is untouched; verification ran on a scratch copy.
             self.assertEqual((repo_root / "src/A.java").read_text(), files["src/A.java"])
 
-    def test_new_files_fail_closed(self) -> None:
+    def test_files_not_in_the_repository_are_left_out(self) -> None:
+        # e.g. annotation-processor output the build generated into the workspace
         with tempfile.TemporaryDirectory() as temp_dir:
-            repo_root, workspace_root = self._make_trees(Path(temp_dir), {})
-            (workspace_root / "src").mkdir(parents=True)
-            (workspace_root / "src/New.java").write_text("class New {}\n")
+            repo_root, workspace_root = self._make_trees(Path(temp_dir), {"src/A.java": "class A {}\n"})
+            (workspace_root / "src/A.java").write_text("final class A {}\n")
+            (workspace_root / "build/gen").mkdir(parents=True)
+            (workspace_root / "build/gen/A_Gen.java").write_text("class A_Gen {}\n")
 
-            with self.assertRaisesRegex(StageExecutionError, "new file"):
-                run_bundle_stage(
-                    repo_root=repo_root,
-                    workspace_root=workspace_root,
-                    candidate_files=["src/New.java"],
-                    stage_output_dir=Path(temp_dir) / "out",
-                )
+            result = run_bundle_stage(
+                repo_root=repo_root,
+                workspace_root=workspace_root,
+                candidate_files=["src/A.java", "build/gen/A_Gen.java"],
+                stage_output_dir=Path(temp_dir) / "out",
+            )
+
+        self.assertEqual(result.changed_files, ["src/A.java"])
+        self.assertIn("Left out 1 generated file(s) that are not in the repository.", result.notes)
 
     def _make_trees(self, root: Path, files: dict[str, str]) -> tuple[Path, Path]:
         repo_root = root / "repo"

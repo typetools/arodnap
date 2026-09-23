@@ -325,6 +325,7 @@ def _initial_state(config: RunConfig, *, workspace_root: Path, artifacts_root: P
             workspace_root,
             compile_target=config.compile_target,
             build_args=config.build_args,
+            build_command=config.build_command,
         )
         selection = adapter.detect()
     except UnsupportedProjectError:

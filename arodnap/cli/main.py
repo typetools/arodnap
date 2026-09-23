@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import sys
 from collections.abc import Sequence
 from pathlib import Path
 
@@ -36,8 +37,17 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
+    argv = list(sys.argv[1:] if argv is None else argv)
+    # Everything after "--" is the project's build command: arodnap repair <repo> -- ./build.sh
+    build_command: list[str] = []
+    if "--" in argv:
+        split = argv.index("--")
+        argv, build_command = argv[:split], argv[split + 1 :]
     parser = build_parser()
     args = parser.parse_args(argv)
+    if build_command and args.command == "apply":
+        parser.error("apply does not take a build command")
+    args.build_command = build_command
     return args.handler(args)
 
 

@@ -40,7 +40,7 @@ class AnalyzeOnceTest(unittest.TestCase):
                 diagnostics_path.write_text("src/A.java:10: warning: leak\n")
                 return RlcRunResult(diagnostics_path=diagnostics_path.resolve(), warning_count=1)
 
-            def fake_select_build_adapter(repo_root, *, compile_target, build_args):
+            def fake_select_build_adapter(repo_root, *, compile_target, build_args, build_command=()):
                 return FixtureGradleAdapter(
                     repo_root,
                     compile_target=compile_target,
@@ -75,7 +75,7 @@ class AnalyzeOnceTest(unittest.TestCase):
             config = self._make_config(temp_root)
             workspace_root = FIXTURES_ROOT / "gradle-pipeline-baseline"
 
-            def fake_select_build_adapter(repo_root, *, compile_target, build_args):
+            def fake_select_build_adapter(repo_root, *, compile_target, build_args, build_command=()):
                 return FixtureGradleAdapter(
                     repo_root,
                     compile_target=compile_target,

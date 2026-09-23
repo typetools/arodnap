@@ -37,6 +37,7 @@ def analyze_once(
             workspace_root,
             compile_target=config.compile_target,
             build_args=config.build_args,
+            build_command=config.build_command,
         )
         project = adapter.inspect()
         adapter.validate_compile(project)

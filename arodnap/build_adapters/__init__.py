@@ -9,7 +9,13 @@ from .base import (
     UnsupportedProjectError,
     build_tool_source,
 )
-from .gradle import GradleAdapter
+from .captured import (
+    AntCaptureAdapter,
+    CapturedBuildAdapter,
+    CommandCaptureAdapter,
+    GradleCaptureAdapter,
+    MavenCaptureAdapter,
+)
 from .registry import BUILD_ADAPTER_REGISTRY, RegisteredBuildAdapter, default_build_tool_selection, select_build_adapter
 
 __all__ = [
@@ -18,7 +24,11 @@ __all__ = [
     "BUILD_ADAPTER_REGISTRY",
     "BuildAdapterContract",
     "BuildToolSelection",
-    "GradleAdapter",
+    "AntCaptureAdapter",
+    "CapturedBuildAdapter",
+    "CommandCaptureAdapter",
+    "GradleCaptureAdapter",
+    "MavenCaptureAdapter",
     "GradleProject",
     "MissingBuildToolError",
     "ProjectModel",
