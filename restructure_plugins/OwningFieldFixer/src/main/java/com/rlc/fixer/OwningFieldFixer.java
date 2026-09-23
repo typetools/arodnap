@@ -1,5 +1,6 @@
 package com.rlc.fixer;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -27,7 +28,10 @@ public class OwningFieldFixer {
         String logPath = args[1];
         String projectRoot = args[3];
 
-        PATCH_FILE = Paths.get(projectRoot, "src", "owning-field.patch");
+        String patchFileOverride = System.getProperty("arodnap.patchFile");
+        PATCH_FILE = patchFileOverride != null
+                ? Paths.get(patchFileOverride)
+                : Paths.get(projectRoot, "src", "owning-field.patch");
         if (PATCH_FILE.toFile().exists()) {
             PATCH_FILE.toFile().delete();
         }
@@ -38,7 +42,7 @@ public class OwningFieldFixer {
             return;
         }
 
-        Path baselineLog = Paths.get(projectRoot, "baseline.log");
+        Path baselineLog = Files.createTempFile("owning-field-baseline-", ".log");
         CompilerUtils.compileAndCapture(projectRoot, baselineLog.toString());
 
         for (LogEntry entry : entries) {

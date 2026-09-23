@@ -56,7 +56,8 @@ public class MainApplication {
         String projectPath = args[1];
 
         // The file patch to store all patches
-        String patchFilePath = Paths.get(projectPath, "src", PATCH_FILE_NAME).toString();
+        String patchFilePath = System.getProperty("arodnap.patchFile",
+                Paths.get(projectPath, "src", PATCH_FILE_NAME).toString());
 
         try {
             List<String> warningMessages = Files.readAllLines(Paths.get(warningFilePath));
@@ -92,7 +93,7 @@ public class MainApplication {
                 System.out.println("No valid warnings found to process.");
                 return;
             }
-            Path baselineLog = Paths.get(projectPath, "baseline.log");
+            Path baselineLog = Files.createTempFile("autoclose-baseline-", ".log");
             CompilerUtils.compileAndCapture(projectPath, baselineLog.toString());
 
             try (FileWriter patchFileWriter = new FileWriter(patchFilePath)) {
