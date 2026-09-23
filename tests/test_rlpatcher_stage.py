@@ -7,7 +7,7 @@ from unittest.mock import patch
 
 from arodnap.patch_tool import PatchToolError, discover_patch_tool
 from arodnap.runtime import CommandResult
-from arodnap.stages.rlpatcher import StageExecutionError, run_rlpatcher_stage
+from arodnap.stages.rlpatcher import StageExecutionError, _changes_code, run_rlpatcher_stage
 
 
 def _has_gnu_patch() -> bool:
@@ -293,31 +293,52 @@ class RLPatcherStageTest(unittest.TestCase):
                         source_root=workspace_root / "src" / "main" / "java",
                     )
 
-    def test_missing_raw_patch_fails_clearly(self) -> None:
+    def test_rlpatcher_side_effects_on_workspace_files_are_undone(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_root = Path(temp_dir)
-            (
-                workspace_root,
-                diagnostics_path,
-                inference_dir,
-                fixes_path,
-                debug_path,
-                rlpatcher_jar,
-                _source_file,
-            ) = self._make_inputs(temp_root)
-            stage_output_dir = temp_root / "arodnap-out" / "stages" / "rlpatcher"
-
-            completed = CommandResult(
-                command=("java", "-jar", str(rlpatcher_jar)),
-                cwd=stage_output_dir.resolve(),
-                returncode=0,
-                stdout="✅ Patch applied successfully: App.java\n",
-                stderr="",
+            workspace_root, diagnostics_path, inference_dir, fixes_path, debug_path, rlpatcher_jar, source_file = (
+                self._make_inputs(temp_root)
             )
+            source_file.write_bytes(b"class App { String old = \"old\"; }")  # no trailing newline
+            original = source_file.read_bytes()
 
-            with patch("arodnap.stages.rlpatcher.run_stage_command", return_value=completed):
-                with self.assertRaisesRegex(StageExecutionError, "RLPatcher did not emit rlfixer.patch"):
-                    run_rlpatcher_stage(
+            def fake_run_stage_command(*, command: list[str], cwd: Path) -> CommandResult:
+                # RLPatcher restoring its backup with a trailing newline, reporting no patch.
+                source_file.write_bytes(original + b"\n")
+                return CommandResult(tuple(command), cwd, 0, "Patch applied successfully: App.java\n", "")
+
+            with patch("arodnap.stages.rlpatcher.run_stage_command", side_effect=fake_run_stage_command):
+                result = run_rlpatcher_stage(
+                    workspace_root=workspace_root,
+                    diagnostics_path=diagnostics_path,
+                    inference_dir=inference_dir,
+                    fixes_path=fixes_path,
+                    debug_path=debug_path,
+                    stage_output_dir=temp_root / "arodnap-out" / "stages" / "rlpatcher",
+                    rlpatcher_jar=rlpatcher_jar,
+                    source_root=workspace_root / "src" / "main" / "java",
+                )
+
+            self.assertEqual(source_file.read_bytes(), original)
+            self.assertFalse(result.changed)
+
+    def test_suggestions_rlpatcher_cannot_materialize_are_recorded_not_fatal(self) -> None:
+        cases = {
+            "no_change": CommandResult((), None, 0, "Patch applied successfully: App.java\n", ""),
+            "rejected": CommandResult((), None, 0, "Patch failed (compilation check failed): App.java\n", ""),
+            "unsupported": CommandResult((), None, 0, "", "Mixed patch types detected.\n"),
+            "crashed": CommandResult((), None, 1, "", "Exception in thread main\n"),
+        }
+        for outcome, completed in cases.items():
+            with self.subTest(outcome=outcome), tempfile.TemporaryDirectory() as temp_dir:
+                temp_root = Path(temp_dir)
+                workspace_root, diagnostics_path, inference_dir, fixes_path, debug_path, rlpatcher_jar, source_file = (
+                    self._make_inputs(temp_root)
+                )
+                stage_output_dir = temp_root / "arodnap-out" / "stages" / "rlpatcher"
+
+                with patch("arodnap.stages.rlpatcher.run_stage_command", return_value=completed):
+                    result = run_rlpatcher_stage(
                         workspace_root=workspace_root,
                         diagnostics_path=diagnostics_path,
                         inference_dir=inference_dir,
@@ -327,6 +348,16 @@ class RLPatcherStageTest(unittest.TestCase):
                         rlpatcher_jar=rlpatcher_jar,
                         source_root=workspace_root / "src" / "main" / "java",
                     )
+
+                self.assertTrue(result.success)
+                self.assertFalse(result.changed)
+                self.assertIn("materialized 0 of 1", result.notes[0])
+                manifest = json.loads((stage_output_dir / "patch_manifest.json").read_text())
+                self.assertEqual(manifest["patches"], [])
+                self.assertEqual(
+                    manifest["fixes"],
+                    [{"index": 1, "file": "com/example/App.java", "line": 10, "outcome": outcome}],
+                )
 
     def _make_inputs(self, root: Path) -> tuple[Path, Path, Path, Path, Path, Path, Path]:
         workspace_root = root / "workspace"
@@ -376,6 +407,16 @@ class RLPatcherStageTest(unittest.TestCase):
             rlpatcher_jar,
             source_file,
         )
+
+
+class ChangesCodeTest(unittest.TestCase):
+    def test_whitespace_only_diffs_are_not_changes(self) -> None:
+        self.assertFalse(_changes_code(""))
+        self.assertFalse(
+            _changes_code("--- A.java\n+++ A.java\n@@ -3 +3 @@\n-}\n+}\n\\ No newline at end of file\n")
+        )
+        self.assertFalse(_changes_code("--- A.java\n+++ A.java\n@@ -3,2 +3,2 @@\n-  int x;\n+\tint x;\n"))
+        self.assertTrue(_changes_code("--- A.java\n+++ A.java\n@@ -3 +3 @@\n-  int x;\n+  final int x;\n"))
 
 
 if __name__ == "__main__":

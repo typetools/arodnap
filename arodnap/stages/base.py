@@ -436,24 +436,47 @@ def write_stage_result(stage_output_dir: Path, result: StageResult) -> Path:
 
 
 def normalize_unified_diff_paths(patch_text: str, *, workspace_root: Path) -> tuple[str, list[str]]:
+    """Rewrite a tool's unified diff so both headers name the repo-relative target file.
+
+    Tools label one side of each header pair with a temporary file (e.g. `--- <workspace file>`
+    / `+++ /tmp/patch-123.java`), so each pair resolves to whichever path is in the workspace.
+    """
     workspace_root = workspace_root.resolve()
-    normalized_lines: list[str] = []
     changed_files: list[str] = []
     seen_files: set[str] = set()
+    normalized_lines: list[str] = []
+    lines = patch_text.replace("\r\n", "\n").splitlines()
     saw_header = False
+    index = 0
 
-    for line in patch_text.replace("\r\n", "\n").splitlines():
-        if line.startswith(("--- ", "+++ ")):
-            marker, remainder = line[:4], line[4:]
-            path_text, separator, suffix = remainder.partition("\t")
-            normalized_path = _normalize_patch_path(path_text.strip(), workspace_root=workspace_root)
-            normalized_lines.append(f"{marker}{normalized_path}{separator}{suffix}")
-            if normalized_path != "/dev/null" and normalized_path not in seen_files:
-                changed_files.append(normalized_path)
-                seen_files.add(normalized_path)
+    while index < len(lines):
+        line = lines[index]
+        if line.startswith("--- "):
+            if index + 1 >= len(lines) or not lines[index + 1].startswith("+++ "):
+                raise StageExecutionError("Patch output did not contain a valid unified diff header pair.")
+            old_path, old_separator, old_suffix = _parse_patch_header(lines[index], prefix="--- ")
+            new_path, new_separator, new_suffix = _parse_patch_header(lines[index + 1], prefix="+++ ")
+            target_path = _resolve_target_path(
+                old_path=old_path,
+                new_path=new_path,
+                workspace_root=workspace_root,
+            )
+            normalized_old = "/dev/null" if old_path == "/dev/null" else target_path
+            normalized_new = "/dev/null" if new_path == "/dev/null" else target_path
+            normalized_lines.append(f"--- {normalized_old}{old_separator}{old_suffix}")
+            normalized_lines.append(f"+++ {normalized_new}{new_separator}{new_suffix}")
+            if target_path not in seen_files:
+                changed_files.append(target_path)
+                seen_files.add(target_path)
             saw_header = True
+            index += 2
             continue
+
+        if line.startswith("+++ "):
+            raise StageExecutionError("Patch output contained an unexpected unified diff header order.")
+
         normalized_lines.append(line)
+        index += 1
 
     if not saw_header:
         raise StageExecutionError("Patch output did not contain unified diff file headers.")
@@ -463,18 +486,32 @@ def normalize_unified_diff_paths(patch_text: str, *, workspace_root: Path) -> tu
     return "\n".join(normalized_lines) + "\n", changed_files
 
 
-def _normalize_patch_path(path_text: str, *, workspace_root: Path) -> str:
+def _parse_patch_header(line: str, *, prefix: str) -> tuple[str, str, str]:
+    payload = line[len(prefix) :]
+    path_text, separator, suffix = payload.partition("\t")
+    return path_text.strip(), separator, suffix
+
+
+def _resolve_target_path(*, old_path: str, new_path: str, workspace_root: Path) -> str:
+    for candidate in (new_path, old_path):
+        normalized = _normalize_candidate_path(candidate, workspace_root=workspace_root)
+        if normalized is not None:
+            return normalized
+    raise StageExecutionError(
+        f"Patch paths did not reference a file under workspace root {workspace_root}: {old_path} -> {new_path}"
+    )
+
+
+def _normalize_candidate_path(path_text: str, *, workspace_root: Path) -> str | None:
     if path_text == "/dev/null":
-        return path_text
+        return None
 
     candidate = Path(path_text)
     if candidate.is_absolute():
         try:
             return candidate.resolve().relative_to(workspace_root).as_posix()
-        except ValueError as exc:
-            raise StageExecutionError(
-                f"Patch path {path_text} does not live under workspace root {workspace_root}."
-            ) from exc
+        except ValueError:
+            return None
 
     relative = Path(path_text.removeprefix("./"))
     if relative.is_absolute() or ".." in relative.parts:

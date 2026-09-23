@@ -134,7 +134,7 @@ class OwningFieldStageTest(unittest.TestCase):
                 raise AssertionError("Patch command should not run when normalization fails.")
 
             with patch("subprocess.run", side_effect=fake_run):
-                with self.assertRaisesRegex(StageExecutionError, "does not live under workspace root"):
+                with self.assertRaisesRegex(StageExecutionError, "did not reference a file under workspace root"):
                     run_owning_field_stage(
                         self._make_config(temp_root),
                         workspace_root=workspace_root,

@@ -15,6 +15,7 @@ from .base import (
     StageExecutionError,
     append_command_log,
     apply_normalized_patch,
+    normalize_unified_diff_paths,
     run_stage_command,
     stage_timeout_seconds,
     write_stage_result,
@@ -32,6 +33,13 @@ from .rlfixer_io import (
 
 _STAGE_NAME = "rlpatcher"
 _PATCH_SUCCESS_TEXT = "Patch applied successfully"
+_PATCH_REJECTED_TEXT = "Patch failed"
+# Per-fix outcomes of running RLPatcher on one RLFixer suggestion.
+MATERIALIZED = "materialized"  # RLPatcher produced a patch that passed its compile check
+NO_CHANGE = "no_change"  # RLPatcher found nothing to change for this suggestion
+REJECTED = "rejected"  # RLPatcher's edit did not pass its compile check
+UNSUPPORTED = "unsupported"  # RLPatcher does not handle this kind of suggestion
+CRASHED = "crashed"  # RLPatcher exited with an error
 
 
 @dataclass(frozen=True)
@@ -87,7 +95,8 @@ class MatchedFixWarning:
 @dataclass(frozen=True)
 class HarvestedPatch:
     match: MatchedFixWarning
-    patch_text: str
+    outcome: str
+    patch_text: str | None
 
 
 @dataclass(frozen=True)
@@ -177,8 +186,8 @@ class RLPatcherStageWrapper(BaseStageWrapper):
         harvested_patches: list[HarvestedPatch] = []
         for index, (fix, warning) in enumerate(matched, start=1):
             match = self._write_prompt(inputs=inputs, index=index, fix=fix, warning=warning)
-            patch_text = self._invoke_patcher(inputs=inputs, match=match)
-            harvested_patches.append(HarvestedPatch(match=match, patch_text=patch_text))
+            outcome, patch_text = self._invoke_patcher(inputs=inputs, match=match)
+            harvested_patches.append(HarvestedPatch(match=match, outcome=outcome, patch_text=patch_text))
 
         return RLPatcherStageInvocation(inputs=inputs, harvested_patches=tuple(harvested_patches))
 
@@ -198,10 +207,21 @@ class RLPatcherStageWrapper(BaseStageWrapper):
         materialized_patches: list[MaterializedPatch] = []
         manifest_entries: list[dict[str, object]] = []
         skipped = 0
+        fix_outcomes = [
+            {
+                "index": harvested.match.index,
+                "file": harvested.match.fix.relpath,
+                "line": harvested.match.fix.line_number,
+                "outcome": harvested.outcome,
+            }
+            for harvested in invocation.harvested_patches
+        ]
 
         for harvested in invocation.harvested_patches:
+            if harvested.outcome != MATERIALIZED:
+                continue
             # Normalize tool-emitted headers before exposing any patch bundle artifact.
-            normalized_patch, changed_files = _normalize_rlpatcher_patch(
+            normalized_patch, changed_files = normalize_unified_diff_paths(
                 harvested.patch_text,
                 workspace_root=invocation.inputs.workspace_root,
             )
@@ -248,15 +268,17 @@ class RLPatcherStageWrapper(BaseStageWrapper):
             )
 
         invocation.inputs.paths.manifest_path.write_text(
-            json.dumps({"stage": _STAGE_NAME, "patches": manifest_entries}, indent=2, sort_keys=True) + "\n"
+            json.dumps(
+                {"stage": _STAGE_NAME, "patches": manifest_entries, "fixes": fix_outcomes},
+                indent=2,
+                sort_keys=True,
+            )
+            + "\n"
         )
         return RLPatcherStageOutputs(
             paths=invocation.inputs.paths,
             materialized_patches=tuple(materialized_patches),
-            note=(
-                f"Materialized {len(materialized_patches)} patch(es); applied "
-                f"{len(materialized_patches) - skipped}, skipped {skipped} that conflicted with earlier patches."
-            ),
+            note=_outcome_note(fix_outcomes, applied=len(materialized_patches) - skipped, skipped=skipped),
         )
 
     def validate_outputs(self, normalized_result: object, **kwargs: object) -> None:
@@ -301,7 +323,7 @@ class RLPatcherStageWrapper(BaseStageWrapper):
         *,
         inputs: RLPatcherStageInputs,
         match: MatchedFixWarning,
-    ) -> str:
+    ) -> tuple[str, str | None]:
         inputs.paths.raw_patch_path.unlink(missing_ok=True)
         command = [
             java_executable(),
@@ -313,7 +335,17 @@ class RLPatcherStageWrapper(BaseStageWrapper):
             "--project-root",
             str(inputs.workspace_root),
         ]
-        completed = run_stage_command(command=command, cwd=inputs.paths.root)
+        # RLPatcher edits the source in place and writes its backup back afterwards, which can
+        # change the file (e.g. add a trailing newline). The stage applies patches itself, so
+        # the workspace must be byte-for-byte what it was before RLPatcher ran.
+        touched = {Path(match.warning.filepath), Path(match.fix.filepath)}
+        originals = {path: path.read_bytes() for path in touched if path.is_file()}
+        try:
+            completed = run_stage_command(command=command, cwd=inputs.paths.root)
+        finally:
+            for path, content in originals.items():
+                if not path.is_file() or path.read_bytes() != content:
+                    path.write_bytes(content)
         append_command_log(
             inputs.paths.log_path,
             title=f"rlpatcher_{match.index:04d}",
@@ -323,16 +355,20 @@ class RLPatcherStageWrapper(BaseStageWrapper):
             timeout_seconds=stage_timeout_seconds(inputs.config),
         )
 
+        # Each suggestion is independent: an outcome other than a patch is recorded for it
+        # (see the stage notes and patch_manifest.json) and the other suggestions still run.
+        raw_patch = inputs.paths.raw_patch_path
+        patch_text = raw_patch.read_text() if raw_patch.is_file() else ""
+        raw_patch.unlink(missing_ok=True)
         if completed.returncode != 0:
-            raise StageExecutionError(f"RLPatcher command failed. See log: {inputs.paths.log_path}")
+            return CRASHED, None
+        if _PATCH_REJECTED_TEXT in completed.stdout:
+            return REJECTED, None
         if _PATCH_SUCCESS_TEXT not in completed.stdout:
-            raise StageExecutionError(f"RLPatcher did not report success. See log: {inputs.paths.log_path}")
-        if not inputs.paths.raw_patch_path.is_file():
-            raise StageExecutionError(f"RLPatcher did not emit rlfixer.patch. See log: {inputs.paths.log_path}")
-
-        patch_text = inputs.paths.raw_patch_path.read_text()
-        inputs.paths.raw_patch_path.unlink(missing_ok=True)
-        return patch_text
+            return UNSUPPORTED, None
+        if not _changes_code(patch_text):
+            return NO_CHANGE, None
+        return MATERIALIZED, patch_text
 
     def _create_stage_result(self, outputs: RLPatcherStageOutputs) -> StageResult:
         changed_files = outputs.applied_changed_files
@@ -394,6 +430,34 @@ def run_rlpatcher_stage(
     )
 
 
+def _changes_code(patch_text: str) -> bool:
+    """False for an empty diff or one that only changes whitespace (RLPatcher reprints files)."""
+    removed = [line[1:].strip() for line in patch_text.splitlines() if line.startswith("-") and not line.startswith("---")]
+    added = [line[1:].strip() for line in patch_text.splitlines() if line.startswith("+") and not line.startswith("+++")]
+    return [line for line in removed if line] != [line for line in added if line]
+
+
+def _outcome_note(fix_outcomes: list[dict[str, object]], *, applied: int, skipped: int) -> str:
+    counts = {outcome: 0 for outcome in (MATERIALIZED, NO_CHANGE, REJECTED, UNSUPPORTED, CRASHED)}
+    for entry in fix_outcomes:
+        counts[str(entry["outcome"])] += 1
+    note = (
+        f"RLPatcher materialized {counts[MATERIALIZED]} of {len(fix_outcomes)} RLFixer suggestion(s); "
+        f"applied {applied}, skipped {skipped} that conflicted with earlier patches."
+    )
+    others = [
+        f"{counts[outcome]} {label}"
+        for outcome, label in (
+            (NO_CHANGE, "needed no change"),
+            (REJECTED, "failed RLPatcher's compile check"),
+            (UNSUPPORTED, "are not supported by RLPatcher"),
+            (CRASHED, "crashed RLPatcher"),
+        )
+        if counts[outcome]
+    ]
+    return note + (f" Not materialized: {', '.join(others)}." if others else "")
+
+
 def _matched_fix_warnings(
     *,
     diagnostics_path: Path,
@@ -430,85 +494,6 @@ def _apply_to_workspace(*, workspace_root: Path, patch_path: Path, log_path: Pat
     if applied.completed.returncode != 0:
         raise StageExecutionError(f"Patch {patch_path.name} passed its dry run but failed to apply. See log: {log_path}")
     return True
-
-
-def _normalize_rlpatcher_patch(patch_text: str, *, workspace_root: Path) -> tuple[str, list[str]]:
-    workspace_root = workspace_root.resolve()
-    changed_files: list[str] = []
-    seen_files: set[str] = set()
-    normalized_lines: list[str] = []
-    lines = patch_text.replace("\r\n", "\n").splitlines()
-    saw_header = False
-    index = 0
-
-    while index < len(lines):
-        line = lines[index]
-        if line.startswith("--- "):
-            if index + 1 >= len(lines) or not lines[index + 1].startswith("+++ "):
-                raise StageExecutionError("Patch output did not contain a valid unified diff header pair.")
-            old_path, old_separator, old_suffix = _parse_patch_header(lines[index], prefix="--- ")
-            new_path, new_separator, new_suffix = _parse_patch_header(lines[index + 1], prefix="+++ ")
-            target_path = _resolve_target_path(
-                old_path=old_path,
-                new_path=new_path,
-                workspace_root=workspace_root,
-            )
-            normalized_old = "/dev/null" if old_path == "/dev/null" else target_path
-            normalized_new = "/dev/null" if new_path == "/dev/null" else target_path
-            normalized_lines.append(f"--- {normalized_old}{old_separator}{old_suffix}")
-            normalized_lines.append(f"+++ {normalized_new}{new_separator}{new_suffix}")
-            if target_path not in seen_files:
-                changed_files.append(target_path)
-                seen_files.add(target_path)
-            saw_header = True
-            index += 2
-            continue
-
-        if line.startswith("+++ "):
-            raise StageExecutionError("Patch output contained an unexpected unified diff header order.")
-
-        normalized_lines.append(line)
-        index += 1
-
-    if not saw_header:
-        raise StageExecutionError("Patch output did not contain unified diff file headers.")
-    if not changed_files:
-        raise StageExecutionError("Patch output did not reference any repo files.")
-
-    return "\n".join(normalized_lines) + "\n", changed_files
-
-
-def _parse_patch_header(line: str, *, prefix: str) -> tuple[str, str, str]:
-    payload = line[len(prefix) :]
-    path_text, separator, suffix = payload.partition("\t")
-    return path_text.strip(), separator, suffix
-
-
-def _resolve_target_path(*, old_path: str, new_path: str, workspace_root: Path) -> str:
-    for candidate in (new_path, old_path):
-        normalized = _normalize_candidate_path(candidate, workspace_root=workspace_root)
-        if normalized is not None:
-            return normalized
-    raise StageExecutionError(
-        f"Patch paths did not reference a file under workspace root {workspace_root}: {old_path} -> {new_path}"
-    )
-
-
-def _normalize_candidate_path(path_text: str, *, workspace_root: Path) -> str | None:
-    if path_text == "/dev/null":
-        return None
-
-    candidate = Path(path_text)
-    if candidate.is_absolute():
-        try:
-            return candidate.resolve().relative_to(workspace_root).as_posix()
-        except ValueError:
-            return None
-
-    relative = Path(path_text.removeprefix("./"))
-    if relative.is_absolute() or ".." in relative.parts:
-        raise StageExecutionError(f"Unsupported patch path outside workspace root: {path_text}")
-    return relative.as_posix()
 
 
 def _compute_preimage_hashes(workspace_root: Path, changed_files: list[str]) -> dict[str, str]:

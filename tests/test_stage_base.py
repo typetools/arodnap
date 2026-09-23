@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 from arodnap.patch_tool import PatchExecution, PatchTool
 from arodnap.runtime import CommandResult
-from arodnap.stages.base import BaseNormalizedPatchStageWrapper, BaseStageWrapper
+from arodnap.stages.base import BaseNormalizedPatchStageWrapper, BaseStageWrapper, normalize_unified_diff_paths
 
 
 class StageBaseWrapperTest(unittest.TestCase):
@@ -197,3 +197,28 @@ class StageBaseWrapperTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class NormalizeUnifiedDiffPathsTest(unittest.TestCase):
+    def test_header_pair_with_a_temporary_copy_resolves_to_the_workspace_file(self) -> None:
+        # OwningFieldFixer diffs the workspace file against its edited temporary copy.
+        with tempfile.TemporaryDirectory() as temp_dir:
+            workspace = Path(temp_dir).resolve() / "workspace"
+            source = workspace / "src/main/java/owning/Sink.java"
+            source.parent.mkdir(parents=True)
+            source.write_text("class Sink { FileWriter out; }\n")
+            patch_text = (
+                f"--- {source}\t2026-09-23 15:07:14\n"
+                "+++ /var/folders/T/patch-3066328583808330310.java\t2026-09-23 15:07:14\n"
+                "@@ -1 +1 @@\n"
+                "-class Sink { FileWriter out; }\n"
+                "+class Sink { private final FileWriter out; }\n"
+            )
+
+            normalized, changed = normalize_unified_diff_paths(patch_text, workspace_root=workspace)
+
+        self.assertEqual(changed, ["src/main/java/owning/Sink.java"])
+        self.assertTrue(normalized.startswith(
+            "--- src/main/java/owning/Sink.java\t2026-09-23 15:07:14\n"
+            "+++ src/main/java/owning/Sink.java\t2026-09-23 15:07:14\n"
+        ))

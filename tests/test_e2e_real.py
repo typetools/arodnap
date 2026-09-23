@@ -70,6 +70,40 @@ class RealEndToEndTest(unittest.TestCase):
         self.assertIn("try (FileInputStream in = new FileInputStream(path))", (repo_root / source).read_text())
 
     @_requires("gradle")
+    def test_every_stage_does_its_part(self) -> None:
+        report, bundle_files, repo_root = self._repair_and_apply("gradle-pipeline-coverage", verify=_GRADLE)
+        out_dir = repo_root.parent / "arodnap-out"
+
+        # Exact counts: a change here means a stage (or an analysis dependency) behaves differently.
+        self.assertEqual(
+            [(run["label"], run["warning_count"]) for run in report["analysis_runs"]],
+            [("initial", 26), ("post_close_injector", 26), ("post_owning_field", 24), ("final", 6)],
+        )
+        stages = {
+            name: json.loads((out_dir / "stages" / name / "stage_result.json").read_text())
+            for name in ("close_injector", "owning_field", "rlfixer", "rlpatcher", "bundle")
+        }
+        self.assertEqual(stages["close_injector"]["changed_files"], ["src/main/java/wrapper/Wrapper.java"])
+        self.assertEqual(
+            sorted(stages["owning_field"]["changed_files"]),
+            ["src/main/java/owning/PackagePrivateSink.java", "src/main/java/owning/PublicSink.java"],
+        )
+        self.assertEqual(stages["rlfixer"]["notes"], ["RLFixer proposed 20 fix(es) for 24 leak warning(s)."])
+        self.assertIn("RLPatcher materialized 18 of 20", stages["rlpatcher"]["notes"][0])
+        changed_by_stages = {
+            path for name in ("close_injector", "owning_field", "rlpatcher") for path in stages[name]["changed_files"]
+        }
+        self.assertEqual(set(bundle_files), changed_by_stages)
+
+        # The paper's scenario: the leak in the wrapper's client is fixed once the wrapper is closable.
+        client = (repo_root / "src/main/java/wrapper/WrapperClient.java").read_text()
+        self.assertIn("try (Wrapper wrapper = new Wrapper(path))", client)
+        self.assertIn(
+            "private final FileWriter out;",
+            (repo_root / "src/main/java/owning/PackagePrivateSink.java").read_text(),
+        )
+
+    @_requires("gradle")
     def test_every_module_of_a_multi_module_gradle_build_is_repaired(self) -> None:
         report, bundle_files, repo_root = self._repair_and_apply("gradle-multimodule", verify=_GRADLE)
 
