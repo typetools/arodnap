@@ -99,13 +99,18 @@ public class PromptParser {
             info.resourceType = trimDot(typeMatcher.group(1));
         }
 
-        // --- finalizer + allocation from $$ … $$ ---
+        // --- finalizer + allocation (+ resource type) from $$ … $$ ---
         Matcher allocExprMatcher = Pattern.compile(
-                "\\$\\$\\s*\\d+\\s*\\$\\$\\s*method\\s+(\\S+)\\s*\\$\\$\\s*([^$]+?)\\s*\\$\\$")
+                "\\$\\$\\s*\\d+\\s*\\$\\$\\s*method\\s+(\\S+)\\s*\\$\\$\\s*([^$]+?)\\s*\\$\\$(?:\\s*([a-zA-Z0-9_.$]+?)\\s*\\$\\$)?")
                 .matcher(cf);
         if (allocExprMatcher.find()) {
             info.finalizerMethod = allocExprMatcher.group(1).trim();
             info.allocationExprText = allocExprMatcher.group(2).trim();
+            // Checker Framework 4.x no longer prints "The type of object is: ..." for the
+            // Resource Leak Checker; the same type is the next -Adetailedmsgtext argument.
+            if (info.resourceType == null && allocExprMatcher.group(3) != null) {
+                info.resourceType = trimDot(allocExprMatcher.group(3));
+            }
         }
 
         // --- RLFixer: file + line ---

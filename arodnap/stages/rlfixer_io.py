@@ -13,7 +13,8 @@ from pathlib import Path
 import re
 
 _WARNING_HEADER = re.compile(r"^(?P<path>/.+?):(?P<line>\d+):\s+warning:", re.MULTILINE)
-_REQUIRED_METHOD_NOT_CALLED = "(required.method.not.called)"
+# Checker Framework 3.x prints "(key)"; 4.x prints "[key]" or "[checker:key]".
+_REQUIRED_METHOD_NOT_CALLED = re.compile(r"[(\[](?:[\w.]+:)?required\.method\.not\.called[)\]]")
 _OWNING_FIELD_OVERWRITE = "Non-final owning field might be overwritten"
 _FIX_BLOCK = re.compile(
     r"""
@@ -71,7 +72,7 @@ def rlfixer_warnings_argument(
     entries = []
     skipped = []
     for warning in warnings:
-        if _REQUIRED_METHOD_NOT_CALLED not in warning.message.splitlines()[0]:
+        if not _REQUIRED_METHOD_NOT_CALLED.search(warning.message.splitlines()[0]):
             continue
         relpath = _relative_to(warning.filepath, source_root)
         if relpath is None:

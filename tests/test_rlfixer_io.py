@@ -47,6 +47,18 @@ class RLFixerIoTest(unittest.TestCase):
         self.assertEqual(argument, "a/A.java,3,None,False#a/B.java,9,None,True#")
         self.assertEqual([w.filepath for w in skipped], ["/elsewhere/C.java"])
 
+    def test_warning_key_formats_of_checker_framework_3_and_4_are_accepted(self) -> None:
+        warnings = [
+            CheckerWarning("/ws/src/main/java/a/A.java", 1, "/ws/src/main/java/a/A.java:1: warning: (required.method.not.called) x"),
+            CheckerWarning("/ws/src/main/java/a/A.java", 2, "/ws/src/main/java/a/A.java:2: warning: [required.method.not.called] x"),
+            CheckerWarning(
+                "/ws/src/main/java/a/A.java", 3, "/ws/src/main/java/a/A.java:3: warning: [resourceleak:required.method.not.called] x"
+            ),
+            CheckerWarning("/ws/src/main/java/a/A.java", 4, "/ws/src/main/java/a/A.java:4: warning: [missing.creates.mustcall.for] x"),
+        ]
+        argument, _ = rlfixer_warnings_argument(warnings, source_root=_ROOT)
+        self.assertEqual(argument, "a/A.java,1,None,False#a/A.java,2,None,False#a/A.java,3,None,False#")
+
     def test_fix_suggestions_use_source_root_relative_paths(self) -> None:
         text = (
             "\nSOURCE LEVEL FIXES\n\n"
