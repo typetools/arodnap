@@ -5,6 +5,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from arodnap.analysis import WpiRunError, run_wpi
+from arodnap.analysis.wpi_runner import _gradle_user_home
 from arodnap.contracts import RunConfig, Timeouts
 from arodnap.runtime import CommandResult, Jdk
 
@@ -223,8 +224,8 @@ class WpiRunnerTest(unittest.TestCase):
                     str((config.cf_root / "checker" / "bin" / "wpi.sh").resolve()),
                 )
                 self.assertEqual(command[2:4], ["-d", str(workspace_root.resolve())])
-                self.assertIn("-b", command)
-                self.assertIn("--info -x=test", command)
+                self.assertEqual(command[command.index("-b") + 1], "--no-daemon --info -x=test")
+                self.assertEqual(command[command.index("-g") + 1], str(_gradle_user_home()))
                 self.assertIn("-c", command)
                 self.assertIn("classes", command)
                 self.assertIn("--", command)

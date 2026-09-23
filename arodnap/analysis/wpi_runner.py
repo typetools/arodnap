@@ -93,18 +93,28 @@ def run_wpi(
 
 
 def _build_wpi_command(config: RunConfig, workspace_root: Path) -> list[str]:
+    # wpi.sh defaults Gradle's user home to <project>/.gradle, which re-downloads every
+    # dependency on each run and leaves daemons writing into the deleted workspace.
+    build_args = ["--no-daemon", *config.build_args]
     command = [
         "bash",
         str((config.cf_root / "checker" / "bin" / "wpi.sh").resolve()),
         "-d",
         str(workspace_root),
+        "-g",
+        str(_gradle_user_home()),
+        "-b",
+        " ".join(build_args),
     ]
-    if config.build_args:
-        command.extend(["-b", " ".join(config.build_args)])
     if config.compile_target:
         command.extend(["-c", config.compile_target])
     command.extend(["--", "--checker", "resourceleak"])
     return command
+
+
+def _gradle_user_home() -> Path:
+    configured = os.environ.get("GRADLE_USER_HOME")
+    return Path(configured).expanduser() if configured else Path.home() / ".gradle"
 
 
 @contextmanager
