@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+import os
 import sys
 from typing import Any, Literal
 
@@ -16,10 +17,9 @@ from arodnap.contracts import RunConfig
 from arodnap.orchestrator.results import write_json
 from arodnap.orchestrator.workspace import copied_workspace
 from arodnap.patch_tool import PatchToolError, discover_patch_tool
-from arodnap.analysis.wpi_runner import resolve_dljc_python
+from arodnap.analysis.wpi_runner import resolve_dljc_python, wpi_supported_jdk_majors
 from arodnap.runtime import (
     RLFIXER_MIN_JDK_MAJOR,
-    WPI_SUPPORTED_JDK_MAJORS,
     JdkResolutionError,
     resolve_jdk,
 )
@@ -108,7 +108,8 @@ def run_doctor(config: RunConfig) -> int:
 def _run_environment_checks(config: RunConfig) -> list[DoctorCheck]:
     return [
         _check_python_runtime(),
-        _check_java_runtime(),
+        _check_java_runtime(config.cf_root),
+        _check_wpi_gradle_jdk(config.cf_root),
         _check_wpi_python(),
         _check_patch_binary(),
         _check_checker_framework_path(config.cf_root),
@@ -127,7 +128,7 @@ def _check_python_runtime() -> DoctorCheck:
     )
 
 
-def _check_java_runtime() -> DoctorCheck:
+def _check_java_runtime(cf_root: Path) -> DoctorCheck:
     try:
         jdk = resolve_jdk()
     except JdkResolutionError as exc:
@@ -136,7 +137,7 @@ def _check_java_runtime() -> DoctorCheck:
     details = {"home": jdk.home, "major_version": jdk.major_version, "source": jdk.source}
     supported = [
         major
-        for major in WPI_SUPPORTED_JDK_MAJORS
+        for major in wpi_supported_jdk_majors(cf_root)
         if major >= RLFIXER_MIN_JDK_MAJOR
     ]
     if jdk.major_version not in supported:
@@ -144,7 +145,8 @@ def _check_java_runtime() -> DoctorCheck:
             name="java_runtime",
             status="error",
             message=(
-                f"JDK {jdk.major_version} at {jdk.home} (from {jdk.source}) is not supported. "
+                f"JDK {jdk.major_version} at {jdk.home} (from {jdk.source}) is not supported "
+                f"with {cf_root.name}. "
                 f"Set JAVA_HOME to JDK {' or '.join(str(major) for major in supported)}."
             ),
             details=details,
@@ -154,6 +156,38 @@ def _check_java_runtime() -> DoctorCheck:
         status="ok",
         message=f"JDK {jdk.major_version} is available at {jdk.home} (from {jdk.source}).",
         details=details,
+    )
+
+
+def _check_wpi_gradle_jdk(cf_root: Path) -> DoctorCheck:
+    """wpi.sh (Checker Framework 4.2.3 and master as of 2026-09) runs Gradle builds with
+    -Dorg.gradle.java.home=${JAVA21_HOME}, so Gradle projects need a JDK 21 even when
+    JAVA_HOME is newer."""
+    try:
+        wpi_script = (cf_root / "checker" / "bin" / "wpi.sh").read_text()
+    except OSError:
+        wpi_script = ""
+    if "org.gradle.java.home=${JAVA21_HOME}" not in wpi_script:
+        return DoctorCheck(name="wpi_gradle_jdk", status="ok", message="wpi.sh runs Gradle on JAVA_HOME.")
+    try:
+        jdk = resolve_jdk()
+    except JdkResolutionError:
+        jdk = None
+    java21_home = os.environ.get("JAVA21_HOME")
+    if (jdk is not None and jdk.major_version == 21) or java21_home:
+        return DoctorCheck(
+            name="wpi_gradle_jdk",
+            status="ok",
+            message="wpi.sh will run Gradle builds on JDK 21.",
+            details={"java21_home": java21_home or (jdk.home if jdk else None)},
+        )
+    return DoctorCheck(
+        name="wpi_gradle_jdk",
+        status="error",
+        message=(
+            f"{cf_root.name}'s wpi.sh runs Gradle builds on JAVA21_HOME, which is not set. "
+            "Set JAVA21_HOME to a JDK 21 (JAVA_HOME may stay newer) or use JDK 21 as JAVA_HOME."
+        ),
     )
 
 

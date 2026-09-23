@@ -19,6 +19,9 @@ class WpiRunnerTest(unittest.TestCase):
         )
         self.resolve_jdk = jdk_patcher.start()
         self.addCleanup(jdk_patcher.stop)
+        majors_patcher = patch("arodnap.analysis.wpi_runner.wpi_supported_jdk_majors", return_value=(17, 21))
+        majors_patcher.start()
+        self.addCleanup(majors_patcher.stop)
 
     def test_runner_exports_resolved_java_home_for_wpi(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -283,13 +286,16 @@ class WpiRunnerTest(unittest.TestCase):
                 command=(),
                 cwd=workspace_root.resolve(),
                 returncode=0,
-                stdout="ok\n",
+                stdout="Starting wpi.sh\nwpi.sh: dljc could not run the build successfully: dljc failed to clean\n",
                 stderr="",
             )
 
             with patch("arodnap.analysis.wpi_runner.resolve_dljc_python", return_value=Path("/usr/bin/python3")):
                 with patch("arodnap.analysis.wpi_runner.run_command", return_value=completed):
-                    with self.assertRaisesRegex(WpiRunError, "no inferred output directory"):
+                    with self.assertRaisesRegex(
+                        WpiRunError,
+                        "no inferred annotations. wpi.sh: dljc could not run the build successfully",
+                    ):
                         run_wpi(
                             config,
                             workspace_root=workspace_root,

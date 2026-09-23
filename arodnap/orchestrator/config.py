@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 from pathlib import Path
 
 from arodnap.contracts import RunConfig, Timeouts
@@ -24,13 +25,26 @@ def build_run_config(
         build_args=list(args.build_args),
         compile_target=args.compile_target,
         patch_dir=patch_dir,
-        cf_root=_tool_repo_root() / "checker_framework" / "checker-framework-3.49.0",
+        cf_root=resolve_cf_root(getattr(args, "checker_framework", None)),
         close_injector_jar=_plugin_jars_root() / "AutoCloseInjector-1.0-SNAPSHOT.jar",
         owning_field_jar=_plugin_jars_root() / "OwningFieldFixer-1.0-SNAPSHOT.jar",
         rlfixer_jar=_plugin_jars_root() / "RLFixer-1.0-SNAPSHOT.jar",
         rlpatcher_jar=_plugin_jars_root() / "RLPatcher-1.0-SNAPSHOT.jar",
         timeouts=Timeouts(build_seconds=900, analysis_seconds=1800, stage_seconds=900),
     )
+
+
+CHECKER_FRAMEWORK_ENV = "ARODNAP_CHECKER_FRAMEWORK"
+VENDORED_CHECKER_FRAMEWORK = "checker-framework-4.2.3"
+
+
+def resolve_cf_root(cli_value: str | None = None) -> Path:
+    """Checker Framework distribution to use: --checker-framework, then
+    $ARODNAP_CHECKER_FRAMEWORK, then the vendored copy."""
+    configured = cli_value or os.environ.get(CHECKER_FRAMEWORK_ENV)
+    if configured:
+        return Path(configured).expanduser().resolve()
+    return _tool_repo_root() / "checker_framework" / VENDORED_CHECKER_FRAMEWORK
 
 
 def _tool_repo_root() -> Path:

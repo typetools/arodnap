@@ -49,8 +49,15 @@ Current v1.1 responsibilities:
 - shared `CommandResult` and `CommandExecutionError`
 - shared command-log rendering for analysis, stages, and patch execution
 - small environment overlay support via `environment_with_overrides(...)`
-- JDK resolution via `resolve_jdk()`: `JAVA_HOME`, else the `java` on `PATH`,
-  with the JDK majors WPI and RLFixer accept
+- JDK resolution via `resolve_jdk()`: `JAVA_HOME`, else the `java` on `PATH`
+
+The Checker Framework distribution comes from `--checker-framework`, then
+`$ARODNAP_CHECKER_FRAMEWORK`, then the bundled
+`checker_framework/checker-framework-4.2.3` (a trimmed release; see its
+`VENDORED.md`). The JDKs WPI accepts are read from that distribution's
+`wpi.sh`, since they change between releases. The final Resource Leak Checker
+pass uses the same flags as the paper's runs, including
+`-Astubs=checker_framework/stubs` and `-Xmaxwarns 10000`.
 
 The runtime layer is intentionally narrow. It centralizes the behavior Arodnap
 actually reuses today instead of introducing a larger framework for future
@@ -247,7 +254,8 @@ Each check object minimum keys:
 | `message` | string | human-readable summary |
 | `details` | object \| null | optional structured detail |
 
-Stable `name` values: `python_runtime`, `java_runtime`, `wpi_python`,
+Stable `name` values: `python_runtime`, `java_runtime`, `wpi_gradle_jdk`,
+`wpi_python`,
 `patch_binary`, `checker_framework_path`, `checker_framework_tools`,
 `plugin_jars`, `repo_path`, `adapter_selection`, `repo_support`,
 `source_root`, `compile_target`.

@@ -5,7 +5,8 @@ These runs take about a minute per fixture, so they are opt-in:
 
     ARODNAP_E2E=1 python -m unittest tests.test_e2e_real
 
-They need a JDK that both wpi.sh and RLFixer accept (17, 20 or 21) as JAVA_HOME or first
+They use the Checker Framework from $ARODNAP_CHECKER_FRAMEWORK (default: the bundled
+4.2.3) and need a JDK that both its wpi.sh and RLFixer (17+) accept, as JAVA_HOME or first
 on PATH, `gradle` on PATH, GNU patch, and network access or a warm Gradle cache for
 the dependency fixture.
 """
@@ -21,7 +22,9 @@ import unittest
 from pathlib import Path
 
 from arodnap.cli.main import main
-from arodnap.runtime import RLFIXER_MIN_JDK_MAJOR, WPI_SUPPORTED_JDK_MAJORS, JdkResolutionError, resolve_jdk
+from arodnap.analysis.wpi_runner import wpi_supported_jdk_majors
+from arodnap.orchestrator.config import resolve_cf_root
+from arodnap.runtime import RLFIXER_MIN_JDK_MAJOR, JdkResolutionError, resolve_jdk
 
 FIXTURES_ROOT = Path(__file__).resolve().parent / "fixtures"
 
@@ -33,8 +36,9 @@ def _skip_reason() -> str | None:
         jdk = resolve_jdk()
     except JdkResolutionError as exc:
         return str(exc)
-    if jdk.major_version not in WPI_SUPPORTED_JDK_MAJORS or jdk.major_version < RLFIXER_MIN_JDK_MAJOR:
-        return f"JDK {jdk.major_version} is not supported for analysis"
+    cf_root = resolve_cf_root()
+    if jdk.major_version not in wpi_supported_jdk_majors(cf_root) or jdk.major_version < RLFIXER_MIN_JDK_MAJOR:
+        return f"JDK {jdk.major_version} is not supported for analysis with {cf_root.name}"
     if shutil.which("gradle") is None:
         return "gradle is not on PATH"
     return None

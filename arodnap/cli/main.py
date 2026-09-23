@@ -46,6 +46,13 @@ def _add_shared_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--keep-workspace", action="store_true")
     parser.add_argument("--build-args", action="append", default=[])
     parser.add_argument("--compile-target")
+    parser.add_argument(
+        "--checker-framework",
+        help=(
+            "Checker Framework distribution directory (the one containing checker/bin/wpi.sh). "
+            "Defaults to $ARODNAP_CHECKER_FRAMEWORK, then the bundled 4.2.3."
+        ),
+    )
     parser.add_argument("repo_root")
 
 

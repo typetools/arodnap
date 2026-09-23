@@ -11,7 +11,6 @@ import tempfile
 
 from arodnap.contracts import RunConfig
 from arodnap.runtime import (
-    WPI_SUPPORTED_JDK_MAJORS,
     CommandExecutionError,
     JdkResolutionError,
     render_command_log,
@@ -31,6 +30,7 @@ class WpiRunError(RuntimeError):
 
 
 DLJC_PYTHON_ENV = "ARODNAP_WPI_PYTHON"
+_WPI_JAVA_VERSION_CHECK = re.compile(r'"\$\{java_version\}" = (\d+) \]')
 _PYTHON_CANDIDATE_NAMES = (
     "python3",
     "python3.12",
@@ -78,8 +78,15 @@ def run_wpi(
         stdout=command_result.stdout,
     )
     if generated_inference_dir is None:
+        # wpi.sh exits 0 even when dljc could not build the project; surface its reason.
+        reasons = [
+            line.strip()
+            for line in command_result.stdout.splitlines()
+            if line.startswith("wpi.sh:")
+        ]
+        detail = f" {reasons[-1]}" if reasons else ""
         raise WpiRunError(
-            "WPI succeeded but no inferred output directory could be located."
+            f"WPI produced no inferred annotations.{detail} See log: {log_path}"
         )
 
     if inference_root.exists():
@@ -121,7 +128,7 @@ def _gradle_user_home() -> Path:
 def _wpi_environment(cf_root: Path):
     env = os.environ.copy()
     env["CHECKERFRAMEWORK"] = str(cf_root)
-    env["JAVA_HOME"] = str(_resolve_wpi_java_home(env))
+    env["JAVA_HOME"] = str(_resolve_wpi_java_home(env, cf_root))
 
     compatible_python = resolve_dljc_python()
     if compatible_python is None:
@@ -141,15 +148,30 @@ def _wpi_environment(cf_root: Path):
         yield env
 
 
-def _resolve_wpi_java_home(env: dict[str, str]) -> Path:
+def wpi_supported_jdk_majors(cf_root: Path) -> tuple[int, ...]:
+    """JDK major versions the given Checker Framework's wpi.sh accepts as JAVA_HOME.
+
+    Read from the script itself because the list changes between releases
+    (3.49.0 accepts 8, 11, 17, 20, 21; 4.2.3 accepts 8, 11, 17, 21, 24, 25, 26).
+    """
+    wpi_script = cf_root / "checker" / "bin" / "wpi.sh"
+    try:
+        text = wpi_script.read_text()
+    except OSError:
+        return ()
+    return tuple(sorted({int(major) for major in _WPI_JAVA_VERSION_CHECK.findall(text)}))
+
+
+def _resolve_wpi_java_home(env: dict[str, str], cf_root: Path) -> Path:
     try:
         jdk = resolve_jdk(env)
     except JdkResolutionError as exc:
         raise WpiRunError(str(exc)) from exc
-    if jdk.major_version not in WPI_SUPPORTED_JDK_MAJORS:
-        supported = ", ".join(str(major) for major in WPI_SUPPORTED_JDK_MAJORS)
+    supported_majors = wpi_supported_jdk_majors(cf_root)
+    if jdk.major_version not in supported_majors:
+        supported = ", ".join(str(major) for major in supported_majors)
         raise WpiRunError(
-            f"Whole-program inference needs a JDK {supported}; found JDK {jdk.major_version} "
+            f"Whole-program inference with {cf_root.name} needs a JDK {supported}; found JDK {jdk.major_version} "
             f"at {jdk.home} (from {jdk.source}). Set JAVA_HOME to a supported JDK."
         )
     return jdk.home

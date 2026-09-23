@@ -29,10 +29,13 @@ python -m arodnap.main analyze /path/to/repo
 ## Prerequisites
 
 - Python 3.10 or newer
-- JDK 17, 20 or 21, as `JAVA_HOME` or as the first `java` on `PATH`. RLFixer
-  needs 17 or newer, and the bundled Checker Framework's whole-program
-  inference accepts 8, 11, 17, 20 and 21. Your project itself may target any
-  release this JDK can compile.
+- JDK 17 or newer, as `JAVA_HOME` or as the first `java` on `PATH`. RLFixer
+  needs 17+, and the bundled Checker Framework 4.2.3's whole-program inference
+  accepts 17, 21, 24, 25 and 26. Your project itself may target any release
+  this JDK can compile.
+- for Gradle projects on a JDK newer than 21: a JDK 21 as `JAVA21_HOME`. The
+  Checker Framework's `wpi.sh` runs Gradle builds on `JAVA21_HOME`
+  (an upstream limitation in 4.2.3 and current master).
 - a Python with `distutils` for the Checker Framework's do-like-javac helper:
   Python 3.11 or older, or a newer Python with `setuptools` installed. Arodnap
   finds one automatically (macOS's `/usr/bin/python3` works); set
@@ -75,6 +78,9 @@ Common options:
   flow.
 - `--compile-target`: override the compile target used for adapter-backed
   validation and analysis.
+- `--checker-framework`: use another Checker Framework distribution (the
+  directory containing `checker/bin/wpi.sh`). Defaults to
+  `$ARODNAP_CHECKER_FRAMEWORK`, then the bundled 4.2.3.
 - `apply` also requires `--patch-dir`, usually `./arodnap-out/patches`.
 
 ## Typical Workflow
@@ -188,8 +194,9 @@ Important outputs:
   `patch` and expose it as `gpatch` or `patch`.
 - If the default compile target is wrong for the repository, rerun with
   `--compile-target`.
-- If whole-program inference fails with a JDK message, point `JAVA_HOME` at
-  JDK 17, 20 or 21.
+- If whole-program inference fails with a JDK message, run `arodnap doctor`:
+  it names the JDKs the configured Checker Framework accepts and whether
+  Gradle builds need `JAVA21_HOME`.
 - If you need to inspect how a stage behaved, look at
   `arodnap-out/stages/<stage>/stage_result.json` and `stage.log` before
   rerunning the command.

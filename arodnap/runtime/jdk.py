@@ -11,9 +11,6 @@ from .commands import run_command
 from .errors import CommandExecutionError
 
 JAVA_HOME_ENV = "JAVA_HOME"
-
-# JDK majors the vendored Checker Framework wpi.sh accepts (checker-framework-3.49.0).
-WPI_SUPPORTED_JDK_MAJORS = (8, 11, 17, 20, 21)
 # RLFixer is built on WALA 1.8, which needs Java 17 or newer.
 RLFIXER_MIN_JDK_MAJOR = 17
 
