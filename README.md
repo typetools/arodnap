@@ -29,9 +29,18 @@ python -m arodnap.main analyze /path/to/repo
 ## Prerequisites
 
 - Python 3.10 or newer
-- Java 11 or newer
+- JDK 17, 20 or 21, as `JAVA_HOME` or as the first `java` on `PATH`. RLFixer
+  needs 17 or newer, and the bundled Checker Framework's whole-program
+  inference accepts 8, 11, 17, 20 and 21. Your project itself may target any
+  release this JDK can compile.
+- a Python with `distutils` for the Checker Framework's do-like-javac helper:
+  Python 3.11 or older, or a newer Python with `setuptools` installed. Arodnap
+  finds one automatically (macOS's `/usr/bin/python3` works); set
+  `ARODNAP_WPI_PYTHON` to choose one explicitly.
 - a Gradle wrapper in the target repository, or `gradle` available on `PATH`
 - GNU `patch`, exposed as `gpatch` or `patch`
+
+`arodnap doctor` checks all of these.
 
 ## Commands
 
@@ -50,8 +59,8 @@ Command summary:
 - `infer`: run one `reanalyze(workspace)` cycle and preserve inferred `.ajava`
   outputs.
 - `repair`: run the full workspace-based repair flow: analysis, close injector,
-  owning-field handling, RLFixer compatibility-bundle generation, and final
-  patch materialization.
+  owning-field repair, RLFixer fix suggestions, RLPatcher materialization, a
+  final reanalysis, and one verified patch bundle covering every change.
 - `apply`: validate a previously emitted patch bundle with a dry run, then
   apply it to the original repository. This is the only public command that
   mutates the original repository.
@@ -116,9 +125,12 @@ not edit the original repository by default.
 `repair` is intentionally non-destructive:
 
 - Arodnap copies the target repository into a temporary workspace.
-- Mutation-capable stages run only against that workspace copy.
+- Mutation-capable stages run only against that workspace copy, and analysis
+  is rerun after each stage that changes sources.
 - Each stage writes its own directory under `arodnap-out/stages/<stage>/`.
-- The final normalized patch bundle is emitted under `arodnap-out/patches/`.
+- The `bundle` stage diffs the original repository against the final workspace
+  into one patch, replays it onto a clean copy of the original files to check
+  it reproduces the repair exactly, and emits it under `arodnap-out/patches/`.
 
 `apply` is intentionally separate:
 
@@ -145,8 +157,10 @@ arodnap-out/
     owning_field/
     rlfixer/
     rlpatcher/
+    bundle/
   patches/
     manifest.json
+    arodnap.patch
 ```
 
 Important outputs:
@@ -161,7 +175,8 @@ Important outputs:
 - `logs/<label>/`: analysis logs and adapter metadata files
 - `inference/<label>/`: preserved inferred outputs for `infer` and `repair`
 - `stages/<name>/stage_result.json`: structured stage results for `repair`
-- `patches/manifest.json`: normalized patch bundle consumed by `apply`
+- `patches/manifest.json` and `patches/arodnap.patch`: the verified patch
+  bundle consumed by `apply`; review `arodnap.patch` before applying
 
 ## Troubleshooting
 
@@ -173,6 +188,8 @@ Important outputs:
   `patch` and expose it as `gpatch` or `patch`.
 - If the default compile target is wrong for the repository, rerun with
   `--compile-target`.
+- If whole-program inference fails with a JDK message, point `JAVA_HOME` at
+  JDK 17, 20 or 21.
 - If you need to inspect how a stage behaved, look at
   `arodnap-out/stages/<stage>/stage_result.json` and `stage.log` before
   rerunning the command.
@@ -183,6 +200,15 @@ Run the full test suite:
 
 ```bash
 python -m unittest discover -s tests -p "test_*.py"
+```
+
+Those tests mock the external tools. The real end-to-end tests run Gradle,
+whole-program inference, the Resource Leak Checker and every repair tool with
+nothing mocked, then apply the patch and compile the result. They take about a
+minute per fixture and are opt-in:
+
+```bash
+ARODNAP_E2E=1 python -m unittest tests.test_e2e_real
 ```
 
 Run focused suites:

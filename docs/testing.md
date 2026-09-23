@@ -11,11 +11,27 @@ Fixture repositories live under
 Current fixture usage:
 
 - `gradle-pipeline-baseline/` is the main supported single-module Gradle fixture
+- `gradle-dependency-leak/` has a leak through a Maven Central dependency
 - unsupported-shape fixtures cover fail-closed validation paths
 - the legacy normalized fixture remains internal regression coverage only
 
 Keep fixtures intentionally small. A single high-signal fixture is preferred to
 many partially maintained ones.
+
+## Real End-To-End Tests
+
+[`tests/test_e2e_real.py`](../tests/test_e2e_real.py) runs `repair`, `apply`
+and a compile of the result with the real toolchain and nothing mocked. It is
+the gate for roadmap milestones: mocked tests check wiring, this checks that
+the tools actually work together.
+
+```bash
+ARODNAP_E2E=1 python -m unittest tests.test_e2e_real
+```
+
+It needs a supported JDK (17, 20 or 21), `gradle` on `PATH`, GNU patch, and
+network access or a warm Gradle cache for `gradle-dependency-leak`. Add a
+fixture and a test here for every newly supported project shape.
 
 ## Fixture-Based Integration Tests
 

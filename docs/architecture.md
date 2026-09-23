@@ -49,6 +49,8 @@ Current v1.1 responsibilities:
 - shared `CommandResult` and `CommandExecutionError`
 - shared command-log rendering for analysis, stages, and patch execution
 - small environment overlay support via `environment_with_overrides(...)`
+- JDK resolution via `resolve_jdk()`: `JAVA_HOME`, else the `java` on `PATH`,
+  with the JDK majors WPI and RLFixer accept
 
 The runtime layer is intentionally narrow. It centralizes the behavior Arodnap
 actually reuses today instead of introducing a larger framework for future
@@ -130,14 +132,24 @@ Each `RepairStageDefinition` declares:
   as `rlfixer_result` to subsequent stages (currently `rlfixer`)
 - `promotes_patch_manifest`: `True` for the stage whose `patch_manifest`
   artifact is promoted to the top-level `patches/manifest.json` (currently
-  `rlpatcher`)
+  `bundle`); promotion copies the patch files next to the manifest
 
-The current repair order remains:
+The current repair order is:
 
-1. `close_injector`
-2. `owning_field`
-3. `rlfixer`
-4. `rlpatcher`
+1. `close_injector` (rerun analysis if it changed sources)
+2. `owning_field` (rerun analysis if it changed sources)
+3. `rlfixer`: runs the RLFixer jar on build-discovered inputs and fails if
+   RLFixer crashes or prints no fixes report
+4. `rlpatcher`: materializes RLFixer suggestions and applies them to the
+   workspace, skipping any that conflict with an earlier patch (rerun analysis
+   as `final` if it changed sources)
+5. `bundle`: diffs the original repository against the final workspace into
+   one patch and verifies it by replaying it onto a clean copy
+
+The Java stage tools receive the build's source list and classpath through
+`-Darodnap.sourcesFile` and `-Darodnap.classpathFile`, and write raw patches
+to `-Darodnap.patchFile` inside the stage directory. They run on the JDK
+resolved by `arodnap/runtime/jdk.py` (`JAVA_HOME`, else `java` on `PATH`).
 
 ## Outputs
 
@@ -235,7 +247,7 @@ Each check object minimum keys:
 | `message` | string | human-readable summary |
 | `details` | object \| null | optional structured detail |
 
-Stable `name` values in v1.1: `python_runtime`, `java_runtime`,
+Stable `name` values: `python_runtime`, `java_runtime`, `wpi_python`,
 `patch_binary`, `checker_framework_path`, `checker_framework_tools`,
 `plugin_jars`, `repo_path`, `adapter_selection`, `repo_support`,
 `source_root`, `compile_target`.
