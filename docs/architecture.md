@@ -1,8 +1,7 @@
-# Arodnap v1.1 Architecture
+# Arodnap Architecture
 
-This note describes the implemented v1.1 architecture. It is intentionally
-limited to the current supported scope: single-module Gradle repositories at
-the repo root.
+This note describes the implemented architecture: a Python orchestrator that
+captures a project's own build, and the paper's Java analysis and repair tools.
 
 ## Public Flow
 
@@ -76,35 +75,35 @@ tools.
 The build-adapter boundary lives under
 [`arodnap/build_adapters/`](../arodnap/build_adapters).
 
-Key pieces:
+Adapters learn a project's compilation by running its own build once per
+analysis point with a recording hook installed through the build tool's
+official extension point ([`captured.py`](../arodnap/build_adapters/captured.py)):
 
-- [`base.py`](../arodnap/build_adapters/base.py)
-  defines the `BuildAdapterContract`, `ProjectModel`, `AdapterMetadata`, and
-  adapter error types.
-- [`registry.py`](../arodnap/build_adapters/registry.py)
-  owns adapter registration and selection.
-- [`gradle.py`](../arodnap/build_adapters/gradle.py)
-  is the only registered backend in v1.1.
+- `gradle`: an init script records the inputs of every `JavaCompile` task
+- `maven`: the compiler plugin forks to a recording `javac` shim
+- `ant`: a recording compiler adapter (`restructure_plugins/AntCapture`)
+- `command`: the recording `javac` shim first on `PATH`, for any
+  `-- <build command>`
 
-Current adapter responsibilities:
+Every hook writes the same JSON lines (`{cwd, args}`), which
+[`capture.py`](../arodnap/build_adapters/capture.py) parses into compile
+units and merges into one analysis universe: all units' sources plus
+generated sources, the union of classpaths minus artifacts the capture build
+wrote, the highest release level, and an analysis root for RLFixer. The
+adapter then compiles the merged sources itself into
+`<workspace>/.arodnap/analysis-classes`, so app classes and RLFixer's
+classpath do not depend on the build's output layout.
 
-- detect whether a repo matches the supported build shape
-- inspect the repo and construct a `ProjectModel`
-- validate the compile target
-- emit source-file, app-class, classpath-entry, and adapter-metadata files
+The adapter contract (`inspect`, `validate_compile`, `write_*_file`) is
+unchanged, so `analyze`, `reanalyze`, `doctor` and the stages are
+build-system agnostic.
 
-**Registry-first invariant (v1.1):** All adapter selection must route through
-`select_build_adapter(...)` in `build_adapters/registry.py`. No orchestration
-layer may construct or import a concrete adapter class directly. Adding a new
-build-system backend in v2 means registering a new `RegisteredBuildAdapter`
-entry — not adding a new import in the orchestrator.
-
-v1.1 registers one backend: `GradleAdapter` (`gradle-v1`). `doctor`,
-`analyze`, `infer`, `repair`, and `reanalyze` all select adapters through the
-registry. `_initial_state()` in the pipeline falls back to
-`default_build_tool_selection()` only on `UnsupportedProjectError` during
-early state initialization; that fallback is intentional v1.1-scoped behavior
-that will be revisited when multi-adapter support is introduced in v2.
+**Registry-first invariant:** adapter selection goes through
+`select_build_adapter(...)` in `build_adapters/registry.py`. With a build
+command, its executable name picks the adapter (`gradle`/`gradlew`,
+`mvn`/`mvnw`, `ant`, otherwise `command`); without one, the first registered
+adapter whose build file exists is used. Adding a build system means adding a
+`RegisteredBuildAdapter` entry.
 
 ## Stage Wrapper Lifecycle
 

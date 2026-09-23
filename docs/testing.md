@@ -10,9 +10,12 @@ Fixture repositories live under
 
 Current fixture usage:
 
-- `gradle-pipeline-baseline/` is the main supported single-module Gradle fixture
-- `gradle-dependency-leak/` has a leak through a Maven Central dependency
-- unsupported-shape fixtures cover fail-closed validation paths
+- `gradle-pipeline-baseline/`: the main fixture (wrappers, owning fields, direct and try/catch leaks)
+- `gradle-dependency-leak/`: a leak through a Maven Central dependency
+- `gradle-multimodule/`: two Gradle modules with a leak in each
+- `maven-dependency-leak/`: Maven with a Maven Central dependency
+- `ant-vendored-jar/`: Ant compiling against a jar checked into `lib/`
+- `javac-script/`: no build tool; captured with `-- ./build.sh`
 - the legacy normalized fixture remains internal regression coverage only
 
 Keep fixtures intentionally small. A single high-signal fixture is preferred to
@@ -29,7 +32,8 @@ the tools actually work together.
 ARODNAP_E2E=1 python -m unittest tests.test_e2e_real
 ```
 
-It needs JDK 17 or newer (it has passed on 17, 21, 23 and 24), `gradle` on `PATH`, GNU patch, and network access or a warm
+It needs JDK 17 or newer (it has passed on 17, 21, 23 and 24) and `gradle`, `mvn` and
+`ant` on `PATH` (tests for a missing tool are skipped), GNU patch, and network access or a warm
 Gradle cache for `gradle-dependency-leak`. Set `ARODNAP_CHECKER_FRAMEWORK` to
 run it against another Checker Framework distribution; both the bundled 4.2.3
 and 3.49.0 pass. Add a

@@ -1,14 +1,15 @@
 # Arodnap
 
-Arodnap is a build-backed repair tool for Java resource-leak warnings in
-supported single-module Gradle repositories. It analyzes a temporary workspace
-copy of the target project, keeps the original repository unchanged by default,
-and writes machine-readable diagnostics, logs, stage artifacts, and patch
-bundles under `./arodnap-out`.
+Arodnap repairs Java resource leaks. It is the tool from the paper
+"Repairing Leaks on Resource Wrappers": it finds leaks with the Checker
+Framework's Resource Leak Checker, fixes resource wrapper classes and owning
+fields, and turns RLFixer's suggestions into source patches.
 
-v1.1 keeps the v1 support boundary intact. Standard single-module Gradle is
-still the only supported project shape. `doctor` is the only additive public
-command in v1.1.
+It works on Gradle (including multi-module builds), Maven and Ant projects, and
+on any other build that runs `javac`, by watching the project's own build. It
+analyzes a temporary copy of the project, never edits the original repository
+unless you run `apply`, and produces one reviewable patch that has been
+verified to apply.
 
 ## Install
 
@@ -35,7 +36,8 @@ python -m arodnap.main analyze /path/to/repo
   The bundled Checker Framework 4.2.3 is tested upstream up to JDK 26, and
   `doctor` warns (but does not stop you) on newer JDKs. Your project itself may
   target any release this JDK can compile.
-- a Gradle wrapper in the target repository, or `gradle` available on `PATH`
+- whatever the project's build needs: `./gradlew` or `gradle`, `./mvnw` or
+  `mvn`, `ant`, or the tools your own build command uses
 - GNU `patch`, exposed as `gpatch` or `patch`
 
 `arodnap doctor` checks all of these.
@@ -48,6 +50,15 @@ arodnap infer /path/to/repo
 arodnap repair /path/to/repo
 arodnap apply --patch-dir ./arodnap-out/patches /path/to/repo
 arodnap doctor /path/to/repo
+```
+
+`analyze`, `infer`, `repair` and `doctor` accept the project's build command
+after `--`:
+
+```bash
+arodnap repair /path/to/repo -- ./build.sh           # any build that runs javac
+arodnap repair /path/to/repo -- mvn -Pci compile      # override the default command
+arodnap repair /path/to/repo -- ./gradlew :app:compileJava
 ```
 
 Command summary:
@@ -69,9 +80,9 @@ Common options:
 
 - `--out-dir`: output root. Defaults to `./arodnap-out`.
 - `--keep-workspace`: keep the temporary workspace after the command exits.
-- `--build-args`: repeatable extra build arguments forwarded to Gradle.
-- `--compile-target`: override the compile target used for adapter-backed
-  validation and analysis.
+- `--build-args`: repeatable extra arguments for the default build command.
+- `--compile-target`: the Gradle task, Maven phase or Ant target the default
+  build command runs (`compileJava`, `compile`, and Ant's default target).
 - `--checker-framework`: use another Checker Framework distribution (the
   directory containing `checker/dist/checker.jar`). Defaults to
   `$ARODNAP_CHECKER_FRAMEWORK`, then the bundled 4.2.3.
@@ -87,35 +98,34 @@ arodnap apply --patch-dir ./arodnap-out/patches /path/to/repo
 
 The intended flow is:
 
-1. Run `doctor` first to confirm the environment, supported repo shape, adapter
-   selection, and compile-target viability.
+1. Run `doctor` first to confirm the environment and that Arodnap can capture
+   the project's build.
 2. Run `repair` to analyze a workspace copy and emit a normalized patch bundle.
 3. Inspect `report.json`, `manifest.json`, stage outputs, and the patch bundle.
 4. Run `apply` only when you are ready to update the original repository.
 
-## Supported Scope
+## How Arodnap Sees Your Build
 
-Arodnap currently supports repositories that meet all of these conditions:
+Arodnap runs the project's build once per analysis point and records every
+`javac` call through the build tool's own extension point:
 
-- the analysis root is the repository root
-- the repository contains `build.gradle` or `build.gradle.kts`
-- the repository is a standard single-module Gradle Java project
-- main Java sources live under `src/main/java`
-- the project validates against a conventional main compile target such as
-  `classes`
+| Build | Detected by | Default command | How javac calls are recorded |
+|---|---|---|---|
+| Gradle | `build.gradle(.kts)` or `settings.gradle(.kts)` | `gradle[w] clean compileJava` | init script on every `JavaCompile` task |
+| Maven | `pom.xml` | `mvn[w] clean compile` | compiler plugin forks to a recording `javac` |
+| Ant | `build.xml` | `ant` (default target) | recording Ant compiler adapter |
+| anything else | `-- <command>` | none | recording `javac` first on `PATH` |
 
-## Unsupported Scope
+All recorded sources are analyzed together (every module of a multi-module
+build), with the dependencies the build resolved. Files the build generates,
+such as annotation processor output, are analyzed but never patched.
 
-Arodnap fails closed on unsupported shapes. Common unsupported cases are:
+Not supported yet (Arodnap stops with a clear message):
 
-- Maven projects
-- Ant projects
-- multi-module Gradle builds
-- custom source-set layouts
-- generated-source-heavy repositories
-- workflows that expect Arodnap to mutate the original repository automatically
-- direct-classpath RLFixer usage
-- field-enhancement flows from the legacy benchmark tooling
+- Lombok, which rewrites code during compilation
+- builds that compile Java without calling `javac` or a supported build tool
+  (for example a script that uses `$JAVA_HOME/bin/javac` directly)
+- Kotlin and Android sources (Java sources in the same build are analyzed)
 
 ## Workspace And Mutation Model
 
@@ -180,14 +190,15 @@ Important outputs:
 
 ## Troubleshooting
 
-- If `doctor` reports an unsupported repo shape, fix the repository layout or
-  compile target rather than expecting best-effort guessing.
-- If Gradle detection fails, provide a working `./gradlew` in the target
-  repository or install `gradle` on `PATH`.
+- If `doctor` says the build compiled no Java sources, make sure the build
+  command compiles the main sources and does not skip compilation as up to
+  date (the default commands clean first).
+- The captured build's output and the recorded `javac` calls are in
+  `arodnap-out/logs/<label>/build.log` and `javac-invocations.jsonl`.
 - If `repair` or `apply` fails with a patch prerequisite error, install GNU
   `patch` and expose it as `gpatch` or `patch`.
-- If the default compile target is wrong for the repository, rerun with
-  `--compile-target`.
+- If the default build command is wrong for the repository, pass your own after
+  `--` or use `--compile-target`.
 - If analysis fails on a very new JDK, run `arodnap doctor`: it says whether
   the JDK is newer than the Checker Framework is tested on. Use a tested JDK
   via `JAVA_HOME`, or a newer Checker Framework via `--checker-framework`.
@@ -203,10 +214,11 @@ Run the full test suite:
 python -m unittest discover -s tests -p "test_*.py"
 ```
 
-Those tests mock the external tools. The real end-to-end tests run Gradle,
+Those tests mock the external tools. The real end-to-end tests run the real
+builds (Gradle, Maven, Ant and a plain javac script),
 whole-program inference, the Resource Leak Checker and every repair tool with
 nothing mocked, then apply the patch and compile the result. They take about a
-minute per fixture and are opt-in:
+half a minute per fixture and are opt-in:
 
 ```bash
 ARODNAP_E2E=1 python -m unittest tests.test_e2e_real
