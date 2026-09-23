@@ -10,13 +10,19 @@ from arodnap.contracts import RunConfig
 from arodnap.runtime import CommandExecutionError, render_command_log, run_command
 
 _WARNING_PATTERN = re.compile(r"(?m)^.*: warning:")
+# Same flags as the paper's final Resource Leak Checker pass (legacy RLCRunner.py),
+# minus JVM heap and assertion settings.
 _RLC_FLAGS = [
     "-Adetailedmsgtext",
     "-Awarns",
+    "-Xmaxwarns",
+    "10000",
     "-ApermitStaticOwning",
     "-AshowPrefixInWarningMessages",
     "-AenableReturnsReceiverForRlc",
 ]
+# Arodnap's stub files for the Resource Leak Checker (e.g. side-effect-free close()).
+RLC_STUBS_DIR = Path(__file__).resolve().parents[2] / "checker_framework" / "stubs"
 
 
 @dataclass(frozen=True)
@@ -56,6 +62,7 @@ def run_resource_leak_checker(
             "-processor",
             "org.checkerframework.checker.resourceleak.ResourceLeakChecker",
             *_RLC_FLAGS,
+            f"-Astubs={RLC_STUBS_DIR}",
         ]
         if inference_dir is not None:
             command.append(f"-Aajava={inference_dir}")
