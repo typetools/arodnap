@@ -5,11 +5,26 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+from arodnap.patch_tool import PatchToolError, discover_patch_tool
 from arodnap.runtime import CommandResult
 from arodnap.stages.rlpatcher import StageExecutionError, run_rlpatcher_stage
 
 
+def _has_gnu_patch() -> bool:
+    try:
+        discover_patch_tool(require_gnu=True, operation_label="test")
+    except PatchToolError:
+        return False
+    return True
+
+
+@unittest.skipUnless(_has_gnu_patch(), "GNU patch is required to apply materialized patches")
 class RLPatcherStageTest(unittest.TestCase):
+    def setUp(self) -> None:
+        java_patcher = patch("arodnap.stages.rlpatcher.java_executable", return_value="java")
+        java_patcher.start()
+        self.addCleanup(java_patcher.stop)
+
     def test_successful_run_materializes_normalized_patch_and_stage_result(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_root = Path(temp_dir)
@@ -55,12 +70,14 @@ class RLPatcherStageTest(unittest.TestCase):
                     debug_path=debug_path,
                     stage_output_dir=stage_output_dir,
                     rlpatcher_jar=rlpatcher_jar,
+                    source_root=workspace_root / "src" / "main" / "java",
                 )
 
             self.assertTrue(result.success)
-            self.assertFalse(result.changed)
-            self.assertEqual(result.changed_files, [])
-            self.assertFalse(result.rerun_required)
+            self.assertTrue(result.changed)
+            self.assertEqual(result.changed_files, ["src/main/java/com/example/App.java"])
+            self.assertTrue(result.rerun_required)
+            self.assertEqual(source_file.read_text(), 'class App { String value = "new"; }\n')
             self.assertEqual(result.artifacts["patch_manifest"], str((stage_output_dir / "patch_manifest.json").resolve()))
             self.assertEqual(result.artifacts["patch_dir"], str((stage_output_dir / "patches").resolve()))
             self.assertTrue((stage_output_dir / "stage_result.json").is_file())
@@ -90,6 +107,7 @@ class RLPatcherStageTest(unittest.TestCase):
                 source_file,
             ) = self._make_inputs(temp_root)
             stage_output_dir = temp_root / "arodnap-out" / "stages" / "rlpatcher"
+            original_hash = hashlib.sha256(source_file.read_bytes()).hexdigest()
 
             def fake_run_stage_command(*, command: list[str], cwd: Path) -> CommandResult:
                 (cwd / "rlfixer.patch").write_text(
@@ -121,6 +139,7 @@ class RLPatcherStageTest(unittest.TestCase):
                     debug_path=debug_path,
                     stage_output_dir=stage_output_dir,
                     rlpatcher_jar=rlpatcher_jar,
+                    source_root=workspace_root / "src" / "main" / "java",
                 )
 
             manifest = json.loads((stage_output_dir / "patch_manifest.json").read_text())
@@ -131,12 +150,61 @@ class RLPatcherStageTest(unittest.TestCase):
             self.assertEqual(patch_entry["changed_files"], ["src/main/java/com/example/App.java"])
             self.assertEqual(
                 patch_entry["preimage_hashes"],
-                {
-                    "src/main/java/com/example/App.java": hashlib.sha256(
-                        source_file.read_bytes()
-                    ).hexdigest()
-                },
+                {"src/main/java/com/example/App.java": original_hash},
             )
+            self.assertTrue(patch_entry["applied_to_workspace"])
+
+    def test_patch_that_conflicts_with_an_earlier_one_is_skipped_not_half_applied(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_root = Path(temp_dir)
+            (
+                workspace_root,
+                diagnostics_path,
+                inference_dir,
+                fixes_path,
+                debug_path,
+                rlpatcher_jar,
+                source_file,
+            ) = self._make_inputs(temp_root)
+            # Two suggestions for the same file, materialized against the same original text.
+            fixes_path.write_text(fixes_path.read_text() + fixes_path.read_text().replace("Line number 10", "Line number 11").replace("+10", "+11"))
+            diagnostics_path.write_text(
+                diagnostics_path.read_text()
+                + f"{source_file.resolve()}:11: warning: [required.method.not.called] leak\n"
+            )
+            stage_output_dir = temp_root / "arodnap-out" / "stages" / "rlpatcher"
+            replacements = iter(['String first = "1";', 'String second = "2";'])
+
+            def fake_run_stage_command(*, command: list[str], cwd: Path) -> CommandResult:
+                (cwd / "rlfixer.patch").write_text(
+                    f"--- {source_file.resolve()}\n+++ {source_file.resolve()}\n@@ -1 +1 @@\n"
+                    f"-class App {{ String old = \"old\"; }}\n+class App {{ {next(replacements)} }}\n"
+                )
+                return CommandResult(
+                    command=tuple(command),
+                    cwd=cwd.resolve(),
+                    returncode=0,
+                    stdout="Patch applied successfully\n",
+                    stderr="",
+                )
+
+            with patch("arodnap.stages.rlpatcher.run_stage_command", side_effect=fake_run_stage_command):
+                result = run_rlpatcher_stage(
+                    workspace_root=workspace_root,
+                    diagnostics_path=diagnostics_path,
+                    inference_dir=inference_dir,
+                    fixes_path=fixes_path,
+                    debug_path=debug_path,
+                    stage_output_dir=stage_output_dir,
+                    rlpatcher_jar=rlpatcher_jar,
+                    source_root=workspace_root / "src" / "main" / "java",
+                )
+
+            self.assertEqual(source_file.read_text(), 'class App { String first = "1"; }\n')
+            self.assertEqual(list(source_file.parent.glob("*.rej")), [])
+            manifest = json.loads((stage_output_dir / "patch_manifest.json").read_text())
+            self.assertEqual([entry["applied_to_workspace"] for entry in manifest["patches"]], [True, False])
+            self.assertIn("applied 1, skipped 1", result.notes[0])
 
     def test_noop_run_writes_empty_manifest_and_skips_subprocess(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -163,6 +231,7 @@ class RLPatcherStageTest(unittest.TestCase):
                     debug_path=debug_path,
                     stage_output_dir=stage_output_dir,
                     rlpatcher_jar=rlpatcher_jar,
+                    source_root=workspace_root / "src" / "main" / "java",
                 )
 
             mocked_run.assert_not_called()
@@ -221,6 +290,7 @@ class RLPatcherStageTest(unittest.TestCase):
                         debug_path=debug_path,
                         stage_output_dir=stage_output_dir,
                         rlpatcher_jar=rlpatcher_jar,
+                        source_root=workspace_root / "src" / "main" / "java",
                     )
 
     def test_missing_raw_patch_fails_clearly(self) -> None:
@@ -255,6 +325,7 @@ class RLPatcherStageTest(unittest.TestCase):
                         debug_path=debug_path,
                         stage_output_dir=stage_output_dir,
                         rlpatcher_jar=rlpatcher_jar,
+                        source_root=workspace_root / "src" / "main" / "java",
                     )
 
     def _make_inputs(self, root: Path) -> tuple[Path, Path, Path, Path, Path, Path, Path]:

@@ -175,6 +175,7 @@ class DoctorCommandTest(unittest.TestCase):
             cf_root=repo_root / "checker-framework",
             close_injector_jar=repo_root / "close.jar",
             owning_field_jar=repo_root / "owning.jar",
+            rlfixer_jar=repo_root / "rlfixer.jar",
             rlpatcher_jar=repo_root / "rlpatcher.jar",
             timeouts=Timeouts(build_seconds=900, analysis_seconds=1800, stage_seconds=900),
         )

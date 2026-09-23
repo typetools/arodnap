@@ -1,21 +1,33 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-import importlib.util
-from functools import lru_cache
 import hashlib
 import json
 from pathlib import Path
-from types import ModuleType
+
 from arodnap.contracts import RunConfig, StageResult
+from arodnap.patch_tool import PatchToolError, append_patch_execution_log, run_patch
+from arodnap.runtime import java_executable
 
 from .base import (
     BaseStageWrapper,
+    CompileInputs,
     StageExecutionError,
     append_command_log,
+    apply_normalized_patch,
     run_stage_command,
     stage_timeout_seconds,
     write_stage_result,
+)
+from .rlfixer_io import (
+    CheckerWarning,
+    FixSuggestion,
+    build_rlpatcher_prompt,
+    match_fixes_to_warnings,
+    parse_checker_warnings,
+    parse_debug_fixable,
+    parse_fix_suggestions,
+    select_fixable_suggestions,
 )
 
 _STAGE_NAME = "rlpatcher"
@@ -59,14 +71,16 @@ class RLPatcherStageInputs:
     fixes_path: Path
     debug_path: Path
     rlpatcher_jar: Path
+    source_root: Path
+    compile_inputs: CompileInputs | None
     paths: RLPatcherStagePaths
 
 
 @dataclass(frozen=True)
 class MatchedFixWarning:
     index: int
-    fix: dict[str, object]
-    warning: dict[str, object]
+    fix: FixSuggestion
+    warning: CheckerWarning
     prompt_path: Path
 
 
@@ -87,6 +101,7 @@ class MaterializedPatch:
     patch_path: Path
     changed_files: tuple[str, ...]
     preimage_hashes: dict[str, str]
+    applied: bool
 
 
 @dataclass(frozen=True)
@@ -94,6 +109,14 @@ class RLPatcherStageOutputs:
     paths: RLPatcherStagePaths
     materialized_patches: tuple[MaterializedPatch, ...]
     note: str
+
+    @property
+    def applied_changed_files(self) -> list[str]:
+        changed: list[str] = []
+        for patch in self.materialized_patches:
+            if patch.applied:
+                changed.extend(path for path in patch.changed_files if path not in changed)
+        return changed
 
 
 class RLPatcherStageWrapper(BaseStageWrapper):
@@ -110,6 +133,8 @@ class RLPatcherStageWrapper(BaseStageWrapper):
         debug_path: Path,
         stage_output_dir: Path,
         rlpatcher_jar: Path,
+        source_root: Path,
+        compile_inputs: CompileInputs | None = None,
     ) -> StageResult:
         normalized_inputs = RLPatcherStageInputs(
             config=config,
@@ -119,6 +144,8 @@ class RLPatcherStageWrapper(BaseStageWrapper):
             fixes_path=fixes_path.resolve(),
             debug_path=debug_path.resolve(),
             rlpatcher_jar=rlpatcher_jar.resolve(),
+            source_root=source_root.resolve(),
+            compile_inputs=compile_inputs,
             paths=RLPatcherStagePaths.for_stage(stage_output_dir),
         )
         outputs = super().run(inputs=normalized_inputs)
@@ -142,6 +169,7 @@ class RLPatcherStageWrapper(BaseStageWrapper):
             diagnostics_path=inputs.diagnostics_path,
             fixes_path=inputs.fixes_path,
             debug_path=inputs.debug_path,
+            source_root=inputs.source_root,
         )
         if not matched:
             return RLPatcherStageInvocation(inputs=inputs, harvested_patches=())
@@ -169,6 +197,7 @@ class RLPatcherStageWrapper(BaseStageWrapper):
 
         materialized_patches: list[MaterializedPatch] = []
         manifest_entries: list[dict[str, object]] = []
+        skipped = 0
 
         for harvested in invocation.harvested_patches:
             # Normalize tool-emitted headers before exposing any patch bundle artifact.
@@ -184,15 +213,26 @@ class RLPatcherStageWrapper(BaseStageWrapper):
             patch_name = _patch_filename(
                 index=harvested.match.index,
                 changed_files=changed_files,
-                line_number=int(harvested.match.fix["line_number"]),
+                line_number=harvested.match.fix.line_number,
             )
             patch_path = invocation.inputs.paths.patch_dir / patch_name
             patch_path.write_text(normalized_patch)
+
+            # Every patch was materialized against the same workspace state; apply them in
+            # order and skip any that no longer applies cleanly after an earlier one.
+            applied = _apply_to_workspace(
+                workspace_root=invocation.inputs.workspace_root,
+                patch_path=patch_path,
+                log_path=invocation.inputs.paths.log_path,
+            )
+            if not applied:
+                skipped += 1
 
             materialized_patch = MaterializedPatch(
                 patch_path=patch_path,
                 changed_files=changed_files_tuple,
                 preimage_hashes=preimage_hashes,
+                applied=applied,
             )
             materialized_patches.append(materialized_patch)
             manifest_entries.append(
@@ -203,6 +243,7 @@ class RLPatcherStageWrapper(BaseStageWrapper):
                     "target_root": ".",
                     "changed_files": list(changed_files_tuple),
                     "preimage_hashes": preimage_hashes,
+                    "applied_to_workspace": applied,
                 }
             )
 
@@ -212,7 +253,10 @@ class RLPatcherStageWrapper(BaseStageWrapper):
         return RLPatcherStageOutputs(
             paths=invocation.inputs.paths,
             materialized_patches=tuple(materialized_patches),
-            note=f"Materialized {len(materialized_patches)} normalized patch(es).",
+            note=(
+                f"Materialized {len(materialized_patches)} patch(es); applied "
+                f"{len(materialized_patches) - skipped}, skipped {skipped} that conflicted with earlier patches."
+            ),
         )
 
     def validate_outputs(self, normalized_result: object, **kwargs: object) -> None:
@@ -245,18 +289,11 @@ class RLPatcherStageWrapper(BaseStageWrapper):
         *,
         inputs: RLPatcherStageInputs,
         index: int,
-        fix: dict[str, object],
-        warning: dict[str, object],
+        fix: FixSuggestion,
+        warning: CheckerWarning,
     ) -> MatchedFixWarning:
         prompt_path = inputs.paths.prompt_dir / f"prompt-{index:04d}.json"
-        runner = _load_rlpatcher_runner()
-        prompt_path.write_text(
-            runner.build_prompt_json(
-                cf_warning_block=str(warning["message"]),
-                rlfixer_hint_block=str(fix["suggestion"]),
-            )
-            + "\n"
-        )
+        prompt_path.write_text(build_rlpatcher_prompt(warning, fix) + "\n")
         return MatchedFixWarning(index=index, fix=fix, warning=warning, prompt_path=prompt_path)
 
     def _invoke_patcher(
@@ -267,7 +304,8 @@ class RLPatcherStageWrapper(BaseStageWrapper):
     ) -> str:
         inputs.paths.raw_patch_path.unlink(missing_ok=True)
         command = [
-            "java",
+            java_executable(),
+            *(inputs.compile_inputs.java_properties() if inputs.compile_inputs is not None else []),
             "-jar",
             str(inputs.rlpatcher_jar),
             "--prompt",
@@ -297,11 +335,12 @@ class RLPatcherStageWrapper(BaseStageWrapper):
         return patch_text
 
     def _create_stage_result(self, outputs: RLPatcherStageOutputs) -> StageResult:
+        changed_files = outputs.applied_changed_files
         return StageResult(
             stage=_STAGE_NAME,
-            changed=False,
-            changed_files=[],
-            rerun_required=False,
+            changed=bool(changed_files),
+            changed_files=changed_files,
+            rerun_required=bool(changed_files),
             artifacts={
                 "log": str(outputs.paths.log_path),
                 "patch_manifest": str(outputs.paths.manifest_path),
@@ -338,6 +377,8 @@ def run_rlpatcher_stage(
     debug_path: Path,
     stage_output_dir: Path,
     rlpatcher_jar: Path,
+    source_root: Path,
+    compile_inputs: CompileInputs | None = None,
 ) -> StageResult:
     return _WRAPPER.run(
         config=config,
@@ -348,6 +389,8 @@ def run_rlpatcher_stage(
         debug_path=debug_path,
         stage_output_dir=stage_output_dir,
         rlpatcher_jar=rlpatcher_jar,
+        source_root=source_root,
+        compile_inputs=compile_inputs,
     )
 
 
@@ -356,31 +399,37 @@ def _matched_fix_warnings(
     diagnostics_path: Path,
     fixes_path: Path,
     debug_path: Path,
-) -> list[tuple[dict, dict]]:
-    runner = _load_rlpatcher_runner()
-    cf_warnings = runner.get_checkerframework_warnings(diagnostics_path.read_text(errors="replace"))
-    all_fixes = runner.parse_fix_suggestions(fixes_path.read_text(errors="replace"))
-    debug_text = debug_path.read_text(errors="replace")
-    fixable_keys = runner.parse_rlfixer_debug_fixable(debug_text) if debug_text.strip() else set()
-    fixes = [item for item in all_fixes if (item["relpath"], item["line_number"]) in fixable_keys]
-    if not fixable_keys:
-        fixes = all_fixes
-    return runner.match_fixes_to_warnings(fixes, cf_warnings)
+    source_root: Path,
+) -> list[tuple[FixSuggestion, CheckerWarning]]:
+    warnings = parse_checker_warnings(diagnostics_path.read_text(errors="replace"))
+    suggestions = parse_fix_suggestions(fixes_path.read_text(errors="replace"), source_root=source_root)
+    fixable_keys = parse_debug_fixable(debug_path.read_text(errors="replace"))
+    return match_fixes_to_warnings(select_fixable_suggestions(suggestions, fixable_keys), warnings)
 
 
-@lru_cache(maxsize=1)
-def _load_rlpatcher_runner() -> ModuleType:
-    runner_path = _repo_root() / "RLPatcherRunner.py"
-    spec = importlib.util.spec_from_file_location("arodnap._rlpatcher_runner", runner_path)
-    if spec is None or spec.loader is None:
-        raise StageExecutionError(f"Unable to load RLPatcher runner module: {runner_path}")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+def _apply_to_workspace(*, workspace_root: Path, patch_path: Path, log_path: Path) -> bool:
+    try:
+        check = run_patch(
+            cwd=workspace_root,
+            patch_path=patch_path,
+            strip_level=0,
+            check_only=True,
+            require_gnu=True,
+            operation_label="rlpatcher workspace dry-run",
+            forward=True,
+            ignore_whitespace=True,
+        )
+    except PatchToolError as exc:
+        raise StageExecutionError(str(exc)) from exc
+    append_patch_execution_log(log_path, title=f"dry_run:{patch_path.name}", execution=check)
+    if check.completed.returncode != 0:
+        return False
 
-
-def _repo_root() -> Path:
-    return Path(__file__).resolve().parents[2]
+    applied = apply_normalized_patch(workspace_root=workspace_root, patch_path=patch_path)
+    append_patch_execution_log(log_path, title=f"apply:{patch_path.name}", execution=applied)
+    if applied.completed.returncode != 0:
+        raise StageExecutionError(f"Patch {patch_path.name} passed its dry run but failed to apply. See log: {log_path}")
+    return True
 
 
 def _normalize_rlpatcher_patch(patch_text: str, *, workspace_root: Path) -> tuple[str, list[str]]:

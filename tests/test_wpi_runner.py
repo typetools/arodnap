@@ -6,10 +6,55 @@ from unittest.mock import patch
 
 from arodnap.analysis import WpiRunError, run_wpi
 from arodnap.contracts import RunConfig, Timeouts
-from arodnap.runtime import CommandResult
+from arodnap.runtime import CommandResult, Jdk
 
 
 class WpiRunnerTest(unittest.TestCase):
+    def setUp(self) -> None:
+        # Resolve a fixed JDK so the tests do not depend on the machine's Java installation.
+        jdk_patcher = patch(
+            "arodnap.analysis.wpi_runner.resolve_jdk",
+            return_value=Jdk(home=Path("/jdk-21"), major_version=21, source="PATH"),
+        )
+        self.resolve_jdk = jdk_patcher.start()
+        self.addCleanup(jdk_patcher.stop)
+
+    def test_runner_exports_resolved_java_home_for_wpi(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_root = Path(temp_dir)
+            workspace_root = temp_root / "workspace"
+            (workspace_root / "build" / "whole-program-inference").mkdir(parents=True)
+            config = self._make_config(temp_root)
+            completed = CommandResult(command=(), cwd=workspace_root, returncode=0, stdout="", stderr="")
+
+            with patch("arodnap.analysis.wpi_runner.resolve_dljc_python", return_value=Path("/usr/bin/python3")):
+                with patch("arodnap.analysis.wpi_runner._prepare_wpi_support_files"):
+                    with patch("arodnap.analysis.wpi_runner.run_command", return_value=completed) as run_mock:
+                        run_wpi(
+                            config,
+                            workspace_root=workspace_root,
+                            log_path=temp_root / "wpi.log",
+                            inference_root=temp_root / "inference",
+                        )
+
+            self.assertEqual(run_mock.call_args.kwargs["env"]["JAVA_HOME"], "/jdk-21")
+
+    def test_unsupported_jdk_fails_with_actionable_message(self) -> None:
+        self.resolve_jdk.return_value = Jdk(home=Path("/jdk-24"), major_version=24, source="PATH")
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_root = Path(temp_dir)
+            (temp_root / "workspace").mkdir()
+            with patch("arodnap.analysis.wpi_runner._prepare_wpi_support_files"):
+                with patch("arodnap.analysis.wpi_runner.run_command") as run_mock:
+                    with self.assertRaisesRegex(WpiRunError, "found JDK 24 at /jdk-24 .*Set JAVA_HOME"):
+                        run_wpi(
+                            self._make_config(temp_root),
+                            workspace_root=temp_root / "workspace",
+                            log_path=temp_root / "wpi.log",
+                            inference_root=temp_root / "inference",
+                        )
+            run_mock.assert_not_called()
+
     def test_runner_preserves_reported_inference_directory_even_when_outside_workspace(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_root = Path(temp_dir)
@@ -29,7 +74,7 @@ class WpiRunnerTest(unittest.TestCase):
                 stderr="",
             )
 
-            with patch("arodnap.analysis.wpi_runner._resolve_dljc_python3", return_value=Path("/usr/bin/python3")):
+            with patch("arodnap.analysis.wpi_runner.resolve_dljc_python", return_value=Path("/usr/bin/python3")):
                 with patch("arodnap.analysis.wpi_runner.run_command", return_value=completed):
                     result = run_wpi(
                         config,
@@ -50,7 +95,7 @@ class WpiRunnerTest(unittest.TestCase):
             inference_root = temp_root / "inference" / "initial"
             config = self._make_config(temp_root)
 
-            with patch("arodnap.analysis.wpi_runner._resolve_dljc_python3", return_value=None):
+            with patch("arodnap.analysis.wpi_runner.resolve_dljc_python", return_value=None):
                 with self.assertRaisesRegex(WpiRunError, "requires a python3 interpreter with distutils"):
                     run_wpi(
                         config,
@@ -78,7 +123,7 @@ class WpiRunnerTest(unittest.TestCase):
                 stderr="",
             )
 
-            with patch("arodnap.analysis.wpi_runner._resolve_dljc_python3", return_value=Path("/usr/bin/python3")):
+            with patch("arodnap.analysis.wpi_runner.resolve_dljc_python", return_value=Path("/usr/bin/python3")):
                 with patch(
                     "arodnap.analysis.wpi_runner.run_command",
                     side_effect=self._make_run_command_side_effect(completed),
@@ -124,7 +169,7 @@ class WpiRunnerTest(unittest.TestCase):
                 stderr="",
             )
 
-            with patch("arodnap.analysis.wpi_runner._resolve_dljc_python3", return_value=Path("/usr/bin/python3")):
+            with patch("arodnap.analysis.wpi_runner.resolve_dljc_python", return_value=Path("/usr/bin/python3")):
                 with patch("arodnap.analysis.wpi_runner.run_command", return_value=completed):
                     run_wpi(
                         config,
@@ -154,7 +199,7 @@ class WpiRunnerTest(unittest.TestCase):
                 stdout="Starting wpi.sh.\n",
                 stderr="",
             )
-            with patch("arodnap.analysis.wpi_runner._resolve_dljc_python3", return_value=Path("/usr/bin/python3")):
+            with patch("arodnap.analysis.wpi_runner.resolve_dljc_python", return_value=Path("/usr/bin/python3")):
                 with patch(
                     "arodnap.analysis.wpi_runner.run_command",
                     side_effect=self._make_run_command_side_effect(completed),
@@ -214,7 +259,7 @@ class WpiRunnerTest(unittest.TestCase):
                 stderr="boom\n",
             )
 
-            with patch("arodnap.analysis.wpi_runner._resolve_dljc_python3", return_value=Path("/usr/bin/python3")):
+            with patch("arodnap.analysis.wpi_runner.resolve_dljc_python", return_value=Path("/usr/bin/python3")):
                 with patch("arodnap.analysis.wpi_runner.run_command", return_value=completed):
                     with self.assertRaisesRegex(WpiRunError, "WPI failed"):
                         run_wpi(
@@ -241,7 +286,7 @@ class WpiRunnerTest(unittest.TestCase):
                 stderr="",
             )
 
-            with patch("arodnap.analysis.wpi_runner._resolve_dljc_python3", return_value=Path("/usr/bin/python3")):
+            with patch("arodnap.analysis.wpi_runner.resolve_dljc_python", return_value=Path("/usr/bin/python3")):
                 with patch("arodnap.analysis.wpi_runner.run_command", return_value=completed):
                     with self.assertRaisesRegex(WpiRunError, "no inferred output directory"):
                         run_wpi(
@@ -271,6 +316,7 @@ class WpiRunnerTest(unittest.TestCase):
             cf_root=(cf_root or Path("/Users/sanjay/projects/arodnap/checker_framework/checker-framework-3.49.0")),
             close_injector_jar=root / "close.jar",
             owning_field_jar=root / "owning.jar",
+            rlfixer_jar=root / "rlfixer.jar",
             rlpatcher_jar=root / "rlpatcher.jar",
             timeouts=Timeouts(build_seconds=1, analysis_seconds=2, stage_seconds=3),
         )

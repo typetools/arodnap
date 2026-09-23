@@ -25,7 +25,7 @@ class V1IntegrationTest(unittest.TestCase):
     def test_plain_gradle_baseline_repair_and_apply_use_workspace_copy(self) -> None:
         self._assert_repair_and_apply_flow(
             scenario=BASELINE_SCENARIO,
-            expected_analysis_calls=["initial"],
+            expected_analysis_calls=["initial", "final"],
             expected_final_warning_count=1,
             changed_stage=None,
         )
@@ -33,7 +33,7 @@ class V1IntegrationTest(unittest.TestCase):
     def test_close_injector_case_reruns_analysis_via_reanalyze(self) -> None:
         self._assert_repair_and_apply_flow(
             scenario=CLOSE_INJECTOR_SCENARIO,
-            expected_analysis_calls=["initial", "post_close_injector"],
+            expected_analysis_calls=["initial", "post_close_injector", "final"],
             expected_final_warning_count=1,
             changed_stage="close_injector",
         )
@@ -41,7 +41,7 @@ class V1IntegrationTest(unittest.TestCase):
     def test_owning_field_case_reruns_analysis_via_reanalyze(self) -> None:
         self._assert_repair_and_apply_flow(
             scenario=OWNING_FIELD_SCENARIO,
-            expected_analysis_calls=["initial", "post_owning_field"],
+            expected_analysis_calls=["initial", "post_owning_field", "final"],
             expected_final_warning_count=1,
             changed_stage="owning_field",
         )
@@ -110,11 +110,17 @@ class V1IntegrationTest(unittest.TestCase):
 
             self.assertEqual(
                 [stage["stage"] for stage in manifest["stage_history"]],
-                ["close_injector", "owning_field", "rlfixer", "rlpatcher"],
+                ["close_injector", "owning_field", "rlfixer", "rlpatcher", "bundle"],
             )
-            self.assertEqual(top_level_patch_manifest["stage"], "rlpatcher")
+            # One bundle carries every stage's changes relative to the original repo.
+            self.assertEqual(top_level_patch_manifest["stage"], "bundle")
             self.assertEqual(len(top_level_patch_manifest["patches"]), 1)
-            self.assertEqual(top_level_patch_manifest["patches"][0]["changed_files"], [scenario.patch_target])
+            expected_changed = {scenario.patch_target}
+            if changed_stage == "close_injector":
+                expected_changed.add("src/main/java/com/arodnap/fixture/WrapperMissingClose.java")
+            if changed_stage == "owning_field":
+                expected_changed.add("src/main/java/com/arodnap/fixture/OwningFieldReassignment.java")
+            self.assertEqual(set(top_level_patch_manifest["patches"][0]["changed_files"]), expected_changed)
 
             self._assert_stage_artifacts(layout, changed_stage=changed_stage)
 
@@ -154,14 +160,15 @@ class V1IntegrationTest(unittest.TestCase):
         self.assertTrue((rlfixer_dir / "stage.log").is_file())
         self.assertTrue((rlfixer_dir / "fixes.txt").is_file())
         self.assertTrue((rlfixer_dir / "debug.txt").is_file())
-        self.assertTrue((rlfixer_dir / "compat_bundle" / "info" / "classes").is_file())
-        self.assertTrue((rlfixer_dir / "compat_bundle" / "info" / "sources").is_file())
-        self.assertTrue((rlfixer_dir / "compat_bundle" / "metadata.json").is_file())
 
         self.assertTrue((rlpatcher_dir / "stage_result.json").is_file())
         self.assertTrue((rlpatcher_dir / "stage.log").is_file())
         self.assertTrue((rlpatcher_dir / "patch_manifest.json").is_file())
         self.assertEqual(len(list((rlpatcher_dir / "patches").glob("*.patch"))), 1)
+
+        bundle_dir = layout.stage_dir("bundle")
+        self.assertTrue((bundle_dir / "stage_result.json").is_file())
+        self.assertTrue((layout.patches_dir / "arodnap.patch").is_file())
 
 
 if __name__ == "__main__":

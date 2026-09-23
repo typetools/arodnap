@@ -139,10 +139,10 @@ class StageBaseWrapperTest(unittest.TestCase):
             source_file = workspace_root / "src" / "main" / "java" / "Demo.java"
             source_file.parent.mkdir(parents=True)
             source_file.write_text("class Demo {}\n")
-            raw_patch_path = workspace_root / "src" / "demo.raw.patch"
             diagnostics_path = temp_root / "diagnostics.txt"
             diagnostics_path.write_text("warning\n")
             stage_output_dir = temp_root / "out" / "stages" / "demo"
+            raw_patch_path = stage_output_dir / "demo.raw.patch"
 
             def fake_stage_command(*, command: list[str], cwd: Path) -> CommandResult:
                 raw_patch_path.write_text(

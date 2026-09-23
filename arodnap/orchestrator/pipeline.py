@@ -55,6 +55,7 @@ def run_repair(config: RunConfig) -> int:
                     output_layout=output_layout,
                     current_analysis=repair_state.current_analysis,
                     rlfixer_result=repair_state.rlfixer_result,
+                    prior_results=tuple(state.stage_history),
                 )
                 stage_result = _run_timed_stage(
                     stage_timings,

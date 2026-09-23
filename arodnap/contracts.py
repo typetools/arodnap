@@ -50,6 +50,7 @@ class RunConfig:
     cf_root: Path
     close_injector_jar: Path
     owning_field_jar: Path
+    rlfixer_jar: Path
     rlpatcher_jar: Path
     timeouts: Timeouts
 
@@ -66,6 +67,7 @@ class RunConfig:
             "cf_root": str(self.cf_root),
             "close_injector_jar": str(self.close_injector_jar),
             "owning_field_jar": str(self.owning_field_jar),
+            "rlfixer_jar": str(self.rlfixer_jar),
             "rlpatcher_jar": str(self.rlpatcher_jar),
             "timeouts": self.timeouts.to_dict(),
         }
@@ -84,6 +86,7 @@ class RunConfig:
             cf_root=Path(data["cf_root"]),
             close_injector_jar=Path(data["close_injector_jar"]),
             owning_field_jar=Path(data["owning_field_jar"]),
+            rlfixer_jar=Path(data["rlfixer_jar"]),
             rlpatcher_jar=Path(data["rlpatcher_jar"]),
             timeouts=Timeouts.from_dict(data["timeouts"]),
         )

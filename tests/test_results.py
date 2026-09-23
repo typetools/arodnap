@@ -19,6 +19,8 @@ class ResultsTest(unittest.TestCase):
             stage_dir = layout.stage_dir("rlpatcher")
             stage_dir.mkdir(parents=True, exist_ok=True)
             stage_manifest_path = stage_dir / "patch_manifest.json"
+            (stage_dir / "patches").mkdir()
+            (stage_dir / "patches" / "app.patch").write_text("--- a\n+++ a\n")
             stage_manifest_payload = {
                 "patches": [
                     {
@@ -116,7 +118,10 @@ class ResultsTest(unittest.TestCase):
                         stage_timings=stage_timings,
                     )
 
-            self.assertEqual(json.loads(layout.patches_manifest_path.read_text()), stage_manifest_payload)
+            promoted_payload = json.loads(stage_manifest_path.read_text())
+            promoted_payload["patches"][0]["patch_file"] = "app.patch"
+            self.assertEqual(json.loads(layout.patches_manifest_path.read_text()), promoted_payload)
+            self.assertTrue((layout.patches_dir / "app.patch").is_file())
 
             manifest = json.loads(layout.manifest_path.read_text())
             self.assertTrue(manifest["success"])
@@ -200,6 +205,7 @@ class ResultsTest(unittest.TestCase):
             cf_root=Path("/cf"),
             close_injector_jar=Path("/close.jar"),
             owning_field_jar=Path("/owning.jar"),
+            rlfixer_jar=Path("/rlfixer.jar"),
             rlpatcher_jar=Path("/rlpatcher.jar"),
             timeouts=Timeouts(build_seconds=1, analysis_seconds=2, stage_seconds=3),
         )

@@ -10,7 +10,14 @@ import sys
 import tempfile
 
 from arodnap.contracts import RunConfig
-from arodnap.runtime import CommandExecutionError, render_command_log, run_command
+from arodnap.runtime import (
+    WPI_SUPPORTED_JDK_MAJORS,
+    CommandExecutionError,
+    JdkResolutionError,
+    render_command_log,
+    resolve_jdk,
+    run_command,
+)
 
 
 @dataclass(frozen=True)
@@ -104,8 +111,9 @@ def _build_wpi_command(config: RunConfig, workspace_root: Path) -> list[str]:
 def _wpi_environment(cf_root: Path):
     env = os.environ.copy()
     env["CHECKERFRAMEWORK"] = str(cf_root)
+    env["JAVA_HOME"] = str(_resolve_wpi_java_home(env))
 
-    compatible_python = _resolve_dljc_python3()
+    compatible_python = resolve_dljc_python()
     if compatible_python is None:
         raise WpiRunError(
             "Whole-program inference requires a python3 interpreter with distutils for Checker Framework dljc."
@@ -121,6 +129,20 @@ def _wpi_environment(cf_root: Path):
             else shim_dir
         )
         yield env
+
+
+def _resolve_wpi_java_home(env: dict[str, str]) -> Path:
+    try:
+        jdk = resolve_jdk(env)
+    except JdkResolutionError as exc:
+        raise WpiRunError(str(exc)) from exc
+    if jdk.major_version not in WPI_SUPPORTED_JDK_MAJORS:
+        supported = ", ".join(str(major) for major in WPI_SUPPORTED_JDK_MAJORS)
+        raise WpiRunError(
+            f"Whole-program inference needs a JDK {supported}; found JDK {jdk.major_version} "
+            f"at {jdk.home} (from {jdk.source}). Set JAVA_HOME to a supported JDK."
+        )
+    return jdk.home
 
 
 def _prepare_wpi_support_files(cf_root: Path) -> None:
@@ -160,7 +182,7 @@ def _locate_generated_inference_dir(
     return None
 
 
-def _resolve_dljc_python3() -> Path | None:
+def resolve_dljc_python() -> Path | None:
     candidates = []
     override = os.environ.get(DLJC_PYTHON_ENV)
     if override:

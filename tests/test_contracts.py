@@ -19,6 +19,7 @@ class ContractsTest(unittest.TestCase):
             cf_root=Path("/cf"),
             close_injector_jar=Path("/jars/close.jar"),
             owning_field_jar=Path("/jars/owning.jar"),
+            rlfixer_jar=Path("/jars/rlfixer.jar"),
             rlpatcher_jar=Path("/jars/patcher.jar"),
             timeouts=Timeouts(build_seconds=60, analysis_seconds=120, stage_seconds=30),
         )
@@ -73,6 +74,7 @@ class ContractsTest(unittest.TestCase):
             cf_root=Path("/cf"),
             close_injector_jar=Path("/jars/close.jar"),
             owning_field_jar=Path("/jars/owning.jar"),
+            rlfixer_jar=Path("/jars/rlfixer.jar"),
             rlpatcher_jar=Path("/jars/patcher.jar"),
             timeouts=Timeouts(build_seconds=10, analysis_seconds=20, stage_seconds=30),
         )

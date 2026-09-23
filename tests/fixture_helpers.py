@@ -181,7 +181,10 @@ class FixtureRepairHarness:
         analysis_paths.classpath_entries_file.write_text(str(compiled_outputs_root.resolve()) + "\n")
         analysis_paths.adapter_metadata_path.write_text(
             json.dumps(
-                {"compiled_classes_root": str(compiled_outputs_root.resolve())},
+                {
+                    "compiled_classes_root": str(compiled_outputs_root.resolve()),
+                    "source_root": str(source_root.resolve()),
+                },
                 indent=2,
                 sort_keys=True,
             )
@@ -207,7 +210,7 @@ class FixtureRepairHarness:
             adapter_metadata_path=analysis_paths.adapter_metadata_path.resolve(),
         )
 
-    def _fake_close_injector(self, config, *, workspace_root, diagnostics_path, stage_output_dir):
+    def _fake_close_injector(self, config, *, workspace_root, diagnostics_path, stage_output_dir, **_kwargs):
         return self._run_stage_change(
             stage="close_injector",
             workspace_root=Path(workspace_root),
@@ -219,7 +222,7 @@ class FixtureRepairHarness:
             note_prefix="close-injector",
         )
 
-    def _fake_owning_field(self, config, *, workspace_root, diagnostics_path, stage_output_dir):
+    def _fake_owning_field(self, config, *, workspace_root, diagnostics_path, stage_output_dir, **_kwargs):
         return self._run_stage_change(
             stage="owning_field",
             workspace_root=Path(workspace_root),
@@ -284,20 +287,7 @@ class FixtureRepairHarness:
         write_stage_result(stage_output_dir, result)
         return result
 
-    def _fake_rlfixer(
-        self,
-        *,
-        workspace_root,
-        diagnostics_path,
-        inference_dir,
-        compatibility_bundle_root,
-        stage_output_dir,
-    ):
-        bundle_root = Path(compatibility_bundle_root).resolve()
-        metadata_path = bundle_root / "metadata.json"
-        if not metadata_path.is_file():
-            raise AssertionError("repair should generate the RLFixer compatibility bundle before running RLFixer")
-
+    def _fake_rlfixer(self, *, stage_output_dir, **_kwargs):
         stage_output_dir = Path(stage_output_dir).resolve()
         stage_output_dir.mkdir(parents=True, exist_ok=True)
         log_path = stage_output_dir / "stage.log"
@@ -317,7 +307,6 @@ class FixtureRepairHarness:
                 "log": str(log_path.resolve()),
                 "fixes": str(fixes_path.resolve()),
                 "debug": str(debug_path.resolve()),
-                "compatibility_bundle_metadata": str(metadata_path.resolve()),
             },
             notes=["RLFixer completed without mutating workspace sources."],
             success=True,
@@ -325,17 +314,7 @@ class FixtureRepairHarness:
         write_stage_result(stage_output_dir, result)
         return result
 
-    def _fake_rlpatcher(
-        self,
-        *,
-        workspace_root,
-        diagnostics_path,
-        inference_dir,
-        fixes_path,
-        debug_path,
-        stage_output_dir,
-        rlpatcher_jar,
-    ):
+    def _fake_rlpatcher(self, *, workspace_root, stage_output_dir, **_kwargs):
         stage_output_dir = Path(stage_output_dir).resolve()
         stage_output_dir.mkdir(parents=True, exist_ok=True)
         patch_dir = stage_output_dir / "patches"
@@ -349,6 +328,7 @@ class FixtureRepairHarness:
         after = self.scenario.patch_transform(before)
         patch_path = patch_dir / f"{Path(target_relpath).stem}.patch"
         patch_path.write_text(unified_patch(target_relpath, before, after))
+        workspace_file.write_text(after)
 
         preimage_hash = hashlib.sha256((self.repo_root / target_relpath).read_bytes()).hexdigest()
         manifest = {
@@ -369,9 +349,9 @@ class FixtureRepairHarness:
 
         result = StageResult(
             stage="rlpatcher",
-            changed=False,
-            changed_files=[],
-            rerun_required=False,
+            changed=True,
+            changed_files=[target_relpath],
+            rerun_required=True,
             artifacts={
                 "log": str(log_path.resolve()),
                 "patch_manifest": str(manifest_path.resolve()),

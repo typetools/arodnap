@@ -10,12 +10,18 @@ from arodnap.stages.owning_field import StageExecutionError, run_owning_field_st
 
 
 class OwningFieldStageTest(unittest.TestCase):
+    def setUp(self) -> None:
+        # Keep the command shape independent of the JDK installed on this machine.
+        java_patcher = patch("arodnap.stages.owning_field.java_executable", return_value="java")
+        java_patcher.start()
+        self.addCleanup(java_patcher.stop)
+
     def test_changed_run_normalizes_patch_and_writes_stage_result(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_root = Path(temp_dir)
             workspace_root, diagnostics_path = self._make_workspace(temp_root)
             stage_output_dir = temp_root / "arodnap-out" / "stages" / "owning_field"
-            raw_patch_path = workspace_root / "src" / "owning-field.patch"
+            raw_patch_path = stage_output_dir / "owning-field.patch"
             source_file = workspace_root / "src" / "main" / "java" / "com" / "example" / "Demo.java"
 
             def fake_run(command, **kwargs):
@@ -107,10 +113,10 @@ class OwningFieldStageTest(unittest.TestCase):
             temp_root = Path(temp_dir)
             workspace_root, diagnostics_path = self._make_workspace(temp_root)
             stage_output_dir = temp_root / "arodnap-out" / "stages" / "owning_field"
-            raw_patch_path = workspace_root / "src" / "owning-field.patch"
+            raw_patch_path = stage_output_dir / "owning-field.patch"
 
             def fake_run(command, **kwargs):
-                if command[0] == "java":
+                if Path(command[0]).name == "java":
                     raw_patch_path.parent.mkdir(parents=True, exist_ok=True)
                     raw_patch_path.write_text(
                         "\n".join(
@@ -158,6 +164,7 @@ class OwningFieldStageTest(unittest.TestCase):
             cf_root=root / "checker-framework",
             close_injector_jar=root / "AutoCloseInjector.jar",
             owning_field_jar=root / "OwningFieldFixer.jar",
+            rlfixer_jar=root / "rlfixer.jar",
             rlpatcher_jar=root / "rlpatcher.jar",
             timeouts=Timeouts(build_seconds=1, analysis_seconds=2, stage_seconds=3),
         )

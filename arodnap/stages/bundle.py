@@ -1,0 +1,181 @@
+from __future__ import annotations
+
+from dataclasses import dataclass
+import difflib
+import hashlib
+import json
+from pathlib import Path
+import shutil
+import tempfile
+
+from arodnap.contracts import StageResult
+from arodnap.patch_tool import PatchToolError, append_patch_execution_log, run_patch
+
+from .base import StageExecutionError, write_stage_result
+
+_STAGE_NAME = "bundle"
+_PATCH_FILENAME = "arodnap.patch"
+_NO_NEWLINE_MARKER = "\\ No newline at end of file\n"
+
+
+@dataclass(frozen=True)
+class BundlePaths:
+    root: Path
+    log_path: Path
+    patch_path: Path
+    manifest_path: Path
+
+    @classmethod
+    def for_stage(cls, stage_output_dir: Path) -> "BundlePaths":
+        root = stage_output_dir.resolve()
+        return cls(
+            root=root,
+            log_path=root / "stage.log",
+            patch_path=root / _PATCH_FILENAME,
+            manifest_path=root / "patch_manifest.json",
+        )
+
+
+def run_bundle_stage(
+    *,
+    repo_root: Path,
+    workspace_root: Path,
+    candidate_files: list[str],
+    stage_output_dir: Path,
+) -> StageResult:
+    """Emit one patch that turns the original repository into the final workspace state.
+
+    `candidate_files` are repo-relative paths any stage may have touched. The bundle is
+    only reported once applying it to a clean copy of the original files reproduces the
+    workspace contents exactly.
+    """
+    repo_root = repo_root.resolve()
+    workspace_root = workspace_root.resolve()
+    paths = BundlePaths.for_stage(stage_output_dir)
+    paths.root.mkdir(parents=True, exist_ok=True)
+    paths.log_path.write_text("")
+
+    changed_files: list[str] = []
+    diffs: list[str] = []
+    for relpath in sorted(set(candidate_files)):
+        original = repo_root / relpath
+        final = workspace_root / relpath
+        if not final.is_file():
+            raise StageExecutionError(f"Workspace file disappeared during repair: {relpath}")
+        if original.is_file() and original.read_bytes() == final.read_bytes():
+            continue
+        if not original.is_file():
+            raise StageExecutionError(f"Repair created a new file, which bundles do not support yet: {relpath}")
+        diffs.append(_unified_diff(relpath, _read_text(original), _read_text(final)))
+        changed_files.append(relpath)
+
+    if not changed_files:
+        paths.patch_path.unlink(missing_ok=True)
+        _write_manifest(paths.manifest_path, entries=[])
+        result = StageResult(
+            stage=_STAGE_NAME,
+            changed=False,
+            changed_files=[],
+            rerun_required=False,
+            artifacts={"log": str(paths.log_path), "patch_manifest": str(paths.manifest_path)},
+            notes=["Repair produced no source changes."],
+            success=True,
+        )
+        write_stage_result(paths.root, result)
+        return result
+
+    paths.patch_path.write_text("".join(diffs), encoding="utf-8", errors="surrogateescape")
+    _verify_bundle(
+        repo_root=repo_root,
+        workspace_root=workspace_root,
+        changed_files=changed_files,
+        patch_path=paths.patch_path,
+        log_path=paths.log_path,
+    )
+    _write_manifest(
+        paths.manifest_path,
+        entries=[
+            {
+                "patch_file": str(paths.patch_path),
+                "stage": _STAGE_NAME,
+                "strip_level": 0,
+                "target_root": ".",
+                "changed_files": changed_files,
+                "preimage_hashes": {
+                    relpath: hashlib.sha256((repo_root / relpath).read_bytes()).hexdigest()
+                    for relpath in changed_files
+                },
+            }
+        ],
+    )
+    result = StageResult(
+        stage=_STAGE_NAME,
+        changed=False,
+        changed_files=changed_files,
+        rerun_required=False,
+        artifacts={
+            "log": str(paths.log_path),
+            "patch": str(paths.patch_path),
+            "patch_manifest": str(paths.manifest_path),
+        },
+        notes=[f"Bundled changes to {len(changed_files)} file(s) and verified them against the original repository."],
+        success=True,
+    )
+    write_stage_result(paths.root, result)
+    return result
+
+
+def _unified_diff(relpath: str, old_text: str, new_text: str) -> str:
+    lines = []
+    for line in difflib.unified_diff(
+        old_text.splitlines(keepends=True),
+        new_text.splitlines(keepends=True),
+        fromfile=relpath,
+        tofile=relpath,
+    ):
+        lines.append(line if line.endswith("\n") else line + "\n" + _NO_NEWLINE_MARKER)
+    return "".join(lines)
+
+
+def _verify_bundle(
+    *,
+    repo_root: Path,
+    workspace_root: Path,
+    changed_files: list[str],
+    patch_path: Path,
+    log_path: Path,
+) -> None:
+    with tempfile.TemporaryDirectory(prefix="arodnap-bundle-check-") as temp_dir:
+        clean_copy = Path(temp_dir)
+        for relpath in changed_files:
+            target = clean_copy / relpath
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(repo_root / relpath, target)
+        try:
+            execution = run_patch(
+                cwd=clean_copy,
+                patch_path=patch_path,
+                strip_level=0,
+                check_only=False,
+                require_gnu=False,
+                operation_label="bundle verification",
+            )
+        except PatchToolError as exc:
+            raise StageExecutionError(str(exc)) from exc
+        append_patch_execution_log(log_path, title="verify_bundle", execution=execution)
+        if execution.completed.returncode != 0:
+            raise StageExecutionError(f"Bundle does not apply to the original repository. See log: {log_path}")
+        for relpath in changed_files:
+            if (clean_copy / relpath).read_bytes() != (workspace_root / relpath).read_bytes():
+                raise StageExecutionError(f"Bundle does not reproduce the repaired contents of {relpath}.")
+
+
+def _read_text(path: Path) -> str:
+    return path.read_text(encoding="utf-8", errors="surrogateescape")
+
+
+def _write_manifest(path: Path, *, entries: list[dict[str, object]]) -> None:
+    path.write_text(json.dumps({"stage": _STAGE_NAME, "patches": entries}, indent=2, sort_keys=True) + "\n")
+
+
+__all__ = ["run_bundle_stage"]

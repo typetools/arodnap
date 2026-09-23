@@ -82,6 +82,20 @@ class NormalizedPatchStageOutputs:
 
 
 @dataclass(frozen=True)
+class CompileInputs:
+    """Build-discovered facts the Java stage tools use to check that patches compile."""
+
+    sources_file: Path
+    classpath_file: Path
+
+    def java_properties(self) -> list[str]:
+        return [
+            f"-Darodnap.sourcesFile={self.sources_file.resolve()}",
+            f"-Darodnap.classpathFile={self.classpath_file.resolve()}",
+        ]
+
+
+@dataclass(frozen=True)
 class StagePaths:
     root: Path
     log_path: Path
@@ -158,7 +172,7 @@ def _as_command_result(
 
 
 class BaseNormalizedPatchStageWrapper(BaseStageWrapper, ABC):
-    """Shared wrapper for Java tools that emit raw unified diffs under workspace/src."""
+    """Shared wrapper for Java tools that emit a raw unified diff to a requested path."""
 
     patch_filename: str
     raw_patch_filename: str
@@ -171,11 +185,13 @@ class BaseNormalizedPatchStageWrapper(BaseStageWrapper, ABC):
         workspace_root: Path,
         diagnostics_path: Path,
         stage_output_dir: Path,
+        compile_inputs: CompileInputs | None = None,
     ) -> StageResult:
         workspace_root = workspace_root.resolve()
         diagnostics_path = diagnostics_path.resolve()
         stage_paths = StagePaths.for_stage(stage_output_dir, patch_filename=self.patch_filename)
-        raw_patch_path = workspace_root / "src" / self.raw_patch_filename
+        # The tool writes its raw diff outside the workspace so it can never leak into sources.
+        raw_patch_path = stage_paths.root / self.raw_patch_filename
 
         self.validate_inputs(
             config=config,
@@ -190,6 +206,7 @@ class BaseNormalizedPatchStageWrapper(BaseStageWrapper, ABC):
             diagnostics_path=diagnostics_path,
             stage_paths=stage_paths,
             raw_patch_path=raw_patch_path,
+            compile_inputs=compile_inputs,
         )
         normalized_outputs = self.normalize_outputs(
             invocation,
@@ -218,14 +235,19 @@ class BaseNormalizedPatchStageWrapper(BaseStageWrapper, ABC):
         diagnostics_path = Path(kwargs["diagnostics_path"]).resolve()
         stage_paths: StagePaths = kwargs["stage_paths"]  # type: ignore[assignment]
         raw_patch_path = Path(kwargs["raw_patch_path"]).resolve()
+        compile_inputs = kwargs.get("compile_inputs")
 
         if raw_patch_path.exists():
             raw_patch_path.unlink()
 
+        java_properties = [f"-Darodnap.patchFile={raw_patch_path}"]
+        if compile_inputs is not None:
+            java_properties.extend(compile_inputs.java_properties())
         command = self.build_command(
             config=config,
             workspace_root=workspace_root,
             diagnostics_path=diagnostics_path,
+            java_properties=java_properties,
         )
         completed = run_stage_command(command=command, cwd=workspace_root)
         append_command_log(
@@ -357,6 +379,7 @@ class BaseNormalizedPatchStageWrapper(BaseStageWrapper, ABC):
         config: RunConfig,
         workspace_root: Path,
         diagnostics_path: Path,
+        java_properties: list[str],
     ) -> list[str]:
         raise StageNotImplementedError(f"Stage '{self.name}' does not implement build_command().")
 
@@ -462,6 +485,7 @@ def _normalize_patch_path(path_text: str, *, workspace_root: Path) -> str:
 __all__ = [
     "BaseStageWrapper",
     "BaseNormalizedPatchStageWrapper",
+    "CompileInputs",
     "NormalizedPatchStageOutputs",
     "PatchStageToolInvocation",
     "StageExecutionError",

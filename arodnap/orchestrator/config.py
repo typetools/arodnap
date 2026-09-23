@@ -27,6 +27,7 @@ def build_run_config(
         cf_root=_tool_repo_root() / "checker_framework" / "checker-framework-3.49.0",
         close_injector_jar=_plugin_jars_root() / "AutoCloseInjector-1.0-SNAPSHOT.jar",
         owning_field_jar=_plugin_jars_root() / "OwningFieldFixer-1.0-SNAPSHOT.jar",
+        rlfixer_jar=_plugin_jars_root() / "RLFixer-1.0-SNAPSHOT.jar",
         rlpatcher_jar=_plugin_jars_root() / "RLPatcher-1.0-SNAPSHOT.jar",
         timeouts=Timeouts(build_seconds=900, analysis_seconds=1800, stage_seconds=900),
     )

@@ -186,6 +186,7 @@ class ApplyBundleTest(unittest.TestCase):
             cf_root=(repo_root.parent / "cf").resolve(),
             close_injector_jar=(repo_root.parent / "close.jar").resolve(),
             owning_field_jar=(repo_root.parent / "owning.jar").resolve(),
+            rlfixer_jar=(repo_root.parent / "rlfixer.jar").resolve(),
             rlpatcher_jar=(repo_root.parent / "rlpatcher.jar").resolve(),
             timeouts=Timeouts(build_seconds=1, analysis_seconds=1, stage_seconds=1),
         )

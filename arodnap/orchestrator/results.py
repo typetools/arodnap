@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 import json
 from dataclasses import dataclass
 from pathlib import Path
+import shutil
 from typing import Any
 
 from arodnap.contracts import PipelineState, ReanalyzeResult, StageResult
@@ -91,6 +92,14 @@ class OutputLayout:
         if not stage_manifest_path.is_file():
             raise FileNotFoundError(f"Stage patch manifest not found: {stage_manifest_path}")
         payload = json.loads(stage_manifest_path.read_text())
+        # Copy patch files next to the manifest so patches/ is a self-contained bundle.
+        self.patches_dir.mkdir(parents=True, exist_ok=True)
+        for entry in payload.get("patches", []):
+            source = Path(entry["patch_file"])
+            if not source.is_absolute():
+                source = stage_manifest_path.parent / source
+            shutil.copyfile(source, self.patches_dir / source.name)
+            entry["patch_file"] = source.name
         return write_json(self.patches_manifest_path, payload)
 
 

@@ -7,7 +7,7 @@ import re
 import shutil
 import tempfile
 
-from arodnap.runtime import CommandExecutionError, CommandResult, environment_with_overrides, run_command
+from arodnap.runtime import CommandExecutionError, CommandResult, run_command
 
 from .base import (
     AdapterExecutionError,
@@ -211,16 +211,16 @@ class GradleAdapter:
         raise UnsupportedProjectError("Gradle repo must use src/main/java in v1.")
 
     def _run_gradle(self, project: ProjectModel, *args: str) -> CommandResult:
-        with tempfile.TemporaryDirectory(prefix="arodnap-gradle-home-") as gradle_home:
-            env = environment_with_overrides({"GRADLE_USER_HOME": gradle_home})
-            try:
-                return run_command(
-                    [*project.build_tool, "--no-daemon", "--console=plain", *self.build_args, *args],
-                    cwd=project.repo_root,
-                    env=env,
-                )
-            except CommandExecutionError as exc:
-                raise AdapterExecutionError(str(exc)) from exc
+        # Use the caller's Gradle user home: resolved dependency jars must outlive
+        # this call because the classpath file points at them, and reusing the
+        # cache avoids re-downloading dependencies on every invocation.
+        try:
+            return run_command(
+                [*project.build_tool, "--no-daemon", "--console=plain", *self.build_args, *args],
+                cwd=project.repo_root,
+            )
+        except CommandExecutionError as exc:
+            raise AdapterExecutionError(str(exc)) from exc
 
 
 def _classpath_init_script() -> str:

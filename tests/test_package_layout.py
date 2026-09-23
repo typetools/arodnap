@@ -24,7 +24,8 @@ class PackageLayoutTest(unittest.TestCase):
             "arodnap.stages.owning_field",
             "arodnap.stages.rlfixer",
             "arodnap.stages.rlpatcher",
-            "arodnap.compat.rlfixer_inputs",
+            "arodnap.stages.rlfixer_io",
+            "arodnap.stages.bundle",
         ]
 
         for module_name in module_names:

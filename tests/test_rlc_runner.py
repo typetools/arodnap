@@ -157,6 +157,7 @@ class RlcRunnerTest(unittest.TestCase):
             cf_root=Path("/Users/sanjay/projects/arodnap/checker_framework/checker-framework-3.49.0"),
             close_injector_jar=root / "close.jar",
             owning_field_jar=root / "owning.jar",
+            rlfixer_jar=root / "rlfixer.jar",
             rlpatcher_jar=root / "rlpatcher.jar",
             timeouts=Timeouts(build_seconds=1, analysis_seconds=2, stage_seconds=3),
         )

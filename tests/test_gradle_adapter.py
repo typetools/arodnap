@@ -94,7 +94,8 @@ class GradleAdapterTest(unittest.TestCase):
             command,
             ["gradle", "--no-daemon", "--console=plain", "--info", "-x=test", "classes"],
         )
-        self.assertIn("GRADLE_USER_HOME", run_mock.call_args.kwargs["env"])
+        # Gradle runs with the caller's environment so its dependency cache persists.
+        self.assertNotIn("env", run_mock.call_args.kwargs)
 
     def test_supported_fixture_writes_expected_source_file_list(self) -> None:
         adapter = GradleAdapter(FIXTURES_ROOT / "gradle-pipeline-baseline")

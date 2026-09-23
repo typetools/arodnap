@@ -4,7 +4,6 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from arodnap.compat.rlfixer_inputs import RLFixerCompatibilityBundle
 from arodnap.contracts import ReanalyzeResult, RunConfig, StageResult, Timeouts
 from arodnap.orchestrator.pipeline import run_repair
 from arodnap.orchestrator.results import OutputLayout
@@ -69,149 +68,54 @@ class RepairPipelineTest(unittest.TestCase):
                     adapter_metadata_path=analysis_paths.adapter_metadata_path.resolve(),
                 )
 
-            def fake_close(config, *, workspace_root, diagnostics_path, stage_output_dir):
-                stage_output_dir.mkdir(parents=True, exist_ok=True)
-                (stage_output_dir / "stage.log").write_text("close\n")
-                (stage_output_dir / "stage_result.json").write_text("{}\n")
-                return StageResult(
-                    stage="close_injector",
-                    changed=True,
-                    changed_files=["src/main/java/App.java"],
-                    rerun_required=True,
-                    artifacts={"log": str((stage_output_dir / "stage.log").resolve())},
-                    notes=["patched"],
-                    success=True,
-                )
+            def fake_stage(name, *, changed_files=(), extra_artifacts=None):
+                def run(*args, stage_output_dir, workspace_root, **kwargs):
+                    stage_output_dir.mkdir(parents=True, exist_ok=True)
+                    log_path = stage_output_dir / "stage.log"
+                    log_path.write_text(f"{name}\n")
+                    for changed_file in changed_files:
+                        target = workspace_root / changed_file
+                        target.write_text(target.read_text().replace("class App", "final class App"))
+                    artifacts = {"log": str(log_path.resolve())}
+                    artifacts.update((extra_artifacts or (lambda _dir: {}))(stage_output_dir))
+                    return StageResult(
+                        stage=name,
+                        changed=bool(changed_files),
+                        changed_files=list(changed_files),
+                        rerun_required=bool(changed_files),
+                        artifacts=artifacts,
+                        notes=[name],
+                        success=True,
+                    )
 
-            def fake_owning(config, *, workspace_root, diagnostics_path, stage_output_dir):
-                stage_output_dir.mkdir(parents=True, exist_ok=True)
-                (stage_output_dir / "stage.log").write_text("owning\n")
-                (stage_output_dir / "stage_result.json").write_text("{}\n")
-                return StageResult(
-                    stage="owning_field",
-                    changed=False,
-                    changed_files=[],
-                    rerun_required=False,
-                    artifacts={"log": str((stage_output_dir / "stage.log").resolve())},
-                    notes=["noop"],
-                    success=True,
-                )
+                return run
 
-            def fake_bundle(
-                *,
-                workspace_root,
-                source_files_file,
-                app_classes_file,
-                classpath_entries_file,
-                compiled_outputs_root,
-                stage_output_dir,
-            ):
-                bundle_root = stage_output_dir / "compat_bundle"
-                info_dir = bundle_root / "info"
-                jar_dir = bundle_root / "jarfile"
-                info_dir.mkdir(parents=True, exist_ok=True)
-                jar_dir.mkdir(parents=True, exist_ok=True)
-                classes_file = info_dir / "classes"
-                sources_file = info_dir / "sources"
-                jar_path = jar_dir / "repo.jar"
-                metadata_path = bundle_root / "metadata.json"
-                classes_file.write_text("App\n")
-                sources_file.write_text("src/main/java/App.java\n")
-                jar_path.write_bytes(b"jar")
-                metadata_path.write_text("{}\n")
-                return RLFixerCompatibilityBundle(
-                    root=bundle_root.resolve(),
-                    info_dir=info_dir.resolve(),
-                    classes_file=classes_file.resolve(),
-                    sources_file=sources_file.resolve(),
-                    jar_dir=jar_dir.resolve(),
-                    jar_path=jar_path.resolve(),
-                    metadata_path=metadata_path.resolve(),
-                )
-
-            def fake_rlfixer(*, workspace_root, diagnostics_path, inference_dir, compatibility_bundle_root, stage_output_dir):
-                stage_output_dir.mkdir(parents=True, exist_ok=True)
-                fixes_path = stage_output_dir / "fixes.txt"
-                debug_path = stage_output_dir / "debug.txt"
-                log_path = stage_output_dir / "stage.log"
-                fixes_path.write_text("fixes\n")
-                debug_path.write_text("debug\n")
-                log_path.write_text("rlfixer\n")
-                (stage_output_dir / "stage_result.json").write_text("{}\n")
-                return StageResult(
-                    stage="rlfixer",
-                    changed=False,
-                    changed_files=[],
-                    rerun_required=False,
-                    artifacts={
-                        "log": str(log_path.resolve()),
-                        "fixes": str(fixes_path.resolve()),
-                        "debug": str(debug_path.resolve()),
-                        "compatibility_bundle_metadata": str((compatibility_bundle_root / "metadata.json").resolve()),
-                    },
-                    notes=["rlfixer"],
-                    success=True,
-                )
-
-            def fake_rlpatcher(
-                *,
-                workspace_root,
-                diagnostics_path,
-                inference_dir,
-                fixes_path,
-                debug_path,
-                stage_output_dir,
-                rlpatcher_jar,
-            ):
-                stage_output_dir.mkdir(parents=True, exist_ok=True)
-                patch_dir = stage_output_dir / "patches"
-                patch_dir.mkdir(parents=True, exist_ok=True)
-                patch_path = patch_dir / "app.patch"
-                patch_path.write_text("--- src/main/java/App.java\n+++ src/main/java/App.java\n")
-                stage_manifest_path = stage_output_dir / "patch_manifest.json"
-                stage_manifest_payload = {
-                    "patches": [
-                        {
-                            "changed_files": ["src/main/java/App.java"],
-                            "patch_file": str(patch_path.resolve()),
-                            "preimage_hashes": {"src/main/java/App.java": "abc"},
-                            "stage": "rlpatcher",
-                            "strip_level": 0,
-                            "target_root": ".",
-                        }
-                    ],
-                    "stage": "rlpatcher",
+            def rlfixer_artifacts(stage_output_dir):
+                (stage_output_dir / "fixes.txt").write_text("fixes\n")
+                (stage_output_dir / "debug.txt").write_text("debug\n")
+                return {
+                    "fixes": str((stage_output_dir / "fixes.txt").resolve()),
+                    "debug": str((stage_output_dir / "debug.txt").resolve()),
                 }
-                stage_manifest_path.write_text(json.dumps(stage_manifest_payload, indent=2, sort_keys=True) + "\n")
-                (stage_output_dir / "stage.log").write_text("rlpatcher\n")
-                (stage_output_dir / "stage_result.json").write_text("{}\n")
-                return StageResult(
-                    stage="rlpatcher",
-                    changed=False,
-                    changed_files=[],
-                    rerun_required=False,
-                    artifacts={
-                        "log": str((stage_output_dir / "stage.log").resolve()),
-                        "patch_manifest": str(stage_manifest_path.resolve()),
-                        "patch_dir": str(patch_dir.resolve()),
-                    },
-                    notes=["materialized"],
-                    success=True,
-                )
 
             with patch("arodnap.orchestrator.pipeline.reanalyze", side_effect=fake_reanalyze):
-                with patch("arodnap.stages.registry.run_close_injector_stage", side_effect=fake_close):
-                    with patch("arodnap.stages.registry.run_owning_field_stage", side_effect=fake_owning):
+                with patch(
+                    "arodnap.stages.registry.run_close_injector_stage",
+                    side_effect=fake_stage("close_injector", changed_files=["src/main/java/App.java"]),
+                ):
+                    with patch(
+                        "arodnap.stages.registry.run_owning_field_stage",
+                        side_effect=fake_stage("owning_field"),
+                    ):
                         with patch(
-                            "arodnap.stages.registry.generate_rlfixer_compatibility_bundle",
-                            side_effect=fake_bundle,
+                            "arodnap.stages.registry.run_rlfixer_stage",
+                            side_effect=fake_stage("rlfixer", extra_artifacts=rlfixer_artifacts),
                         ):
-                            with patch("arodnap.stages.registry.run_rlfixer_stage", side_effect=fake_rlfixer):
-                                with patch(
-                                    "arodnap.stages.registry.run_rlpatcher_stage",
-                                    side_effect=fake_rlpatcher,
-                                ):
-                                    self.assertEqual(run_repair(config), 0)
+                            with patch(
+                                "arodnap.stages.registry.run_rlpatcher_stage",
+                                side_effect=fake_stage("rlpatcher"),
+                            ):
+                                self.assertEqual(run_repair(config), 0)
 
             self.assertEqual(analysis_calls, ["initial", "post_close_injector"])
             self.assertTrue(layout.report_path.is_file())
@@ -225,33 +129,36 @@ class RepairPipelineTest(unittest.TestCase):
             self.assertTrue(layout.stage_dir("owning_field").is_dir())
             self.assertTrue(layout.stage_dir("rlfixer").is_dir())
             self.assertTrue(layout.stage_dir("rlpatcher").is_dir())
+            self.assertTrue(layout.stage_dir("bundle").is_dir())
 
+            # The bundle is the diff between the original repo and the final workspace.
             promoted_manifest = json.loads(layout.patches_manifest_path.read_text())
-            self.assertEqual(promoted_manifest["stage"], "rlpatcher")
-            self.assertEqual(
-                promoted_manifest["patches"][0]["changed_files"],
-                ["src/main/java/App.java"],
-            )
+            self.assertEqual(promoted_manifest["stage"], "bundle")
+            [entry] = promoted_manifest["patches"]
+            self.assertEqual(entry["changed_files"], ["src/main/java/App.java"])
+            self.assertEqual(entry["patch_file"], "arodnap.patch")
+            self.assertIn("+final class App {}", (layout.patches_dir / "arodnap.patch").read_text())
+            self.assertEqual((repo_root / "src" / "main" / "java" / "App.java").read_text(), "class App {}\n")
 
             manifest = json.loads(layout.manifest_path.read_text())
             self.assertTrue(manifest["success"])
             self.assertEqual(manifest["final_patch_manifest"], str(layout.patches_manifest_path))
-            self.assertEqual(len(manifest["stage_history"]), 4)
+            self.assertEqual(len(manifest["stage_history"]), 5)
             self.assertEqual(manifest["run_metadata"]["command"], "repair")
             self.assertEqual(manifest["adapter"]["selected_build_tool"], ["gradle"])
             self.assertEqual(len(manifest["analysis_runs"]), 2)
-            self.assertEqual(len(manifest["stage_timings"]), 4)
+            self.assertEqual(len(manifest["stage_timings"]), 5)
 
             report = json.loads(layout.report_path.read_text())
             self.assertTrue(report["success"])
             self.assertEqual(report["diagnostics"]["final_warning_count"], 1)
             self.assertEqual(
                 [stage["stage"] for stage in report["executed_stages"]],
-                ["close_injector", "owning_field", "rlfixer", "rlpatcher"],
+                ["close_injector", "owning_field", "rlfixer", "rlpatcher", "bundle"],
             )
             self.assertEqual(report["artifacts"]["patches_manifest"], str(layout.patches_manifest_path))
             self.assertEqual(report["artifacts"]["patch_bundle_dir"], str(layout.patches_dir))
-            self.assertEqual(report["stage_execution_summary"]["executed"], 4)
+            self.assertEqual(report["stage_execution_summary"]["executed"], 5)
             self.assertEqual(report["stage_execution_summary"]["reruns_requested"], 1)
 
     def _make_config(self, root: Path, *, repo_root: Path) -> RunConfig:
@@ -267,6 +174,7 @@ class RepairPipelineTest(unittest.TestCase):
             cf_root=(root / "cf").resolve(),
             close_injector_jar=(root / "close.jar").resolve(),
             owning_field_jar=(root / "owning.jar").resolve(),
+            rlfixer_jar=(root / "rlfixer.jar").resolve(),
             rlpatcher_jar=(root / "rlpatcher.jar").resolve(),
             timeouts=Timeouts(build_seconds=1, analysis_seconds=2, stage_seconds=3),
         )

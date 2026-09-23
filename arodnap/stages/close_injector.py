@@ -3,9 +3,11 @@ from __future__ import annotations
 from pathlib import Path
 
 from arodnap.contracts import RunConfig, StageResult
+from arodnap.runtime import java_executable
 
 from .base import (
     BaseNormalizedPatchStageWrapper,
+    CompileInputs,
     StageExecutionError,
 )
 
@@ -25,9 +27,11 @@ class CloseInjectorStageWrapper(BaseNormalizedPatchStageWrapper):
         config: RunConfig,
         workspace_root: Path,
         diagnostics_path: Path,
+        java_properties: list[str],
     ) -> list[str]:
         return [
-            "java",
+            java_executable(),
+            *java_properties,
             "-jar",
             str(config.close_injector_jar.resolve()),
             str(diagnostics_path),
@@ -59,12 +63,14 @@ def run_close_injector_stage(
     workspace_root: Path,
     diagnostics_path: Path,
     stage_output_dir: Path,
+    compile_inputs: CompileInputs | None = None,
 ) -> StageResult:
     return _WRAPPER.run(
         config=config,
         workspace_root=workspace_root,
         diagnostics_path=diagnostics_path,
         stage_output_dir=stage_output_dir,
+        compile_inputs=compile_inputs,
     )
 
 

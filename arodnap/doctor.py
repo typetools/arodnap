@@ -16,7 +16,13 @@ from arodnap.contracts import RunConfig
 from arodnap.orchestrator.results import write_json
 from arodnap.orchestrator.workspace import copied_workspace
 from arodnap.patch_tool import PatchToolError, discover_patch_tool
-from arodnap.runtime import CommandExecutionError, run_command
+from arodnap.analysis.wpi_runner import resolve_dljc_python
+from arodnap.runtime import (
+    RLFIXER_MIN_JDK_MAJOR,
+    WPI_SUPPORTED_JDK_MAJORS,
+    JdkResolutionError,
+    resolve_jdk,
+)
 
 
 DoctorStatus = Literal["ok", "warning", "error"]
@@ -103,6 +109,7 @@ def _run_environment_checks(config: RunConfig) -> list[DoctorCheck]:
     return [
         _check_python_runtime(),
         _check_java_runtime(),
+        _check_wpi_python(),
         _check_patch_binary(),
         _check_checker_framework_path(config.cf_root),
         _check_checker_framework_tools(config.cf_root),
@@ -122,29 +129,50 @@ def _check_python_runtime() -> DoctorCheck:
 
 def _check_java_runtime() -> DoctorCheck:
     try:
-        completed = run_command(["java", "-version"])
-    except CommandExecutionError as exc:
+        jdk = resolve_jdk()
+    except JdkResolutionError as exc:
+        return DoctorCheck(name="java_runtime", status="error", message=str(exc))
+
+    details = {"home": jdk.home, "major_version": jdk.major_version, "source": jdk.source}
+    supported = [
+        major
+        for major in WPI_SUPPORTED_JDK_MAJORS
+        if major >= RLFIXER_MIN_JDK_MAJOR
+    ]
+    if jdk.major_version not in supported:
         return DoctorCheck(
             name="java_runtime",
             status="error",
-            message=str(exc),
+            message=(
+                f"JDK {jdk.major_version} at {jdk.home} (from {jdk.source}) is not supported. "
+                f"Set JAVA_HOME to JDK {' or '.join(str(major) for major in supported)}."
+            ),
+            details=details,
         )
-
-    output = "\n".join(part for part in (completed.stdout, completed.stderr) if part).strip()
-    version_line = _first_nonempty_line(output) or "<unknown version>"
-    if completed.returncode != 0:
-        return DoctorCheck(
-            name="java_runtime",
-            status="error",
-            message=f"java -version failed with exit code {completed.returncode}.",
-            details={"version": version_line, "output": output},
-        )
-
     return DoctorCheck(
         name="java_runtime",
         status="ok",
-        message=f"Java is available: {version_line}",
-        details={"version": version_line},
+        message=f"JDK {jdk.major_version} is available at {jdk.home} (from {jdk.source}).",
+        details=details,
+    )
+
+
+def _check_wpi_python() -> DoctorCheck:
+    python = resolve_dljc_python()
+    if python is None:
+        return DoctorCheck(
+            name="wpi_python",
+            status="error",
+            message=(
+                "Whole-program inference needs a python3 with distutils (Python 3.11 or older, "
+                "or newer with setuptools installed). Point ARODNAP_WPI_PYTHON at one."
+            ),
+        )
+    return DoctorCheck(
+        name="wpi_python",
+        status="ok",
+        message=f"Whole-program inference will use {python}.",
+        details={"python": python},
     )
 
 
@@ -220,6 +248,7 @@ def _check_plugin_jars(config: RunConfig) -> DoctorCheck:
     required = {
         "close_injector_jar": config.close_injector_jar,
         "owning_field_jar": config.owning_field_jar,
+        "rlfixer_jar": config.rlfixer_jar,
         "rlpatcher_jar": config.rlpatcher_jar,
     }
     missing = [name for name, path in required.items() if not path.is_file()]
@@ -417,13 +446,6 @@ def _print_summary(report: DoctorReport, report_path: Path) -> None:
     for check in report.checks:
         print(f"[{check.status.upper()}] {check.name}: {check.message}")
     print(f"Doctor report: {report_path}")
-
-
-def _first_nonempty_line(text: str) -> str:
-    for line in text.splitlines():
-        if line.strip():
-            return line.strip()
-    return ""
 
 
 def _jsonable(value: Any) -> Any:
