@@ -9,7 +9,7 @@ from arodnap.contracts import RunConfig, Timeouts
 from arodnap.orchestrator.config import resolve_cf_root
 from arodnap.runtime import CommandResult
 from arodnap.stages.base import CompileInputs, StageExecutionError
-from arodnap.stages.field_transformations import EXTRA_RESOURCE_TYPES, run_field_transformations_stage
+from arodnap.stages.field_transformations import EXTRA_RESOURCE_TYPES, error_prone_for, run_field_transformations_stage
 
 
 class ExtraResourceTypesTest(unittest.TestCase):
@@ -32,6 +32,20 @@ class ExtraResourceTypesTest(unittest.TestCase):
                     found.add(f"{qualified}:{match.group(1)}")
         public = {entry for entry in found if not entry.startswith(("sun.", "jdk.internal."))}
         self.assertEqual(public, set(EXTRA_RESOURCE_TYPES))
+
+
+class ErrorProneSelectionTest(unittest.TestCase):
+    def test_jdk_17_to_20_use_the_last_release_that_runs_there(self) -> None:
+        for major in (17, 20):
+            jar, flags = error_prone_for(major)
+            self.assertEqual((jar.name, flags), ("error_prone_core-2.42.0-with-dependencies.jar", []))
+
+    def test_jdk_21_and_newer_use_the_latest_release(self) -> None:
+        for major in (21, 25):
+            jar, flags = error_prone_for(major)
+            self.assertEqual(jar.name, "error_prone_core-2.50.0-with-dependencies.jar")
+            self.assertIn("-XDaddTypeAnnotationsToSymbol=true", flags)
+            self.assertTrue(jar.is_file())
 
 
 class FieldTransformationsStageTest(unittest.TestCase):
@@ -65,7 +79,8 @@ class FieldTransformationsStageTest(unittest.TestCase):
 
             with patch("arodnap.stages.field_transformations.run_stage_command", side_effect=fake_run), \
                     patch("arodnap.stages.field_transformations.PLUGIN_JAR", root / "sources.txt"), \
-                    patch("arodnap.stages.field_transformations.ERROR_PRONE_JARS", (root / "sources.txt",)):
+                    patch("arodnap.stages.field_transformations.DATAFLOW_JAR", root / "sources.txt"), \
+                    patch("arodnap.stages.field_transformations.error_prone_for", return_value=(root / "sources.txt", [])):
                 result = run_field_transformations_stage(
                     _config(root), workspace_root=workspace, stage_output_dir=root / "stage",
                     compile_inputs=CompileInputs(sources_file=sources, classpath_file=classpath),
@@ -93,7 +108,8 @@ class FieldTransformationsStageTest(unittest.TestCase):
 
             with patch("arodnap.stages.field_transformations.run_stage_command", side_effect=fake_run), \
                     patch("arodnap.stages.field_transformations.PLUGIN_JAR", sources), \
-                    patch("arodnap.stages.field_transformations.ERROR_PRONE_JARS", (sources,)):
+                    patch("arodnap.stages.field_transformations.DATAFLOW_JAR", sources), \
+                    patch("arodnap.stages.field_transformations.error_prone_for", return_value=(sources, [])):
                 with self.assertRaisesRegex(StageExecutionError, "no longer compiles"):
                     run_field_transformations_stage(
                         _config(root), workspace_root=root, stage_output_dir=root / "stage",

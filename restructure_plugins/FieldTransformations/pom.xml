@@ -11,7 +11,8 @@
     <version>1.0-SNAPSHOT</version>
 
     <properties>
-        <!-- Error Prone 2.42.0 is the last release that runs on JDK 17. -->
+        <!-- Compiled against 2.42.0, the last release that runs on JDK 17; the same jar also runs
+             with the latest Error Prone, which Arodnap uses on JDK 21+. -->
         <errorprone.version>2.42.0</errorprone.version>
         <!-- -source/-target, not release: the checks use javac internals exported below. -->
         <maven.compiler.source>17</maven.compiler.source>

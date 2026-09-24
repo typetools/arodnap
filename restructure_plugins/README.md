@@ -18,9 +18,15 @@ RLFixer lives under `rlfixer/wala/` (Maven build); its jar
 Third-party jars in `prebuilt_plugin_jars/`, used to run the field
 transformations:
 
-- `error_prone_core-2.42.0-with-dependencies.jar`: Error Prone 2.42.0, the last
-  release that runs on JDK 17
-- `dataflow-errorprone-3.41.0-eisop1.jar`: the dataflow library that release uses
+- `error_prone_core-2.50.0-with-dependencies.jar`: the latest Error Prone, used on
+  JDK 21 and newer; bump it when a new JDK needs a newer release
+- `error_prone_core-2.42.0-with-dependencies.jar`: the last release that runs on
+  JDK 17, used on JDK 17 to 20
+- `dataflow-errorprone-3.41.0-eisop1.jar`: the dataflow library both releases use
+
+Error Prone runs inside javac and depends on its internals, so each release
+supports a range of JDKs; `arodnap/stages/field_transformations.py` picks the
+jar by JDK. The checks are compiled against 2.42.0 and run unchanged on both.
 
 The paper's earlier Error Prone plugins and their Error Prone 2.28 jars are in
 `legacy/prebuilt_plugin_jars/`.

@@ -33,10 +33,11 @@ from .base import (
 _STAGE_NAME = "field_transformations"
 _PREBUILT = Path(__file__).resolve().parents[2] / "restructure_plugins" / "prebuilt_plugin_jars"
 PLUGIN_JAR = _PREBUILT / "arodnap-field-transformations.jar"
-ERROR_PRONE_JARS = (
-    _PREBUILT / "error_prone_core-2.42.0-with-dependencies.jar",
-    _PREBUILT / "dataflow-errorprone-3.41.0-eisop1.jar",
-)
+DATAFLOW_JAR = _PREBUILT / "dataflow-errorprone-3.41.0-eisop1.jar"
+# Error Prone uses javac internals, so each release supports a range of JDKs. Releases from
+# 2.43 need JDK 21 to run and keep up with new JDKs; 2.42.0 is the last one that runs on 17.
+LATEST_ERROR_PRONE = (21, _PREBUILT / "error_prone_core-2.50.0-with-dependencies.jar")
+JDK17_ERROR_PRONE = _PREBUILT / "error_prone_core-2.42.0-with-dependencies.jar"
 CHECKS = (("ResourceFieldCanBeFinal", "final"), ("ResourceFieldCanBeLocal", "local"))
 MODES = ("resources", "all", "off")
 # Types the Checker Framework's annotated JDK marks @MustCall without being AutoCloseable, with
@@ -87,13 +88,15 @@ def run_field_transformations_stage(
         return _finish(root, changed_files=[], notes=["Field transformations are off (--field-transformations=off)."],
                        artifacts={"log": str(log_path)})
 
-    for jar in (PLUGIN_JAR, *ERROR_PRONE_JARS):
-        if not jar.is_file():
-            raise StageExecutionError(f"Missing {jar.name} in {jar.parent}")
     try:
-        javac = str(resolve_jdk().home / "bin" / "javac")
+        jdk = resolve_jdk()
     except JdkResolutionError as exc:
         raise StageExecutionError(str(exc)) from exc
+    javac = str(jdk.home / "bin" / "javac")
+    error_prone_jar, error_prone_flags = error_prone_for(jdk.major_version)
+    for jar in (PLUGIN_JAR, DATAFLOW_JAR, error_prone_jar):
+        if not jar.is_file():
+            raise StageExecutionError(f"Missing {jar.name} in {jar.parent}")
 
     sources = [Path(line.strip().strip('"')) for line in compile_inputs.sources_file.read_text().splitlines() if line.strip()]
     originals = {path: path.read_bytes() for path in sources if path.is_file()}
@@ -117,8 +120,8 @@ def run_field_transformations_stage(
         ])
         with tempfile.TemporaryDirectory(prefix="arodnap-fields-") as classes:
             command = [
-                javac, *_JAVAC_EXPORTS, "-XDcompilePolicy=simple", "--should-stop=ifError=FLOW",
-                "-processorpath", os.pathsep.join(str(jar) for jar in (*ERROR_PRONE_JARS, PLUGIN_JAR)),
+                javac, *_JAVAC_EXPORTS, "-XDcompilePolicy=simple", "--should-stop=ifError=FLOW", *error_prone_flags,
+                "-processorpath", os.pathsep.join(str(jar) for jar in (error_prone_jar, DATAFLOW_JAR, PLUGIN_JAR)),
                 options, "-proc:none", "-d", classes, "-classpath", classpath, *language,
                 f"@{compile_inputs.sources_file.resolve()}",
             ]
@@ -162,6 +165,15 @@ def run_field_transformations_stage(
         notes.append(f"Undid the changes to {len(dropped_files)} file(s) that did not compile with them.")
     return _finish(root, changed_files=[_relative(path, workspace_root) for path in changed], notes=notes,
                    artifacts=artifacts)
+
+
+def error_prone_for(jdk_major: int) -> tuple[Path, list[str]]:
+    """The Error Prone jar that runs on this JDK, and the javac flags it needs."""
+    minimum, latest = LATEST_ERROR_PRONE
+    if jdk_major >= minimum:
+        # Required by Error Prone 2.46+ on JDK 21 (JDK-8225377); harmless on newer JDKs.
+        return latest, ["-XDaddTypeAnnotationsToSymbol=true"]
+    return JDK17_ERROR_PRONE, []
 
 
 def _compile_until_clean(javac, classpath, language, compile_inputs, before, edited, log_path, config, *, title) -> set[Path]:
@@ -227,4 +239,4 @@ def _finish(root: Path, *, changed_files: list[str], notes: list[str], artifacts
     return result
 
 
-__all__ = ["MODES", "FieldChange", "run_field_transformations_stage"]
+__all__ = ["MODES", "FieldChange", "error_prone_for", "run_field_transformations_stage"]
