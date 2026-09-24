@@ -13,21 +13,18 @@ verified to apply.
 
 ## Install
 
-Arodnap is a Python package that carries everything else it runs (the Checker
-Framework and its Java tools). Install it as a command with
-[pipx](https://pipx.pypa.io/) or [uv](https://docs.astral.sh/uv/):
+There is no release yet. Install Arodnap from a checkout of this repository; it
+carries everything else it runs (the Checker Framework and its Java tools).
+With [pipx](https://pipx.pypa.io/) or [uv](https://docs.astral.sh/uv/) it
+becomes an `arodnap` command:
 
 ```bash
-pipx install arodnap
+pipx install /path/to/arodnap
 ```
 
 ```bash
-uv tool install arodnap
+uv tool install /path/to/arodnap
 ```
-
-`uv` downloads a suitable Python by itself if none is installed. Until the
-first release is published on PyPI, install from a checkout of this repository
-the same way (`pipx install /path/to/arodnap`).
 
 For working on Arodnap itself, install the checkout in editable mode:
 

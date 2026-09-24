@@ -40,6 +40,19 @@ run it against another Checker Framework distribution; both the bundled 4.2.3
 and 3.49.0 pass. Add a
 fixture and a test here for every newly supported project shape.
 
+## Continuous Integration
+
+[`.github/workflows/ci.yml`](../.github/workflows/ci.yml) runs on every pull
+request and every push to `master`:
+
+- `unit`: the unit tests on Python 3.10 to 3.14 (Ubuntu) and on macOS
+- `java-tools`: builds and tests every Java tool with JDK 21 and fails if a
+  committed jar in `restructure_plugins/prebuilt_plugin_jars/` does not match
+  its source (`python scripts/java_tools.py build` then `check`)
+- `e2e`: the real end-to-end tests on JDK 17, 21 and 24 with Gradle, Maven and
+  Ant installed; a skipped test fails the job. JDK 25 runs too, but is allowed
+  to fail until it is verified.
+
 ## Fixture-Based Integration Tests
 
 Current integration-style tests build on
