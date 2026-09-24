@@ -16,7 +16,7 @@ directly are recorded too.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 import json
 import os
 from pathlib import Path
@@ -34,12 +34,7 @@ from .base import (
     ProjectModel,
     UnsupportedProjectError,
 )
-from .capture import (
-    AnalysisInputs,
-    load_compile_units,
-    merge_compile_units,
-    snapshot_classpath_candidates,
-)
+from .capture import AnalysisInputs, load_compile_units, merge_compile_units
 
 ARODNAP_DIR = ".arodnap"
 _PREBUILT_JARS = Path(__file__).resolve().parents[2] / "restructure_plugins" / "prebuilt_plugin_jars"
@@ -157,7 +152,6 @@ class CapturedBuildAdapter:
                 "PATH": f"{shim_dir}{os.pathsep}{env.get('PATH', '')}",
             }
         )
-        before_build = snapshot_classpath_candidates(self.repo_root, skip=ARODNAP_DIR)
         try:
             result = run_command(list(command), cwd=self.repo_root, env=env)
         except CommandExecutionError as exc:
@@ -169,10 +163,10 @@ class CapturedBuildAdapter:
                 f"{_tail(result.stdout + result.stderr)}"
             )
 
-        inputs = merge_compile_units(
-            load_compile_units(capture_file),
-            workspace_root=self.repo_root,
-            before_build=before_build,
+        inputs = merge_compile_units(load_compile_units(capture_file))
+        # Ant puts its own runtime, including Arodnap's capture adapter, on javac's classpath.
+        inputs = replace(
+            inputs, classpath=tuple(entry for entry in inputs.classpath if entry.parent != _PREBUILT_JARS)
         )
         return CapturedProject(
             repo_root=self.repo_root,

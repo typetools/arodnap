@@ -8,11 +8,11 @@ Arodnap analyzes, so nothing downstream depends on the build system.
 
 from __future__ import annotations
 
-from collections.abc import Mapping
 from dataclasses import dataclass
 import json
 import os
 from pathlib import Path
+import zipfile
 
 from .base import UnsupportedProjectError
 
@@ -121,24 +121,19 @@ def load_compile_units(capture_file: Path) -> tuple[CompileUnit, ...]:
 
 def merge_compile_units(
     units: tuple[CompileUnit, ...],
-    *,
-    workspace_root: Path,
-    before_build: Mapping[Path, int],
 ) -> AnalysisInputs:
     """Merge units into one analysis universe.
 
-    `before_build` is `snapshot_classpath_candidates(workspace_root)` taken just before the
-    capture build. Classpath entries inside the workspace that the build created or rewrote
-    are build artifacts (such as a sibling module's jar) and are dropped; their classes come
-    from the sources being analyzed. Everything else, like a jar checked into `lib/`, is kept.
+    Classpath entries that hold only classes the units themselves compiled (a unit's output
+    directory, a sibling module's jar) are dropped: those classes come from the sources
+    being analyzed. Every other entry is kept, including dependency jars the build
+    downloaded into the workspace (Ivy retrieve, dependency:copy) or checked into `lib/`.
     """
     if not units:
         raise UnsupportedProjectError(
             "The build compiled no Java sources, so there is nothing to analyze. Check that the build "
             "command compiles the project's main sources (and cleans first, so javac actually runs)."
         )
-    workspace_root = workspace_root.resolve()
-
     # module-info.java is left out so every unit's sources compile together on the classpath.
     sources = _unique(
         path.resolve() for unit in units for path in unit.sources if path.name != "module-info.java"
@@ -153,13 +148,13 @@ def merge_compile_units(
     )
 
     outputs = {unit.output_dir.resolve() for unit in units if unit.output_dir is not None}
+    compiled_classes = _compiled_class_entries(outputs)
 
     def is_build_artifact(entry: Path) -> bool:
         if entry in outputs:
             return True
-        if not _is_within(entry, workspace_root):
-            return False
-        return before_build.get(entry) != entry.stat().st_mtime_ns
+        classes = _class_entries(entry)
+        return bool(classes) and classes <= compiled_classes
 
     classpath = _unique(
         entry.resolve()
@@ -189,20 +184,20 @@ def merge_compile_units(
     )
 
 
-def snapshot_classpath_candidates(workspace_root: Path, *, skip: str | None = None) -> dict[Path, int]:
-    """Modification times of every directory and jar/zip in the workspace, keyed by path."""
-    snapshot: dict[Path, int] = {}
-    workspace_root = workspace_root.resolve()
-    for directory, subdirs, files in os.walk(workspace_root):
-        if skip is not None and skip in subdirs:
-            subdirs.remove(skip)
-        base = Path(directory)
-        snapshot[base] = base.stat().st_mtime_ns
-        for name in files:
-            if name.endswith((".jar", ".zip", ".JAR", ".ZIP")):
-                path = base / name
-                snapshot[path] = path.stat().st_mtime_ns
-    return snapshot
+def _compiled_class_entries(output_dirs: set[Path]) -> frozenset[str]:
+    """Class files the units compiled, as archive-style relative paths ("a/b/C.class")."""
+    return frozenset(name for output_dir in output_dirs for name in _class_entries(output_dir))
+
+
+def _class_entries(entry: Path) -> frozenset[str]:
+    """Class files in a classpath directory or jar, as archive-style relative paths."""
+    if entry.is_dir():
+        return frozenset(path.relative_to(entry).as_posix() for path in entry.rglob("*.class"))
+    try:
+        with zipfile.ZipFile(entry) as archive:
+            return frozenset(name for name in archive.namelist() if name.endswith(".class"))
+    except (OSError, zipfile.BadZipFile):
+        return frozenset()
 
 
 def analysis_root(sources: tuple[Path, ...]) -> Path:
@@ -263,14 +258,6 @@ def _unique(paths) -> tuple[Path, ...]:
     return tuple(seen)
 
 
-def _is_within(path: Path, directory: Path) -> bool:
-    try:
-        path.relative_to(directory)
-    except ValueError:
-        return False
-    return True
-
-
 __all__ = [
     "AnalysisInputs",
     "CompileUnit",
@@ -278,5 +265,4 @@ __all__ = [
     "load_compile_units",
     "merge_compile_units",
     "parse_javac_invocation",
-    "snapshot_classpath_candidates",
 ]

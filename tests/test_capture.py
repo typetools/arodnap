@@ -1,7 +1,7 @@
 import json
-import os
 import tempfile
 import unittest
+import zipfile
 from pathlib import Path
 
 from arodnap.build_adapters.base import UnsupportedProjectError
@@ -10,7 +10,6 @@ from arodnap.build_adapters.capture import (
     load_compile_units,
     merge_compile_units,
     parse_javac_invocation,
-    snapshot_classpath_candidates,
 )
 
 
@@ -74,12 +73,11 @@ class MergeCompileUnitsTest(unittest.TestCase):
             ):
                 (workspace / relpath).parent.mkdir(parents=True, exist_ok=True)
                 (workspace / relpath).write_text("")
-            # A jar checked into the repo, just cloned, so its timestamp is as new as the build's.
-            before_build = snapshot_classpath_candidates(workspace)
-            # Written by the build: the core module's jar and classes.
+            # Written by the build: the core module's classes and its jar.
+            (workspace / "core/build/classes/java/main/demo/core").mkdir(parents=True)
+            (workspace / "core/build/classes/java/main/demo/core/Store.class").write_bytes(b"")
             (workspace / "core/build/libs").mkdir(parents=True)
-            (workspace / "core/build/libs/core.jar").write_bytes(b"")
-            (workspace / "core/build/classes/java/main").mkdir(parents=True)
+            _write_jar(workspace / "core/build/libs/core.jar", "demo/core/Store.class", "META-INF/MANIFEST.MF")
             external = root / "gradle-cache/commons-io-2.16.1.jar"
             external.parent.mkdir()
             external.write_bytes(b"")
@@ -107,33 +105,39 @@ class MergeCompileUnitsTest(unittest.TestCase):
                 + "\n"
             )
             units = load_compile_units(capture)
-            inputs = merge_compile_units(units, workspace_root=workspace, before_build=before_build)
+            inputs = merge_compile_units(units)
 
         self.assertEqual([unit.label for unit in units], [":core:compileJava", ":app:compileJava"])
         self.assertEqual(
             inputs.sources,
             (workspace / "core/src/main/java/demo/core/Store.java", workspace / "app/src/main/java/demo/app/Leak.java"),
         )
-        # core.jar is dropped (the build wrote it); the vendored jar and the dependency are kept.
+        # core.jar is dropped (it holds only classes compiled here); the vendored jar and the dependency are kept.
         self.assertEqual(inputs.classpath, (external, workspace / "libs/vendor.jar"))
         self.assertEqual(inputs.release, 17)
         self.assertEqual(inputs.analysis_root, workspace)
 
-    def test_an_existing_jar_the_build_rewrites_is_an_artifact(self) -> None:
+    def test_dependency_jars_the_build_downloads_into_the_workspace_are_kept(self) -> None:
+        # Apache Ivy's build retrieves its dependencies into lib/ while it runs.
         with tempfile.TemporaryDirectory() as temp_dir:
             workspace = Path(temp_dir).resolve()
-            (workspace / "src").mkdir()
-            (workspace / "src/A.java").write_text("")
-            stale = workspace / "build/libs/stale.jar"
-            stale.parent.mkdir(parents=True)
-            stale.write_bytes(b"old")
-            before_build = snapshot_classpath_candidates(workspace)
-            stale.write_bytes(b"rebuilt")
-            # Make sure the rewrite is visible even on coarse-timestamp filesystems.
-            os.utime(stale, ns=(stale.stat().st_atime_ns, before_build[stale] + 1_000_000_000))
-            unit = parse_javac_invocation(["-cp", str(stale), str(workspace / "src/A.java")], cwd=workspace)
-            inputs = merge_compile_units((unit,), workspace_root=workspace, before_build=before_build)
-        self.assertEqual(inputs.classpath, ())
+            (workspace / "src/demo").mkdir(parents=True)
+            (workspace / "src/demo/A.java").write_text("")
+            (workspace / "build/classes/demo").mkdir(parents=True)
+            (workspace / "build/classes/demo/A.class").write_bytes(b"")
+            retrieved = workspace / "lib/bcpg.jar"
+            retrieved.parent.mkdir()
+            _write_jar(retrieved, "org/bouncycastle/bcpg/Packet.class")
+            # A jar that repackages a compiled class next to others is a dependency, not an artifact.
+            patched = workspace / "lib/patched.jar"
+            _write_jar(patched, "demo/A.class", "other/B.class")
+            unit = parse_javac_invocation(
+                ["-d", str(workspace / "build/classes"), "-cp", f"{retrieved}:{patched}",
+                 str(workspace / "src/demo/A.java")],
+                cwd=workspace,
+            )
+            inputs = merge_compile_units((unit,))
+        self.assertEqual(inputs.classpath, (retrieved, patched))
 
     def test_generated_sources_are_analyzed_separately(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -146,7 +150,7 @@ class MergeCompileUnitsTest(unittest.TestCase):
             unit = parse_javac_invocation(
                 ["-s", str(generated.parent), str(source)], cwd=workspace
             )
-            inputs = merge_compile_units((unit,), workspace_root=workspace, before_build={})
+            inputs = merge_compile_units((unit,))
         self.assertEqual(inputs.sources, (source,))
         self.assertEqual(inputs.generated_sources, (generated,))
 
@@ -158,11 +162,17 @@ class MergeCompileUnitsTest(unittest.TestCase):
             lombok.write_bytes(b"")
             unit = parse_javac_invocation(["-classpath", str(lombok), "A.java"], cwd=workspace)
             with self.assertRaisesRegex(UnsupportedProjectError, "Lombok"):
-                merge_compile_units((unit,), workspace_root=workspace / "ws", before_build={})
+                merge_compile_units((unit,))
 
     def test_no_units_fails_closed(self) -> None:
         with self.assertRaisesRegex(UnsupportedProjectError, "compiled no Java sources"):
-            merge_compile_units((), workspace_root=Path("/ws"), before_build={})
+            merge_compile_units(())
+
+
+def _write_jar(path: Path, *names: str) -> None:
+    with zipfile.ZipFile(path, "w") as archive:
+        for name in names:
+            archive.writestr(name, b"")
 
 
 class AnalysisRootTest(unittest.TestCase):
