@@ -7,6 +7,7 @@ import re
 import tempfile
 
 from arodnap.contracts import RunConfig
+from arodnap.resources import stubs_dir
 from arodnap.runtime import (
     CommandExecutionError,
     CommandTimeoutError,
@@ -35,7 +36,7 @@ _RLC_FLAGS = [
     "-AenableReturnsReceiverForRlc",
 ]
 # Arodnap's stub files for the Resource Leak Checker (e.g. side-effect-free close()).
-RLC_STUBS_DIR = Path(__file__).resolve().parents[2] / "checker_framework" / "stubs"
+RLC_STUBS_DIR = stubs_dir()
 
 
 @dataclass(frozen=True)

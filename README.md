@@ -1,7 +1,7 @@
 # Arodnap
 
 Arodnap repairs Java resource leaks. It is the tool from the paper
-"Repairing Leaks on Resource Wrappers": it finds leaks with the Checker
+"Repairing Leaks in Resource Wrappers": it finds leaks with the Checker
 Framework's Resource Leak Checker, fixes resource wrapper classes and owning
 fields, and turns RLFixer's suggestions into source patches.
 
@@ -13,18 +13,26 @@ verified to apply.
 
 ## Install
 
-For local development, install Arodnap from a checkout of this repository in
-editable mode:
+Arodnap is a Python package that carries everything else it runs (the Checker
+Framework and its Java tools). Install it as a command with
+[pipx](https://pipx.pypa.io/) or [uv](https://docs.astral.sh/uv/):
+
+```bash
+pipx install arodnap
+```
+
+```bash
+uv tool install arodnap
+```
+
+`uv` downloads a suitable Python by itself if none is installed. Until the
+first release is published on PyPI, install from a checkout of this repository
+the same way (`pipx install /path/to/arodnap`).
+
+For working on Arodnap itself, install the checkout in editable mode:
 
 ```bash
 python -m pip install -e .
-```
-
-That installs the `arodnap` console entrypoint. The existing module-based
-entrypoint still works:
-
-```bash
-python -m arodnap.main analyze /path/to/repo
 ```
 
 ## Prerequisites
@@ -38,7 +46,6 @@ python -m arodnap.main analyze /path/to/repo
   target any release this JDK can compile.
 - whatever the project's build needs: `./gradlew` or `gradle`, `./mvnw` or
   `mvn`, `ant`, or the tools your own build command uses
-- GNU `patch`, exposed as `gpatch` or `patch`
 
 `arodnap doctor` checks all of these.
 
@@ -218,8 +225,6 @@ Important outputs:
   date (the default commands clean first).
 - The captured build's output and the recorded `javac` calls are in
   `arodnap-out/logs/<label>/build.log` and `javac-invocations.jsonl`.
-- If `repair` or `apply` fails with a patch prerequisite error, install GNU
-  `patch` and expose it as `gpatch` or `patch`.
 - If the default build command is wrong for the repository, pass your own after
   `--` or use `--compile-target`.
 - If analysis fails on a very new JDK, run `arodnap doctor`: it says whether

@@ -1,0 +1,15 @@
+# The source distribution carries what setup.py bundles into the package.
+include LICENSE THIRD_PARTY_NOTICES.md README.md
+include restructure_plugins/prebuilt_plugin_jars/AutoCloseInjector-1.0-SNAPSHOT.jar
+include restructure_plugins/prebuilt_plugin_jars/OwningFieldFixer-1.0-SNAPSHOT.jar
+include restructure_plugins/prebuilt_plugin_jars/RLFixer-1.0-SNAPSHOT.jar
+include restructure_plugins/prebuilt_plugin_jars/RLPatcher-1.0-SNAPSHOT.jar
+include restructure_plugins/prebuilt_plugin_jars/arodnap-ant-capture.jar
+include restructure_plugins/prebuilt_plugin_jars/arodnap-maven-capture.jar
+include restructure_plugins/prebuilt_plugin_jars/arodnap-field-transformations.jar
+include restructure_plugins/prebuilt_plugin_jars/error_prone_core-2.42.0-with-dependencies.jar
+include restructure_plugins/prebuilt_plugin_jars/error_prone_core-2.50.0-with-dependencies.jar
+include restructure_plugins/prebuilt_plugin_jars/dataflow-errorprone-3.41.0-eisop1.jar
+graft checker_framework/checker-framework-4.2.3
+graft checker_framework/stubs
+global-exclude .DS_Store

@@ -25,6 +25,7 @@ import sys
 import time
 
 from arodnap.contracts import Timeouts
+from arodnap.resources import jars_dir
 from arodnap.runtime import (
     CommandExecutionError,
     CommandTimeoutError,
@@ -46,7 +47,7 @@ from .base import (
 from .capture import AnalysisInputs, load_compile_units, merge_compile_units
 
 ARODNAP_DIR = ".arodnap"
-_PREBUILT_JARS = Path(__file__).resolve().parents[2] / "restructure_plugins" / "prebuilt_plugin_jars"
+_PREBUILT_JARS = jars_dir()
 _ANT_CAPTURE_JAR = _PREBUILT_JARS / "arodnap-ant-capture.jar"
 _MAVEN_CAPTURE_JAR = _PREBUILT_JARS / "arodnap-maven-capture.jar"
 _ANT_ADAPTER_CLASS = "org.arodnap.capture.RecordingJavacAdapter"

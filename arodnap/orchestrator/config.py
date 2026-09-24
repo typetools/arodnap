@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 
 from arodnap.contracts import RunConfig, Timeouts
+from arodnap.resources import CHECKER_FRAMEWORK_DIRNAME, checker_framework_dir, jar
 
 
 def build_run_config(
@@ -26,10 +27,10 @@ def build_run_config(
         compile_target=args.compile_target,
         patch_dir=patch_dir,
         cf_root=resolve_cf_root(getattr(args, "checker_framework", None)),
-        close_injector_jar=_plugin_jars_root() / "AutoCloseInjector-1.0-SNAPSHOT.jar",
-        owning_field_jar=_plugin_jars_root() / "OwningFieldFixer-1.0-SNAPSHOT.jar",
-        rlfixer_jar=_plugin_jars_root() / "RLFixer-1.0-SNAPSHOT.jar",
-        rlpatcher_jar=_plugin_jars_root() / "RLPatcher-1.0-SNAPSHOT.jar",
+        close_injector_jar=jar("AutoCloseInjector-1.0-SNAPSHOT.jar"),
+        owning_field_jar=jar("OwningFieldFixer-1.0-SNAPSHOT.jar"),
+        rlfixer_jar=jar("RLFixer-1.0-SNAPSHOT.jar"),
+        rlpatcher_jar=jar("RLPatcher-1.0-SNAPSHOT.jar"),
         timeouts=Timeouts(
             build_seconds=getattr(args, "build_timeout", None),
             analysis_seconds=getattr(args, "analysis_timeout", None),
@@ -41,7 +42,7 @@ def build_run_config(
 
 
 CHECKER_FRAMEWORK_ENV = "ARODNAP_CHECKER_FRAMEWORK"
-VENDORED_CHECKER_FRAMEWORK = "checker-framework-4.2.3"
+VENDORED_CHECKER_FRAMEWORK = CHECKER_FRAMEWORK_DIRNAME
 
 
 def resolve_cf_root(cli_value: str | None = None) -> Path:
@@ -50,12 +51,4 @@ def resolve_cf_root(cli_value: str | None = None) -> Path:
     configured = cli_value or os.environ.get(CHECKER_FRAMEWORK_ENV)
     if configured:
         return Path(configured).expanduser().resolve()
-    return _tool_repo_root() / "checker_framework" / VENDORED_CHECKER_FRAMEWORK
-
-
-def _tool_repo_root() -> Path:
-    return Path(__file__).resolve().parents[2]
-
-
-def _plugin_jars_root() -> Path:
-    return _tool_repo_root() / "restructure_plugins" / "prebuilt_plugin_jars"
+    return checker_framework_dir()

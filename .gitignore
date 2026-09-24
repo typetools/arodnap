@@ -3,3 +3,6 @@ __pycache__/
 rlfixer/wala/target/
 restructure_plugins/*/target/
 .DS_Store
+arodnap-out/
+build/
+dist/

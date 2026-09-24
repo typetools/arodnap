@@ -19,6 +19,7 @@ import re
 import tempfile
 
 from arodnap.contracts import RunConfig, StageResult
+from arodnap.resources import jar
 from arodnap.runtime import JdkResolutionError, javac_language_options, resolve_jdk
 
 from .base import (
@@ -31,13 +32,12 @@ from .base import (
 )
 
 _STAGE_NAME = "field_transformations"
-_PREBUILT = Path(__file__).resolve().parents[2] / "restructure_plugins" / "prebuilt_plugin_jars"
-PLUGIN_JAR = _PREBUILT / "arodnap-field-transformations.jar"
-DATAFLOW_JAR = _PREBUILT / "dataflow-errorprone-3.41.0-eisop1.jar"
+PLUGIN_JAR = jar("arodnap-field-transformations.jar")
+DATAFLOW_JAR = jar("dataflow-errorprone-3.41.0-eisop1.jar")
 # Error Prone uses javac internals, so each release supports a range of JDKs. Releases from
 # 2.43 need JDK 21 to run and keep up with new JDKs; 2.42.0 is the last one that runs on 17.
-LATEST_ERROR_PRONE = (21, _PREBUILT / "error_prone_core-2.50.0-with-dependencies.jar")
-JDK17_ERROR_PRONE = _PREBUILT / "error_prone_core-2.42.0-with-dependencies.jar"
+LATEST_ERROR_PRONE = (21, jar("error_prone_core-2.50.0-with-dependencies.jar"))
+JDK17_ERROR_PRONE = jar("error_prone_core-2.42.0-with-dependencies.jar")
 CHECKS = (("ResourceFieldCanBeFinal", "final"), ("ResourceFieldCanBeLocal", "local"))
 MODES = ("resources", "all", "off")
 # Types the Checker Framework's annotated JDK marks @MustCall without being AutoCloseable, with
