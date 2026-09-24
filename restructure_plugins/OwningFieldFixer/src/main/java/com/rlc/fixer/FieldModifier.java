@@ -61,8 +61,16 @@ public class FieldModifier {
                 if (modified && field.getBegin().isPresent() && field.getEnd().isPresent()) {
                     int beginLine = field.getBegin().get().line - 1;
                     int endLine = field.getEnd().get().line - 1;
-                    String updated = field.toString().strip(); // preserves formatting inside just this node
-                    List<String> updatedLines = Arrays.asList(updated.split("\\R"));
+                    // The field's range excludes its Javadoc, so print it without comments (or the
+                    // comment would be duplicated), indented like the declaration it replaces.
+                    FieldDeclaration printed = field.clone();
+                    printed.removeComment();
+                    String indent = lines.get(beginLine).substring(
+                            0, lines.get(beginLine).length() - lines.get(beginLine).stripLeading().length());
+                    List<String> updatedLines = new ArrayList<>();
+                    for (String printedLine : printed.toString().strip().split("\\R")) {
+                        updatedLines.add(indent + printedLine);
+                    }
 
                     // Replace only those lines in the source file
                     List<String> newFileLines = new ArrayList<>(lines);

@@ -47,4 +47,61 @@ public class CloseMethodInjectorTest {
         Files.deleteIfExists(modifiedFilePath);
         Files.deleteIfExists(tempDir);
     }
+
+    @Test
+    public void existingCloseMethodKeepsItsIndentation() throws IOException {
+        // Shaped like Apktool's ExtFile: close() exists but does not close every owned field.
+        Path tempDir = Files.createTempDirectory("closeMethodInjectorTest");
+        String original =
+                "package com.example;\n\n" +
+                "public class Holder implements AutoCloseable {\n" +
+                "    private Stream stream;\n" +
+                "    private Stream other;\n\n" +
+                "    @Override\n" +
+                "    public void close() {\n" +
+                "        if (other != null) {\n" +
+                "            other.close();\n" +
+                "        }\n" +
+                "    }\n\n" +
+                "    public int size() {\n" +
+                "        return 0;\n" +
+                "    }\n" +
+                "}\n";
+        Path file = tempDir.resolve("Holder.java");
+        Files.write(file, original.getBytes());
+
+        CompilationUnit cu = StaticJavaParser.parse(file.toFile());
+        CloseMethodInjector.addCloseMethod(cu, file.toString(), "Holder", Set.of("stream#close"));
+        String modified = new String(Files.readAllBytes(file.resolveSibling("Holder.java.modified")));
+
+        assertTrue(modified.contains("\n    @Override\n    public void close() {\n        try {\n"),
+                "Rewritten close() should keep the class's indentation:\n" + modified);
+        assertTrue(modified.contains("\n    public int size() {\n        return 0;\n    }\n"),
+                "Code outside close() should be unchanged:\n" + modified);
+    }
+
+    @Test
+    public void closeThatAlreadyReleasesEveryFieldIsLeftAlone() throws IOException {
+        // Apktool's ExtFile: close() already closes mDirectory, so there is nothing to add.
+        Path tempDir = Files.createTempDirectory("closeMethodInjectorTest");
+        String original =
+                "package com.example;\n\n" +
+                "public class Holder implements AutoCloseable {\n" +
+                "    private Stream stream;\n\n" +
+                "    @Override\n" +
+                "    public void close() throws Exception {\n" +
+                "        if (stream != null) {\n" +
+                "            stream.close();\n" +
+                "        }\n" +
+                "    }\n" +
+                "}\n";
+        Path file = tempDir.resolve("Holder.java");
+        Files.write(file, original.getBytes());
+
+        CompilationUnit cu = StaticJavaParser.parse(file.toFile());
+        CloseMethodInjector.addCloseMethod(cu, file.toString(), "Holder", Set.of("stream#close"));
+        String modified = new String(Files.readAllBytes(file.resolveSibling("Holder.java.modified")));
+
+        assertTrue(modified.equals(original), "close() should be unchanged:\n" + modified);
+    }
 }

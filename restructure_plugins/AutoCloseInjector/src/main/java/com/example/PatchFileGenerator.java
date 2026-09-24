@@ -71,8 +71,7 @@ public class PatchFileGenerator {
      * Generates a unified diff patch between the original and modified versions of
      * a file.
      * This method ensures that both files have a newline at the end before
-     * generating the patch,
-     * and filters out lines that are only whitespace changes.
+     * generating the patch.
      *
      * @param originalFilePath the file path of the original version of the file.
      * @param modifiedFilePath the file path of the modified version of the file.
@@ -87,8 +86,9 @@ public class PatchFileGenerator {
         ensureNewlineAtEnd(originalFilePath);
         ensureNewlineAtEnd(modifiedFilePath);
 
-        ProcessBuilder processBuilder = new ProcessBuilder("diff", "-u", "-w", "-B", originalFilePath,
-                modifiedFilePath);
+        // Whitespace must not be ignored: the context lines have to match the file exactly
+        // for the patch to apply.
+        ProcessBuilder processBuilder = new ProcessBuilder("diff", "-u", originalFilePath, modifiedFilePath);
         processBuilder.redirectErrorStream(true);
         Process process = processBuilder.start();
 

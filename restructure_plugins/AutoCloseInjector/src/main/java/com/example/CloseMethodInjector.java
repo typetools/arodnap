@@ -152,6 +152,7 @@ public class CloseMethodInjector {
                 BlockStmt tryBody = new BlockStmt();
 
                 // Add fieldName.methodName() inside the try block
+                int addedCalls = 0;
                 for (int i = 0; i < fieldNames.size(); i++) {
                     String fieldName = fieldNames.get(i);
                     String methodName = methodNames.get(i);
@@ -160,45 +161,60 @@ public class CloseMethodInjector {
                         newFieldName = fieldName.substring(5);
 
                     }
-                    if (!existingBody.toString().contains(newFieldName + "." + methodName + "();"))
+                    if (!existingBody.toString().contains(newFieldName + "." + methodName + "();")) {
                         tryBody.addStatement(
                                 new ExpressionStmt(new MethodCallExpr(new NameExpr(fieldName), methodName)));
+                        addedCalls++;
+                    }
                 }
 
-                // Move existing close method body statements into the try block
-                tryBody.getStatements().addAll(existingBody.getStatements());
+                if (addedCalls == 0) {
+                    // close() already releases every owned field: rewriting it would only wrap the
+                    // body in a catch-all that swallows the exceptions close() declares.
+                    for (String line : lines) {
+                        modifiedContent.append(line).append("\n");
+                    }
+                } else {
 
-                // Create a catch block for exceptions
-                CatchClause catchClause = new CatchClause();
-                catchClause
-                        .setParameter(new Parameter(new ClassOrInterfaceType(null, "Exception"), new SimpleName("e")));
-                catchClause.setBody(
-                        new BlockStmt().addStatement(new ExpressionStmt(new MethodCallExpr("e.printStackTrace"))));
+                    // Move existing close method body statements into the try block
+                    tryBody.getStatements().addAll(existingBody.getStatements());
 
-                tryBlock.setTryBlock(tryBody);
-                tryBlock.getCatchClauses().add(catchClause);
+                    // Create a catch block for exceptions
+                    CatchClause catchClause = new CatchClause();
+                    catchClause
+                            .setParameter(new Parameter(new ClassOrInterfaceType(null, "Exception"), new SimpleName("e")));
+                    catchClause.setBody(
+                            new BlockStmt().addStatement(new ExpressionStmt(new MethodCallExpr("e.printStackTrace"))));
 
-                // Replace the old method body with the new try block
-                existingCloseMethod.setBody(new BlockStmt().addStatement(tryBlock));
+                    tryBlock.setTryBlock(tryBody);
+                    tryBlock.getCatchClauses().add(catchClause);
 
-                // System.out.println("Modified existing close() method.");
+                    // Replace the old method body with the new try block
+                    existingCloseMethod.setBody(new BlockStmt().addStatement(tryBlock));
 
-                // Only replace the lines of the existing close method
-                // Say the existing close method starts and ends at line 10 and 20, then we will
-                // insert the new close methods content
-                // We will remove all the lines from 10 to 20 and insert the new close method
-                // content starting from line 10
-                boolean isCloseMethodFound = false;
-                for (int i = 0; i < lines.length; i++) {
-                    if (i >= existingCloseMethodStartLine - 1 && i <= existingCloseMethodEndLine - 1) {
-                        if (isCloseMethodFound) {
-                            continue;
+                    // System.out.println("Modified existing close() method.");
+
+                    // Only replace the lines of the existing close method
+                    // Say the existing close method starts and ends at line 10 and 20, then we will
+                    // insert the new close methods content
+                    // We will remove all the lines from 10 to 20 and insert the new close method
+                    // content starting from line 10
+                    boolean isCloseMethodFound = false;
+                    for (int i = 0; i < lines.length; i++) {
+                        if (i >= existingCloseMethodStartLine - 1 && i <= existingCloseMethodEndLine - 1) {
+                            if (isCloseMethodFound) {
+                                continue;
+                            }
+                            isCloseMethodFound = true;
+                            // insert the new close method content from existingCloseMethod, indented
+                            // like the method it replaces (JavaParser prints it at column 0)
+                            String indent = leadingWhitespace(lines[existingCloseMethodStartLine - 1]);
+                            for (String printedLine : existingCloseMethod.toString().split("\n")) {
+                                modifiedContent.append(printedLine.isEmpty() ? "" : indent + printedLine).append("\n");
+                            }
+                        } else {
+                            modifiedContent.append(lines[i]).append("\n");
                         }
-                        isCloseMethodFound = true;
-                        // insert the new close method content from existingCloseMethod
-                        modifiedContent.append(existingCloseMethod.toString()).append("\n");
-                    } else {
-                        modifiedContent.append(lines[i]).append("\n");
                     }
                 }
 
@@ -218,6 +234,14 @@ public class CloseMethodInjector {
                     java.nio.file.StandardOpenOption.CREATE,
                     java.nio.file.StandardOpenOption.TRUNCATE_EXISTING);
         }
+    }
+
+    private static String leadingWhitespace(String line) {
+        int end = 0;
+        while (end < line.length() && (line.charAt(end) == ' ' || line.charAt(end) == '\t')) {
+            end++;
+        }
+        return line.substring(0, end);
     }
 }
 

@@ -99,7 +99,7 @@ class RealEndToEndTest(unittest.TestCase):
         client = (repo_root / "src/main/java/wrapper/WrapperClient.java").read_text()
         self.assertIn("try (Wrapper wrapper = new Wrapper(path))", client)
         self.assertIn(
-            "private final FileWriter out;",
+            "\n    private final FileWriter out;\n",
             (repo_root / "src/main/java/owning/PackagePrivateSink.java").read_text(),
         )
 
