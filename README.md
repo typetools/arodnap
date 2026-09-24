@@ -37,7 +37,7 @@ python -m pip install -e .
 - Python 3.10 or newer
 - JDK 17 or newer, as `JAVA_HOME` or as the first `java` on `PATH`. The whole
   analysis (whole-program inference, the Resource Leak Checker, RLFixer and the
-  repair tools) runs on this one JDK; it has been tested on 17, 21, 23 and 24.
+  repair tools) runs on this one JDK; it has been tested on 17, 21, 23, 24 and 25.
   The bundled Checker Framework 4.2.3 is tested upstream up to JDK 26, and
   `doctor` warns (but does not stop you) on newer JDKs. Your project itself may
   target any release this JDK can compile.

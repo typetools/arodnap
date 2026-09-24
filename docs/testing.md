@@ -31,7 +31,7 @@ tests check wiring; this checks that the tools actually work together.
 ARODNAP_E2E=1 python -m unittest tests.test_e2e_real
 ```
 
-It needs JDK 17 or newer (it has passed on 17, 21, 23 and 24) and `gradle`, `mvn` and
+It needs JDK 17 or newer (it has passed on 17, 21, 23, 24 and 25) and `gradle`, `mvn` and
 `ant` on `PATH` (tests for a missing tool are skipped), and network access or a warm
 Gradle cache for `gradle-dependency-leak`. Set `ARODNAP_CHECKER_FRAMEWORK` to
 run it against another Checker Framework distribution; both the bundled 4.2.3
@@ -47,9 +47,8 @@ request and every push to `master`:
 - `java-tools`: builds and tests every Java tool with JDK 21 and fails if a
   committed jar in `restructure_plugins/prebuilt_plugin_jars/` does not match
   its source (`python scripts/java_tools.py build` then `check`)
-- `e2e`: the real end-to-end tests on JDK 17, 21 and 24 with Gradle, Maven and
-  Ant installed; a skipped test fails the job. JDK 25 runs too, but is allowed
-  to fail until it is verified.
+- `e2e`: the real end-to-end tests on JDK 17, 21 and 25 with Gradle, Maven and
+  Ant installed; a skipped test fails the job
 
 ## Fixture-Based Integration Tests
 
