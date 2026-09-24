@@ -17,7 +17,7 @@ from tests.fixture_helpers import (
 )
 
 
-class V1IntegrationTest(unittest.TestCase):
+class CliIntegrationTest(unittest.TestCase):
     def test_plain_gradle_baseline_repair_and_apply_use_workspace_copy(self) -> None:
         self._assert_repair_and_apply_flow(
             scenario=BASELINE_SCENARIO,

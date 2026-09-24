@@ -253,7 +253,7 @@ Run focused suites:
 
 ```bash
 python -m unittest tests.test_doctor
-python -m unittest tests.test_v1_integration
+python -m unittest tests.test_cli_integration
 python -m unittest tests.test_structured_output_regressions
 ```
 
@@ -265,7 +265,6 @@ Contributor-facing architecture and test guidance lives in:
 
 - [`docs/architecture.md`](docs/architecture.md)
 - [`docs/testing.md`](docs/testing.md)
-- [`docs/v1_1_release_notes_draft.md`](docs/v1_1_release_notes_draft.md)
 
 The paper's original evaluation scripts (normalized `src/`, `lib/`, `info/`
 layout, Java 11) are kept for reference in [`legacy/`](legacy/README.md). They

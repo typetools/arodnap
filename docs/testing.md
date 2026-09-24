@@ -1,7 +1,6 @@
 # Testing Conventions
 
-This note documents the current v1/v1.1 test conventions without attempting a
-full test-suite reorganization.
+This note documents the test conventions.
 
 ## Fixture Foundation
 
@@ -25,9 +24,8 @@ many partially maintained ones.
 ## Real End-To-End Tests
 
 [`tests/test_e2e_real.py`](../tests/test_e2e_real.py) runs `repair`, `apply`
-and a compile of the result with the real toolchain and nothing mocked. It is
-the gate for roadmap milestones: mocked tests check wiring, this checks that
-the tools actually work together.
+and a compile of the result with the real toolchain and nothing mocked. Mocked
+tests check wiring; this checks that the tools actually work together.
 
 ```bash
 ARODNAP_E2E=1 python -m unittest tests.test_e2e_real
@@ -64,17 +62,17 @@ Preferred assertions for fixture-backed flows:
   `doctor`
 - the workspace-copy behavior is preserved
 - expected top-level artifacts are emitted under `arodnap-out/`
-- stage-local artifacts exist where the v1 contract expects them
+- stage-local artifacts exist where the output contract expects them
 - patch bundles remain normalized and consumable by `apply`
 
 Representative suites:
 
 - [`tests/test_analysis_commands.py`](../tests/test_analysis_commands.py)
-- [`tests/test_v1_integration.py`](../tests/test_v1_integration.py)
+- [`tests/test_cli_integration.py`](../tests/test_cli_integration.py)
 
 ## Structured Output Regression Tests
 
-Slice 14 added a small structured-output regression layer in
+A small structured-output regression layer lives in
 [`tests/test_structured_output_regressions.py`](../tests/test_structured_output_regressions.py).
 
 These tests intentionally avoid brittle full-file snapshotting. Instead they:
@@ -112,7 +110,7 @@ Representative suites:
 
 ## Contributor Guidance
 
-When adding tests for post-v1.1 work:
+When adding tests:
 
 - start from the smallest fixture or helper that exercises the real contract
 - prefer adapter-driven and stage-driven assertions over path-assumption tests

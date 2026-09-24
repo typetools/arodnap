@@ -42,7 +42,7 @@ The relevant orchestration lives under
 The runtime layer lives under
 [`arodnap/runtime/`](../arodnap/runtime).
 
-Current v1.1 responsibilities:
+Responsibilities:
 
 - shared subprocess execution through `run_command(...)`
 - shared `CommandResult` and `CommandExecutionError`
@@ -132,12 +132,12 @@ Wrapper rules in the current implementation:
 - wrappers do not decide pipeline order
 - wrappers do not rerun analysis directly
 
-**Registry-first invariant (v1.1):** Repair-stage order and per-stage
+**Registry-first invariant:** Repair-stage order and per-stage
 pipeline behavior are declared in `REPAIR_STAGE_REGISTRY` in
 `stages/registry.py`. The pipeline loop in `orchestrator/pipeline.py`
 consumes only the registry — it does not contain stage-name string
 comparisons or import concrete stage modules directly. Adding a new repair
-stage in v2 means adding a `RepairStageDefinition` entry to the registry with
+stage means adding a `RepairStageDefinition` entry to the registry with
 its runner callable and any required flags.
 
 Each `RepairStageDefinition` declares:
@@ -221,9 +221,9 @@ Important contracts:
 The regression tests in `tests/test_structured_output_regressions.py` lock in
 the deterministic parts of those contracts.
 
-### Minimum Stable v1.1 Output Contracts
+### Minimum Stable Output Contracts
 
-These fields are the stable v1.1 machine-readable contract. v2 work must
+These fields are the stable machine-readable contract. Changes must
 either preserve all of them unchanged or explicitly update this section and
 `tests/test_structured_output_regressions.py` before landing breaking changes.
 
@@ -312,14 +312,14 @@ Minimum required keys (matches `StageResult` dataclass in `arodnap/contracts.py`
 | `notes` | array of strings | human-readable stage notes |
 | `success` | bool | `true` if the stage completed without error |
 
-### v2 Output Contract Gate
+### Changing An Output Contract
 
-Before any v2 work changes the structure or semantics of the outputs above:
+Before a change alters the structure or semantics of the outputs above:
 
 1. Update this section to reflect the intended new contract.
 2. Update `tests/test_structured_output_regressions.py` to match.
-3. If a field is removed or renamed, record it as a breaking change in the
-   relevant plan doc before landing the code change.
+3. If a field is removed or renamed, call it out as a breaking change in the
+   commit message.
 
 Additive changes (new optional fields) do not require a gate update.
 
@@ -329,7 +329,7 @@ The paper's original normalized-layout pipeline lives in `legacy/` for
 reference. Nothing in `arodnap/` uses it, and it should not be used as the
 architecture source of truth for future work.
 
-When extending Arodnap after v1.1, prefer:
+When extending Arodnap, prefer:
 
 - adapter-driven discovery over path guessing
 - workspace-copy behavior over in-place mutation
