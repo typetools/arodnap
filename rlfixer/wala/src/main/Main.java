@@ -4,6 +4,9 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -26,6 +29,18 @@ public class Main {
 		Properties p = CommandLine.parse(args);
 		String classpath = p.getProperty("classpath");
 		String warningsString = p.getProperty("warnings");
+		// -warningsFile: the same warnings, one per line, for projects whose warning list is
+		// too long for a command-line argument (Linux limits one argument to 128 KB).
+		String warningsFile = p.getProperty("warningsFile");
+		if (warningsFile != null) {
+			StringBuilder joined = new StringBuilder();
+			for (String line : Files.readAllLines(Paths.get(warningsFile), StandardCharsets.UTF_8)) {
+				if (!line.isBlank()) {
+					joined.append(line.trim()).append('#');
+				}
+			}
+			warningsString = joined.toString();
+		}
 		String appClassesFile = p.getProperty("appClasses");
 		String srcFilesList = p.getProperty("srcFiles");
 		String projectDir = p.getProperty("projectDir");

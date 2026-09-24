@@ -66,9 +66,13 @@ class RLFixerStageTest(unittest.TestCase):
             command = captured["command"]
             stage_dir = inputs["stage_output_dir"].resolve()
             self.assertEqual(command[:3], ["java", "-jar", str(inputs["config"].rlfixer_jar.resolve())])
+            # One warning per line in a file: a single argument is limited to 128 KB on Linux.
+            self.assertNotIn("-warnings", command)
+            warnings_file = Path(command[command.index("-warningsFile") + 1])
+            self.assertEqual(warnings_file, stage_dir / "inputs" / "warnings.txt")
             self.assertEqual(
-                command[command.index("-warnings") + 1],
-                "com/example/Demo.java,10,None,False#com/example/Demo.java,16,None,True#",
+                warnings_file.read_text(),
+                "com/example/Demo.java,10,None,False\ncom/example/Demo.java,16,None,True\n",
             )
             self.assertEqual(command[command.index("-projectDir") + 1], str(inputs["source_root"].resolve()))
             self.assertEqual(

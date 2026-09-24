@@ -82,8 +82,9 @@ class RLFixerStageWrapper(BaseStageWrapper):
     """Runs RLFixer directly on build-discovered inputs.
 
     RLFixer's contract: `-projectDir` is the source root, `-srcFiles` lists sources relative
-    to it, `-warnings` names files the same way, and `-classpath` is a path list that WALA
-    loads as application code (compiled main outputs plus dependencies).
+    to it, `-warningsFile` names files the same way (one warning per line), and
+    `-classpath` is a path list that WALA loads as application code (compiled main outputs
+    plus dependencies).
     """
 
     name = _STAGE_NAME
@@ -175,8 +176,8 @@ class RLFixerStageWrapper(BaseStageWrapper):
             str(inputs.config.rlfixer_jar.resolve()),
             "-classpath",
             classpath,
-            "-warnings",
-            warnings_argument,
+            "-warningsFile",
+            str(paths.warnings_path),
             "-appClasses",
             str(paths.app_classes_path),
             "-projectDir",
