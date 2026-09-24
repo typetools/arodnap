@@ -95,6 +95,22 @@ class RealEndToEndTest(unittest.TestCase):
         }
         self.assertEqual(set(bundle_files), changed_by_stages)
 
+        # Per-leak results: the counts reconcile with the analysis runs above.
+        leaks = report["leaks"]
+        self.assertEqual(
+            {key: leaks["summary"][key] for key in ("initial", "found_during_repair", "fixed", "remaining")},
+            {"initial": 26, "found_during_repair": 1, "fixed": 21, "remaining": 6},
+        )
+        self.assertEqual(leaks["summary"]["fixed_by_stage"], {"close_injector": 1, "owning_field": 2, "rlpatcher": 18})
+        self.assertTrue(Path(leaks["html_report"]).is_file())
+        by_file = {warning["file"]: warning for warning in leaks["warnings"]}
+        self.assertEqual(by_file["src/main/java/wrapper/Wrapper.java"]["fixed_by"], "close_injector")
+        self.assertEqual(
+            (by_file["src/main/java/wrapper/WrapperClient.java"]["first_seen"],
+             by_file["src/main/java/wrapper/WrapperClient.java"]["fixed_by"]),
+            ("post_close_injector", "rlpatcher"),
+        )
+
         # The paper's scenario: the leak in the wrapper's client is fixed once the wrapper is closable.
         client = (repo_root / "src/main/java/wrapper/WrapperClient.java").read_text()
         self.assertIn("try (Wrapper wrapper = new Wrapper(path))", client)

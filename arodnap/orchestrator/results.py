@@ -152,6 +152,7 @@ def write_report(
     run_metadata: dict[str, Any] | None = None,
     analysis_runs: list[dict[str, Any]] | None = None,
     stage_timings: list[dict[str, Any]] | None = None,
+    leaks: dict[str, Any] | None = None,
 ) -> Path:
     current_analysis = state.current_analysis
     adapter_summary = _build_adapter_summary(state)
@@ -190,6 +191,8 @@ def write_report(
         "stage_timings": stage_timings or [],
         "stage_execution_summary": _stage_execution_summary(state, stage_timings or []),
     }
+    if leaks is not None:
+        payload["leaks"] = leaks
     return write_json(output_layout.report_path, payload)
 
 

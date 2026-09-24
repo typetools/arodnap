@@ -12,6 +12,9 @@ from arodnap.build_adapters import default_build_tool_selection, select_build_ad
 from arodnap.contracts import PipelineState, ReanalyzeResult, RunConfig, StageResult
 from arodnap.orchestrator.results import OutputLayout, write_report, write_run_manifest
 from arodnap.orchestrator.workspace import copied_workspace
+from arodnap.reporting.html import write_html_report
+from arodnap.reporting.leaks import build_leak_report
+from arodnap.reporting.summary import format_summary
 from arodnap.stages.registry import REPAIR_STAGE_REGISTRY, StageRunInput
 
 
@@ -48,6 +51,8 @@ def run_repair(config: RunConfig) -> int:
             state.current_analysis = current_analysis
             _require_utf8_readable_sources(current_analysis)
             repair_state = _RepairExecutionState(current_analysis=current_analysis)
+            analyses: list[tuple[str, ReanalyzeResult]] = [("initial", current_analysis)]
+            rlfixer_label: str | None = None
 
             for stage_definition in REPAIR_STAGE_REGISTRY:
                 stage_input = StageRunInput(
@@ -67,6 +72,7 @@ def run_repair(config: RunConfig) -> int:
 
                 if stage_definition.captures_rlfixer_result:
                     repair_state.rlfixer_result = stage_result
+                    rlfixer_label = stage_input.current_analysis.label
                 if stage_definition.promotes_patch_manifest:
                     state.final_patch_manifest = output_layout.promote_patch_manifest(
                         Path(stage_result.artifacts["patch_manifest"])
@@ -84,7 +90,15 @@ def run_repair(config: RunConfig) -> int:
                         ),
                     )
                     state.current_analysis = repair_state.current_analysis
+                    analyses.append((stage_definition.rerun_analysis_label, repair_state.current_analysis))
 
+            leaks, summary = _leak_results(
+                output_layout,
+                state,
+                analyses=analyses,
+                rlfixer_label=rlfixer_label,
+                generated_at=run_started_at,
+            )
             _write_run_outputs(
                 output_layout=output_layout,
                 state=state,
@@ -93,7 +107,9 @@ def run_repair(config: RunConfig) -> int:
                 run_started_perf=run_started_perf,
                 analysis_runs=analysis_runs,
                 stage_timings=stage_timings,
+                leaks=leaks,
             )
+            print(summary)
         except Exception as exc:
             _write_run_outputs(
                 output_layout=output_layout,
@@ -139,6 +155,58 @@ def _require_utf8_readable_sources(analysis: ReanalyzeResult) -> None:
                 "Arodnap's repair tools read and write sources as UTF-8, so `repair` does not support "
                 "this project yet; `analyze` and `infer` do."
             ) from None
+
+
+def _leak_results(
+    output_layout: OutputLayout,
+    state: PipelineState,
+    *,
+    analyses: list[tuple[str, ReanalyzeResult]],
+    rlfixer_label: str | None,
+    generated_at: str,
+) -> tuple[dict[str, object], str]:
+    """Per-leak results, report.html and the terminal summary.
+
+    The patch bundle is already verified at this point, so a failure here is reported in
+    report.json and on the terminal instead of failing the run.
+    """
+    stage_results = {result.stage: result for result in state.stage_history}
+    bundle = stage_results.get("bundle")
+    patch_path = output_layout.patches_dir / "arodnap.patch"
+    patch_path = patch_path if patch_path.is_file() else None
+    try:
+        leaks = build_leak_report(
+            analyses,
+            workspace_root=state.workspace_root,
+            stage_for_label={
+                definition.rerun_analysis_label: definition.name
+                for definition in REPAIR_STAGE_REGISTRY
+                if definition.rerun_analysis_label
+            },
+            rlfixer_label=rlfixer_label,
+            stage_results=stage_results,
+        )
+        html_path = write_html_report(
+            output_layout.root / "report.html",
+            leaks=leaks,
+            repo_root=state.config.repo_root,
+            patch_path=patch_path,
+            patch_dir=output_layout.patches_dir if patch_path else None,
+            generated_at=generated_at,
+        )
+    except Exception as exc:  # the report is a view of results that are already verified
+        message = f"Could not build the per-leak report: {type(exc).__name__}: {exc}"
+        return {"error": message}, message
+    leaks["html_report"] = str(html_path)
+    summary = format_summary(
+        leaks,
+        repo_root=state.config.repo_root,
+        patch_path=patch_path,
+        patch_dir=output_layout.patches_dir,
+        changed_files=len(bundle.changed_files) if bundle else 0,
+        html_path=html_path,
+    )
+    return leaks, summary
 
 
 def run_apply(config: RunConfig) -> int:
@@ -208,6 +276,7 @@ def _write_run_outputs(
     stage_timings: list[dict[str, object]],
     error: str | None = None,
     error_type: str | None = None,
+    leaks: dict[str, object] | None = None,
 ) -> None:
     run_metadata = _build_run_metadata(
         state=state,
@@ -235,6 +304,7 @@ def _write_run_outputs(
         run_metadata=run_metadata,
         analysis_runs=analysis_runs,
         stage_timings=stage_timings,
+        leaks=leaks,
     )
 
 

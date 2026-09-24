@@ -190,7 +190,13 @@ top-level JSON files depending on the command:
 Important contracts:
 
 - `manifest.json` is the run-level machine-readable ledger
-- `report.json` is the run-level summary view
+- `report.json` is the run-level summary view; after `repair` its `leaks` section
+  lists every `required.method.not.called` warning with `status` (`fixed` or
+  `remaining`), `fixed_by` (the stage after which it disappeared), `reason` (a
+  stable code; `leaks.reasons` maps codes to text) and `first_seen` (the analysis
+  run that first reported it). Warnings are followed across analysis runs by file,
+  checker key and the `-Adetailedmsgtext` fields, since patches shift lines
+  (`arodnap/reporting/leaks.py`). `report.html` renders the same data.
 - `stages/<stage>/stage_result.json` is the stable stage result boundary
 - `patches/manifest.json` is the normalized patch bundle consumed by `apply`
 

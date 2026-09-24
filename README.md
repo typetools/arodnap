@@ -183,12 +183,20 @@ arodnap-out/
     arodnap.patch
 ```
 
+`repair` ends with a short summary: how many resource leaks it found, fixed and
+left, why the rest remain, and the command that applies the patch.
+
 Important outputs:
 
+- `report.html` (`repair`): a self-contained page to open in a browser. It lists
+  every resource leak as fixed or remaining; a fixed leak shows the change that
+  fixed it, a remaining one shows why Arodnap left it (for example, RLFixer found
+  no fix, or a fix would have to reorder code). It ends with the full patch.
 - `doctor.json`: machine-readable environment and supportability checks from
   `doctor`
 - `report.json`: top-level run summary with adapter, analysis, and stage timing
-  metadata
+  metadata; for `repair`, `leaks` holds the same per-leak results as
+  `report.html`
 - `manifest.json`: top-level manifest with config, workspace, stage history,
   and artifact references
 - `diagnostics/*.txt`: one diagnostics file per analysis point
