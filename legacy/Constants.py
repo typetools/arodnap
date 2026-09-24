@@ -13,6 +13,8 @@ PATCH_AND_LOGS_FOLDER = os.path.abspath(os.path.join("tool_results", "inference_
 COMPILED_CLASSES_FOLDER = "cf_classes"
 SRC_FILES = "cf_srcs.txt"
 JARS_ROOT = os.path.abspath(os.path.join(REPO_ROOT, "restructure_plugins", "prebuilt_plugin_jars"))
+# The paper's Error Prone field plugins and Error Prone 2.28 (used by helpers/ep.sh).
+LEGACY_JARS_ROOT = os.path.abspath(os.path.join(HERE, "prebuilt_plugin_jars"))
 OWNING_FIELD_JAR = os.path.join(JARS_ROOT, "OwningFieldFixer-1.0-SNAPSHOT.jar")
 CLOSE_INJECTOR_JAR = os.path.join(JARS_ROOT, "AutoCloseInjector-1.0-SNAPSHOT.jar")
 RLPATCHER_JAR = os.path.join(JARS_ROOT, "RLPatcher-1.0-SNAPSHOT.jar")

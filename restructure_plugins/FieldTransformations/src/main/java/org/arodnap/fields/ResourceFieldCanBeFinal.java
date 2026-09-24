@@ -1,4 +1,4 @@
-package org.example;
+package org.arodnap.fields;
 
 import static com.google.errorprone.BugPattern.SeverityLevel.SUGGESTION;
 import static com.google.errorprone.util.ASTHelpers.canBeRemoved;
@@ -10,6 +10,7 @@ import com.google.auto.service.AutoService;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.google.errorprone.BugPattern;
+import com.google.errorprone.ErrorProneFlags;
 import com.google.errorprone.VisitorState;
 import com.google.errorprone.bugpatterns.BugChecker;
 import com.google.errorprone.bugpatterns.BugChecker.CompilationUnitTreeMatcher;
@@ -21,6 +22,8 @@ import com.sun.source.tree.*;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
+import com.sun.source.util.TreeScanner;
+import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.code.Attribute;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
@@ -28,20 +31,41 @@ import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
 
 import java.util.*;
+import javax.inject.Inject;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 
 /**
- * @author Liam Miller-Cushon (cushon@google.com)
+ * Makes private resource fields {@code final} when they are assigned only once, during
+ * construction (Arodnap's "preventing reassignment" transformation). Based on Error Prone's
+ * FieldCanBeFinal by Liam Miller-Cushon, extended to fields assigned inside {@code try}.
+ *
+ * <p>Only fields whose type can hold a resource are changed (see {@link ResourceFields}), and
+ * every change is compile-checked for its file. Making a field final never changes behavior:
+ * the compiler rejects any later write.
  */
 @AutoService(BugChecker.class)
 @BugPattern(
-        name = "FieldCanBeFinalWithTryCatch",
-        summary = "Field can be converted to a final variable even in the presence of try-catch blocks",
+        name = "ResourceFieldCanBeFinal",
+        summary = "Resource field can be final",
         severity = SUGGESTION,
         documentSuppression = false)
-public class FieldCanBeFinalWithTryCatch extends BugChecker implements CompilationUnitTreeMatcher {
+public class ResourceFieldCanBeFinal extends BugChecker implements CompilationUnitTreeMatcher {
+
+    private final List<String> extraResourceTypes;
+    private final boolean allFields;
+
+    /** For {@link java.util.ServiceLoader}, which Error Prone uses to find plugins. */
+    public ResourceFieldCanBeFinal() {
+        this(ErrorProneFlags.empty());
+    }
+
+    @Inject
+    public ResourceFieldCanBeFinal(ErrorProneFlags flags) {
+        extraResourceTypes = Edits.extraResourceTypes(flags);
+        allFields = Edits.allFields(flags);
+    }
 
     /** Annotations that imply a field is non-constant. */
     // TODO(cushon): consider supporting @Var as a meta-annotation
@@ -224,10 +248,11 @@ public class FieldCanBeFinalWithTryCatch extends BugChecker implements Compilati
 
     @Override
     public Description matchCompilationUnit(CompilationUnitTree tree, VisitorState state) {
+        ResourceFields resourceFields = ResourceFields.of(state, extraResourceTypes);
         VariableAssignmentRecords writes = new VariableAssignmentRecords();
         new FinalScanner(writes, state).scan(state.getPath(), InitializationContext.NONE);
 
-        Map<TryTree, List<VariableAssignments>> tryBlockAssignments = new HashMap<>();
+        Map<TryTree, List<VariableAssignments>> tryBlockAssignments = new LinkedHashMap<>();
 
         for (VariableAssignments var : writes.getAssignments()) {
             if (!var.isEffectivelyFinal()) {
@@ -236,103 +261,256 @@ public class FieldCanBeFinalWithTryCatch extends BugChecker implements Compilati
             if (!canBeRemoved(var.sym)) {
                 continue;
             }
+            if (!var.sym.isPrivate() || !(allFields || resourceFields.isRelevant(var.sym.type))) {
+                // Only private fields holding a resource: nothing outside this file can assign
+                // them, and nothing else matters for resource-leak analysis.
+                continue;
+            }
             if (shouldKeep(var.declaration)) {
                 continue;
             }
             if (IMPLICIT_VAR_ANNOTATIONS.stream().anyMatch(a -> hasAnnotation(var.sym, a, state))) {
                 continue;
             }
+            boolean implicitlyVariable = false;
             for (Attribute.Compound anno : var.sym.getAnnotationMirrors()) {
                 TypeElement annoElement = (TypeElement) anno.getAnnotationType().asElement();
-                if (IMPLICIT_VAR_ANNOTATION_SIMPLE_NAMES.contains(annoElement.getSimpleName().toString())) {
-                    return Description.NO_MATCH;
+                if (IMPLICIT_VAR_ANNOTATION_SIMPLE_NAMES.contains(annoElement.getSimpleName().toString())
+                        || annoElement.getQualifiedName().toString().startsWith(OBJECTIFY_PREFIX)) {
+                    implicitlyVariable = true;
                 }
-                if (annoElement.getQualifiedName().toString().startsWith(OBJECTIFY_PREFIX)) {
-                    return Description.NO_MATCH;
-                }
+            }
+            if (implicitlyVariable) {
+                continue;
             }
             VariableTree varDecl = var.declaration();
 
-
             if (var.areAllAssignmentsInSameTryBlock()) {
-                // Find the first enclosing try block
-                TryTree enclosingTryBlock = var.getEnclosingTryBlock();
-                // Collect variable assignments to handle later
-                tryBlockAssignments.computeIfAbsent(enclosingTryBlock, k -> new ArrayList<>()).add(var);
+                tryBlockAssignments.computeIfAbsent(var.getEnclosingTryBlock(), k -> new ArrayList<>()).add(var);
             } else {
-                SuggestedFixes.addModifiers(varDecl, state, Modifier.FINAL)
-                    .filter(f -> SuggestedFixes.compilesWithFix(f, state))
-                    .ifPresent(f -> state.reportMatch(describeMatch(varDecl, f)));
+                SuggestedFix fix = SuggestedFix.builder().prefixWith(varDecl.getType(), "final ").build();
+                if (SuggestedFixes.compilesWithFix(fix, state)) {
+                    state.reportMatch(describe(varDecl, var.sym, fix));
+                }
             }
         }
-        // Apply modifications to the try blocks and finally blocks collectively
         for (Map.Entry<TryTree, List<VariableAssignments>> entry : tryBlockAssignments.entrySet()) {
-            TryTree tryTree = entry.getKey();
-            List<VariableAssignments> vars = entry.getValue();
-
-            SuggestedFix.Builder fixBuilder = SuggestedFix.builder();
-
-            // Declare temporary variables before the try block
-            for (VariableAssignments var : vars) {
-                String tempVarName = "temp" + var.sym.getSimpleName().toString().substring(0, 1).toUpperCase()
-                        + var.sym.getSimpleName().toString().substring(1);
-                fixBuilder.prefixWith(tryTree, var.sym.asType() + " " + tempVarName + " = null;\n");
-                // Add the final modifier to the field declaration
-                String varSource = state.getSourceForNode(var.declaration());
-                if (var.isExplicitlyInitializedToNull()) {
-                    varSource = varSource.replace("= null", "");
+            tryBlockFix(entry.getKey(), entry.getValue(), state).ifPresent(fix -> {
+                for (VariableAssignments var : entry.getValue()) {
+                    state.reportMatch(describe(var.declaration(), var.sym, fix));
                 }
-                if (!varSource.contains("final")) {
-                    varSource = varSource.replaceFirst("\\b(private|protected|public)\\b", "$1 final");
-                }
-                fixBuilder.replace(var.declaration(), varSource);
-            }
-
-            // Replace original variable assignments with temporary variable assignments inside try block
-            BlockTree tryBlock = tryTree.getBlock();
-            String tryBlockSource = state.getSourceForNode(tryBlock);
-            for (VariableAssignments var : vars) {
-                String tempVarName = "temp" + var.sym.getSimpleName().toString().substring(0, 1).toUpperCase()
-                        + var.sym.getSimpleName().toString().substring(1);
-                assert tryBlockSource != null;
-                String fieldWithoutThis = "this." + var.sym.getSimpleName().toString();
-                tryBlockSource = tryBlockSource.replace(fieldWithoutThis, tempVarName).replace(var.sym.getSimpleName().toString(), tempVarName);
-            }
-            fixBuilder.replace(tryBlock, tryBlockSource);
-
-            // Modify or add the finally block
-            BlockTree finallyBlock = tryTree.getFinallyBlock();
-            if (finallyBlock != null) {
-                StringBuilder finallyBlockSource = new StringBuilder(Objects.requireNonNull(state.getSourceForNode(finallyBlock)));
-                for (VariableAssignments var : vars) {
-                    String tempVarName = "temp" + var.sym.getSimpleName().toString().substring(0, 1).toUpperCase()
-                            + var.sym.getSimpleName().toString().substring(1);
-                    finallyBlockSource.append("\n").append(var.sym.getSimpleName()).append(" = ").append(tempVarName).append(";\n");
-                }
-                fixBuilder.replace(finallyBlock, finallyBlockSource.toString());
-            } else {
-                StringBuilder newFinallyBlock = new StringBuilder("finally {\n");
-                for (VariableAssignments var : vars) {
-                    String tempVarName = "temp" + var.sym.getSimpleName().toString().substring(0, 1).toUpperCase()
-                            + var.sym.getSimpleName().toString().substring(1);
-                    newFinallyBlock.append(var.sym.getSimpleName()).append(" = ").append(tempVarName).append(";\n");
-                }
-                newFinallyBlock.append("}\n");
-                fixBuilder.postfixWith(tryTree, newFinallyBlock.toString());
-            }
-
-            // Apply the try block fix collectively and check if the modified code compiles
-            SuggestedFix fix = fixBuilder.build();
-            if (SuggestedFixes.compilesWithFix(fix, state)) {
-                for (VariableAssignments var : vars) {
-                    state.reportMatch(describeMatch(var.declaration(), fix));
-                }
-            }
+            });
         }
-
         return Description.NO_MATCH;
     }
 
+    private Description describe(VariableTree declaration, VarSymbol sym, SuggestedFix fix) {
+        return buildDescription(declaration)
+                .setMessage("Resource field `" + sym.getSimpleName() + "` can be final")
+                .addFix(fix)
+                .build();
+    }
+
+    /**
+     * A field assigned inside a {@code try} cannot simply become final: Java requires a blank
+     * final to be definitely assigned, which fails when the assignment can throw. The rewrite
+     * assigns a temporary inside the {@code try} and the field in {@code finally}:
+     *
+     * <pre>
+     * Socket tempSocket = null;
+     * try {
+     *     tempSocket = new Socket(host, port);
+     * } catch (IOException e) { ... } finally {
+     *     this.socket = tempSocket;
+     * }
+     * </pre>
+     *
+     * The field is then assigned later than before, so the rewrite is only made when nothing
+     * between the original assignment and the {@code finally} (the rest of the try block, the
+     * catch blocks) can observe the field: no calls of this object's methods, no {@code this},
+     * no lambdas or inner classes.
+     */
+    private Optional<SuggestedFix> tryBlockFix(TryTree tryTree, List<VariableAssignments> vars, VisitorState state) {
+        if (!tryTree.getResources().isEmpty()) {
+            return Optional.empty();
+        }
+        Set<VarSymbol> symbols = new HashSet<>();
+        for (VariableAssignments var : vars) {
+            symbols.add(var.sym);
+        }
+        List<? extends StatementTree> statements = tryTree.getBlock().getStatements();
+        int firstAssignment = -1;
+        for (int i = 0; i < statements.size() && firstAssignment < 0; i++) {
+            if (assignsAny(statements.get(i), symbols)) {
+                firstAssignment = i;
+            }
+        }
+        if (firstAssignment < 0) {
+            return Optional.empty();
+        }
+        for (int i = firstAssignment; i < statements.size(); i++) {
+            StatementTree statement = statements.get(i);
+            // A plain "field = expression;" evaluates the expression before assigning.
+            boolean plainAssignment = statement instanceof ExpressionStatementTree
+                    && ((ExpressionStatementTree) statement).getExpression() instanceof AssignmentTree
+                    && symbols.contains(ASTHelpers.getSymbol(
+                            ((AssignmentTree) ((ExpressionStatementTree) statement).getExpression()).getVariable()));
+            if (!plainAssignment && mayObserveObject(statement)) {
+                return Optional.empty();
+            }
+        }
+        for (CatchTree catchTree : tryTree.getCatches()) {
+            if (mayObserveObject(catchTree.getBlock())) {
+                return Optional.empty();
+            }
+        }
+
+        SuggestedFix.Builder fix = SuggestedFix.builder();
+        String indent = Edits.indentAt(state, ASTHelpers.getStartPosition(tryTree));
+        String unit = Edits.indentUnit(state, tryTree, statements.get(0));
+        StringBuilder declarations = new StringBuilder();
+        StringBuilder finallyAssignments = new StringBuilder();
+        Map<VarSymbol, String> temps = new HashMap<>();
+        for (VariableAssignments var : vars) {
+            String name = var.sym.getSimpleName().toString();
+            String temp = Edits.freshName(state, "temp" + Character.toUpperCase(name.charAt(0)) + name.substring(1));
+            temps.put(var.sym, temp);
+            String type = SuggestedFixes.prettyType(state, fix, var.sym.type);
+            declarations.append(type).append(' ').append(temp).append(" = null;\n").append(indent);
+            String target = var.sym.isStatic() ? name : "this." + name;
+            finallyAssignments.append('\n').append(indent).append(unit).append(target).append(" = ").append(temp).append(';');
+
+            VariableTree declaration = var.declaration();
+            fix.prefixWith(declaration.getType(), "final ");
+            if (var.isExplicitlyInitializedToNull()) {
+                int nameEnd = ((JCTree.JCVariableDecl) declaration).pos + name.length();
+                fix.replace(nameEnd, state.getEndPosition(declaration.getInitializer()), "");
+            }
+        }
+        fix.prefixWith(tryTree, declarations.toString());
+
+        // Every reference to the fields inside the try block now uses the temporaries.
+        new TreeScanner<Void, Void>() {
+            @Override
+            public Void visitIdentifier(IdentifierTree node, Void unused) {
+                replace(node);
+                return null;
+            }
+
+            @Override
+            public Void visitMemberSelect(MemberSelectTree node, Void unused) {
+                if (!replace(node)) {
+                    super.visitMemberSelect(node, null);
+                }
+                return null;
+            }
+
+            private boolean replace(Tree node) {
+                Symbol symbol = ASTHelpers.getSymbol(node);
+                if (symbol instanceof VarSymbol && temps.containsKey(symbol)) {
+                    fix.replace(node, temps.get(symbol));
+                    return true;
+                }
+                return false;
+            }
+        }.scan(tryTree.getBlock(), null);
+
+        BlockTree finallyBlock = tryTree.getFinallyBlock();
+        if (finallyBlock != null) {
+            // First in the finally block, so the rest of it sees the field assigned.
+            int brace = ASTHelpers.getStartPosition(finallyBlock);
+            fix.replace(brace, brace + 1, "{" + finallyAssignments);
+        } else {
+            fix.postfixWith(tryTree, " finally {" + finallyAssignments + "\n" + indent + "}");
+        }
+        SuggestedFix built = fix.build();
+        return SuggestedFixes.compilesWithFix(built, state) ? Optional.of(built) : Optional.empty();
+    }
+
+    private static boolean isThisOrSuper(Tree tree) {
+        return tree instanceof IdentifierTree
+                && (((IdentifierTree) tree).getName().contentEquals("this")
+                        || ((IdentifierTree) tree).getName().contentEquals("super"));
+    }
+
+    private static boolean assignsAny(StatementTree statement, Set<VarSymbol> symbols) {
+        Boolean found = new TreeScanner<Boolean, Void>() {
+            @Override
+            public Boolean visitAssignment(AssignmentTree node, Void unused) {
+                return symbols.contains(ASTHelpers.getSymbol(node.getVariable())) || super.visitAssignment(node, null);
+            }
+
+            @Override
+            public Boolean reduce(Boolean a, Boolean b) {
+                return Boolean.TRUE.equals(a) || Boolean.TRUE.equals(b);
+            }
+        }.scan(statement, null);
+        return Boolean.TRUE.equals(found);
+    }
+
+    /**
+     * Conservatively, whether running {@code tree} could read one of this object's fields (or a
+     * static field of this class) through anything but a direct reference: a call of a method
+     * without an explicit receiver or on {@code this}/{@code super}, a use of {@code this}, a
+     * lambda, a method reference or a class creation that may capture it.
+     */
+    private static boolean mayObserveObject(Tree tree) {
+        Boolean found = new TreeScanner<Boolean, Void>() {
+            @Override
+            public Boolean visitMethodInvocation(MethodInvocationTree node, Void unused) {
+                ExpressionTree select = node.getMethodSelect();
+                if (select instanceof IdentifierTree) {
+                    return true;
+                }
+                if (select instanceof MemberSelectTree && isThisOrSuper(((MemberSelectTree) select).getExpression())) {
+                    return true;
+                }
+                return super.visitMethodInvocation(node, null);
+            }
+
+            @Override
+            public Boolean visitMemberSelect(MemberSelectTree node, Void unused) {
+                // this.field reads or writes a field directly; it does not hand the object out.
+                if (isThisOrSuper(node.getExpression()) && ASTHelpers.getSymbol(node) instanceof VarSymbol) {
+                    return false;
+                }
+                return super.visitMemberSelect(node, null);
+            }
+
+            @Override
+            public Boolean visitIdentifier(IdentifierTree node, Void unused) {
+                return isThisOrSuper(node);
+            }
+
+            @Override
+            public Boolean visitNewClass(NewClassTree node, Void unused) {
+                if (node.getClassBody() != null) {
+                    return true;
+                }
+                Symbol constructed = ASTHelpers.getSymbol(node.getIdentifier());
+                if (constructed != null && constructed.hasOuterInstance()) {
+                    return true;
+                }
+                return super.visitNewClass(node, null);
+            }
+
+            @Override
+            public Boolean visitLambdaExpression(LambdaExpressionTree node, Void unused) {
+                return true;
+            }
+
+            @Override
+            public Boolean visitMemberReference(MemberReferenceTree node, Void unused) {
+                return true;
+            }
+
+            @Override
+            public Boolean reduce(Boolean a, Boolean b) {
+                return Boolean.TRUE.equals(a) || Boolean.TRUE.equals(b);
+            }
+        }.scan(tree, null);
+        return Boolean.TRUE.equals(found);
+    }
 
     /** Record assignments to possibly-final variables in a compilation unit. */
     private class FinalScanner extends TreePathScanner<Void, InitializationContext> {

@@ -1,20 +1,19 @@
-package org.example;
+package org.arodnap.fields;
 
 
-import static com.google.common.collect.Iterables.getLast;
 import static com.google.errorprone.BugPattern.SeverityLevel.SUGGESTION;
-import static com.google.errorprone.util.ASTHelpers.getAnnotation;
 import static com.google.errorprone.util.ASTHelpers.getStartPosition;
 import static com.google.errorprone.util.ASTHelpers.getSymbol;
 import static com.google.errorprone.util.ASTHelpers.shouldKeep;
 
 import com.google.auto.service.AutoService;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.MultimapBuilder;
 import com.google.common.collect.SetMultimap;
-import com.google.common.collect.Sets;
 import com.google.errorprone.BugPattern;
+import com.google.errorprone.ErrorProneFlags;
+import com.google.errorprone.fixes.SuggestedFixes;
+import com.google.errorprone.util.ASTHelpers;
 import com.google.errorprone.VisitorState;
 import com.google.errorprone.bugpatterns.BugChecker;
 import com.google.errorprone.bugpatterns.BugChecker.CompilationUnitTreeMatcher;
@@ -26,29 +25,52 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Target;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.inject.Inject;
 import javax.lang.model.element.ElementKind;
 
-/** Flags fields which can be replaced with local variables. */
+/**
+ * Turns a private resource field into a local variable when every method that uses it assigns it
+ * before reading it (Arodnap's "reducing scope" transformation). Based on Error Prone's
+ * FieldCanBeLocal, extended to assignments inside {@code try}.
+ *
+ * <p>Only fields whose type can hold a resource are changed (see {@link ResourceFields}). Fields
+ * are left alone when they have an initializer (removing it would drop its side effects), carry
+ * annotations (frameworks may inject them), or have a name that appears in a string literal
+ * anywhere in the program (reflection could read them). Every change is compile-checked.
+ */
 @AutoService(BugChecker.class)
 @BugPattern(
-        name = "FieldCanBeLocalWithTryCatch",
-        summary = "Field can be converted to a local variable even in the presence of try-catch blocks",
+        name = "ResourceFieldCanBeLocal",
+        summary = "Resource field can be a local variable",
         severity = SUGGESTION,
         documentSuppression = false)
-public final class FieldCanBeLocalWithTryCatch extends BugChecker implements CompilationUnitTreeMatcher {
-    private static final ImmutableSet<ElementType> VALID_ON_LOCAL_VARIABLES =
-            Sets.immutableEnumSet(ElementType.LOCAL_VARIABLE, ElementType.TYPE_USE);
+public final class ResourceFieldCanBeLocal extends BugChecker implements CompilationUnitTreeMatcher {
+
+    private final List<String> extraResourceTypes;
+    private final Set<String> reflectedNames;
+    private final boolean allFields;
+
+    /** For {@link java.util.ServiceLoader}, which Error Prone uses to find plugins. */
+    public ResourceFieldCanBeLocal() {
+        this(ErrorProneFlags.empty());
+    }
+
+    @Inject
+    public ResourceFieldCanBeLocal(ErrorProneFlags flags) {
+        extraResourceTypes = Edits.extraResourceTypes(flags);
+        reflectedNames = Edits.reflectedNames(flags);
+        allFields = Edits.allFields(flags);
+    }
 
     @Override
     public Description matchCompilationUnit(CompilationUnitTree tree, VisitorState state) {
+        ResourceFields resourceFields = ResourceFields.of(state, extraResourceTypes);
         Map<VarSymbol, TreePath> potentialFields = new LinkedHashMap<>();
         SetMultimap<VarSymbol, TreePath> unconditionalAssignments =
                 MultimapBuilder.linkedHashKeys().linkedHashSetValues().build();
@@ -61,32 +83,15 @@ public final class FieldCanBeLocalWithTryCatch extends BugChecker implements Com
                 VarSymbol symbol = getSymbol(variableTree);
                 if (symbol.getKind() == ElementKind.FIELD
                         && symbol.isPrivate()
-                        && canBeLocal(variableTree)
-                        && !shouldKeep(variableTree)
-                        && !symbol.getSimpleName().toString().startsWith("unused")) {
+                        && (allFields || resourceFields.isRelevant(symbol.type))
+                        && (variableTree.getInitializer() == null
+                                || variableTree.getInitializer().getKind() == Kind.NULL_LITERAL)
+                        && variableTree.getModifiers().getAnnotations().isEmpty()
+                        && !reflectedNames.contains(symbol.getSimpleName().toString())
+                        && !shouldKeep(variableTree)) {
                     potentialFields.put(symbol, getCurrentPath());
                 }
                 return null;
-            }
-
-            private boolean canBeLocal(VariableTree variableTree) {
-                if (variableTree.getModifiers() == null) {
-                    return true;
-                }
-                return variableTree.getModifiers().getAnnotations().stream()
-                        .allMatch(this::canBeUsedOnLocalVariable);
-            }
-
-            private boolean canBeUsedOnLocalVariable(AnnotationTree annotationTree) {
-                // TODO(b/137842683): Should this (and all other places using getAnnotation with Target) be
-                // replaced with annotation mirror traversals?
-                // This is safe given we know that Target does not have Class fields.
-                Target target = getAnnotation(annotationTree, Target.class);
-                if (target == null) {
-                    return true;
-                }
-                return !Sets.intersection(VALID_ON_LOCAL_VARIABLES, ImmutableSet.copyOf(target.value()))
-                        .isEmpty();
             }
         }.scan(state.getPath(), null);
 
@@ -136,6 +141,8 @@ public final class FieldCanBeLocalWithTryCatch extends BugChecker implements Com
 
                     @Override
                     public Void visitTry(TryTree tryTree, Void unused) {
+                        // Resources are read before the block runs, like any other use.
+                        scan(tryTree.getResources(), unused);
                         boolean previousInTryCatch = inTryCatch;
                         inTryCatch = true; // Entering try block
                         scan(tryTree.getBlock(), unused);
@@ -260,101 +267,64 @@ public final class FieldCanBeLocalWithTryCatch extends BugChecker implements Com
             SuggestedFix.Builder fix = SuggestedFix.builder();
             VariableTree variableTree = (VariableTree) declarationSite.getLeaf();
             String type = state.getSourceForNode(variableTree.getType());
-            String annotations = getAnnotationSource(state, variableTree);
-            fix.delete(declarationSite.getLeaf());
+            String name = varSymbol.getSimpleName().toString();
+            Edits.deleteWithLine(fix, state, variableTree);
             Set<Tree> deletedTrees = new HashSet<>();
             Set<Tree> scopesDeclared = new HashSet<>();
             for (TreePath assignmentSite : assignmentLocations) {
                 AssignmentTree assignmentTree = (AssignmentTree) assignmentSite.getLeaf();
                 Symbol rhsSymbol = getSymbol(assignmentTree.getExpression());
 
-                // If the RHS of the assignment is a variable with the same name as the field, just remove
-                // the assignment.
-                String assigneeName = getSymbol(assignmentTree.getVariable()).getSimpleName().toString();
+                // "this.x = x;" from a parameter named like the field: the parameter serves as the
+                // local variable, so the assignment goes away.
                 if (rhsSymbol != null
                         && assignmentTree.getExpression() instanceof IdentifierTree
-                        && rhsSymbol.getSimpleName().contentEquals(assigneeName)) {
+                        && rhsSymbol.getSimpleName().contentEquals(name)) {
                     deletedTrees.add(assignmentTree.getVariable());
-                    fix.delete(assignmentSite.getParentPath().getLeaf());
-                } else {
-                    Tree scope = null;
-                    boolean isInsideTryCatch = isInsideTryCatch(assignmentSite);
-                    if (isInsideTryCatch) {
-                        scope = assignmentSite.getParentPath().getParentPath().getParentPath().getLeaf();
-                    } else {
-                        scope = assignmentSite.getParentPath().getParentPath().getLeaf();
+                    Edits.deleteWithLine(fix, state, assignmentSite.getParentPath().getLeaf());
+                    continue;
+                }
+                TryTree enclosingTry = enclosingTry(assignmentSite);
+                if (enclosingTry != null) {
+                    // Declared before the try, so code after the try still sees it.
+                    if (scopesDeclared.add(enclosingTry)) {
+                        String indent = Edits.indentAt(state, ASTHelpers.getStartPosition(enclosingTry));
+                        fix.prefixWith(enclosingTry, type + " " + name + " = null;\n" + indent);
                     }
-                    String defaultValue = "null";
-                    switch (type) {
-                        case "boolean":
-                            defaultValue = "false";
-                            break;
-                        case "byte":
-                        case "short":
-                        case "int":
-                        case "long":
-                        case "char":
-                            defaultValue = "0";
-                            break;
-                        case "float":
-                        case "double":
-                            defaultValue = "0.0";
-                            break;
-                    }
-                    if (scopesDeclared.add(scope)) {
-                        if (isInsideTryCatch)   {
-                            fix.prefixWith(scope, annotations + " " + type + " " + assigneeName + " = " + defaultValue + ";\n");
-                        } else {
-                            fix.prefixWith(assignmentSite.getLeaf(), annotations + " " + type + " ");
-                        }
-                    }
+                } else if (scopesDeclared.add(assignmentSite.getParentPath().getParentPath().getLeaf())) {
+                    fix.prefixWith(assignmentSite.getLeaf(), type + " ");
                 }
             }
             // Strip "this." off any uses of the field.
             for (Tree usage : uses.get(varSymbol)) {
-                if (deletedTrees.contains(usage)
-                        || usage.getKind() == Kind.IDENTIFIER
-                        || usage.getKind() != Kind.MEMBER_SELECT) {
+                if (deletedTrees.contains(usage) || usage.getKind() != Kind.MEMBER_SELECT) {
                     continue;
                 }
                 ExpressionTree selected = ((MemberSelectTree) usage).getExpression();
-                if (!(selected instanceof IdentifierTree)) {
-                    continue;
-                }
-                IdentifierTree ident = (IdentifierTree) selected;
-                if (ident.getName().contentEquals("this")) {
-                    fix.replace(getStartPosition(ident), state.getEndPosition(ident) + 1, "");
+                if (selected instanceof IdentifierTree && ((IdentifierTree) selected).getName().contentEquals("this")) {
+                    fix.replace(getStartPosition(selected), state.getEndPosition(selected) + 1, "");
                 }
             }
-            state.reportMatch(describeMatch(declarationSite.getLeaf(), fix.build()));
+            SuggestedFix built = fix.build();
+            if (SuggestedFixes.compilesWithFix(built, state)) {
+                state.reportMatch(buildDescription(variableTree)
+                        .setMessage("Resource field `" + name + "` can be a local variable")
+                        .addFix(built)
+                        .build());
+            }
         }
         return Description.NO_MATCH;
     }
 
-    private boolean isInsideTryCatch(TreePath path) {
-        while (path != null) {
-            if (path.getLeaf().getKind() == Tree.Kind.TRY) {
-                return true;
+    private static TryTree enclosingTry(TreePath path) {
+        for (TreePath current = path; current != null; current = current.getParentPath()) {
+            if (current.getLeaf() instanceof MethodTree || current.getLeaf() instanceof LambdaExpressionTree) {
+                return null;
             }
-            path = path.getParentPath();
+            if (current.getLeaf() instanceof TryTree) {
+                return (TryTree) current.getLeaf();
+            }
         }
-        return false;
-    }
-
-    private static String getAnnotationSource(VisitorState state, VariableTree variableTree) {
-        List<? extends AnnotationTree> annotations = variableTree.getModifiers().getAnnotations();
-        if (annotations == null || annotations.isEmpty()) {
-            return "";
-        }
-        return state
-                .getSourceCode()
-                .subSequence(
-                        getStartPosition(annotations.get(0)), state.getEndPosition(getLast(annotations)))
-                .toString();
-    }
-
-    public static void printObjectReference(Object obj) {
-        // Print the class name and the identity hash code (a representation of the object's reference)
-        System.out.println("Object reference: " + obj.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(obj)));
+        return null;
     }
 }

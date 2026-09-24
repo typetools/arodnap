@@ -26,7 +26,7 @@ class FieldEnhancementRunner:
         ) as file:
             process = subprocess.Popen(
                 shlex.split(
-                    f"{Constants.EP_FIELD_ENHANCEMENT_SCRIPT_PATH} {source_project_path} '0' {Constants.JARS_ROOT}"
+                    f"{Constants.EP_FIELD_ENHANCEMENT_SCRIPT_PATH} {source_project_path} '0' {Constants.LEGACY_JARS_ROOT}"
                 ),
                 stdout=file,
                 stderr=subprocess.STDOUT,
