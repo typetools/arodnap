@@ -190,7 +190,7 @@ class RlcRunnerTest(unittest.TestCase):
             build_args=[],
             compile_target="classes",
             patch_dir=None,
-            cf_root=Path("/Users/sanjay/projects/arodnap/checker_framework/checker-framework-3.49.0"),
+            cf_root=Path(__file__).resolve().parents[1] / "checker_framework" / "checker-framework-3.49.0",
             close_injector_jar=root / "close.jar",
             owning_field_jar=root / "owning.jar",
             rlfixer_jar=root / "rlfixer.jar",
