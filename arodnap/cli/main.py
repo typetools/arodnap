@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 from collections.abc import Sequence
 from pathlib import Path
@@ -48,7 +49,21 @@ def main(argv: Sequence[str] | None = None) -> int:
     if build_command and args.command == "apply":
         parser.error("apply does not take a build command")
     args.build_command = build_command
-    return args.handler(args)
+    try:
+        return args.handler(args)
+    except KeyboardInterrupt:
+        print("arodnap: interrupted", file=sys.stderr)
+        return 130
+    except Exception as exc:
+        # Failures are expected outcomes for unsupported projects; report them without a
+        # traceback. ARODNAP_DEBUG=1 shows the traceback.
+        if os.environ.get("ARODNAP_DEBUG") == "1":
+            raise
+        print(f"arodnap: {args.command} failed: {exc}", file=sys.stderr)
+        report = Path(args.out_dir) / ("doctor.json" if args.command == "doctor" else "report.json")
+        if report.is_file():
+            print(f"arodnap: details in {report}", file=sys.stderr)
+        return 1
 
 
 def _add_shared_arguments(parser: argparse.ArgumentParser) -> None:

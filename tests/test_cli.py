@@ -45,6 +45,25 @@ class CliTest(unittest.TestCase):
             with self.subTest(value=value), self.assertRaises(SystemExit):
                 parser.parse_args(["repair", "--stage-timeout", value, "/tmp/repo"])
 
+    def test_failures_are_reported_without_a_traceback(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            out_dir = Path(temp_dir) / "out"
+            out_dir.mkdir()
+            (out_dir / "report.json").write_text("{}")
+            with patch("arodnap.orchestrator.pipeline.run_analyze", side_effect=RuntimeError("no build file")), \
+                    patch("sys.stderr") as stderr:
+                code = main(["analyze", "--out-dir", str(out_dir), "/tmp/repo"])
+            printed = "".join(call.args[0] for call in stderr.write.call_args_list)
+        self.assertEqual(code, 1)
+        self.assertIn("arodnap: analyze failed: no build file", printed)
+        self.assertIn("report.json", printed)
+
+    def test_debug_mode_keeps_the_traceback(self) -> None:
+        with patch.dict("os.environ", {"ARODNAP_DEBUG": "1"}), \
+                patch("arodnap.orchestrator.pipeline.run_analyze", side_effect=RuntimeError("boom")):
+            with self.assertRaisesRegex(RuntimeError, "boom"):
+                main(["analyze", "/tmp/repo"])
+
     def test_apply_requires_patch_dir(self) -> None:
         parser = build_parser()
 

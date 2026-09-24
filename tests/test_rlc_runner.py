@@ -104,6 +104,30 @@ class RlcRunnerTest(unittest.TestCase):
             self.assertNotIn("-Aajava=None", command)
             self.assertFalse(any(str(item).startswith("-Aajava=") for item in command))
 
+    def test_the_builds_release_and_encoding_are_passed_to_javac(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_root = Path(temp_dir)
+            config = self._make_config(temp_root)
+            workspace_root, source_files_file, classpath_entries_file, _ = self._make_inputs(temp_root)
+            completed = CommandResult(command=(), cwd=None, returncode=0, stdout="", stderr="")
+            with patch(
+                "arodnap.analysis.rlc_runner.run_command",
+                side_effect=self._make_run_command_side_effect(completed),
+            ) as run_mock:
+                run_resource_leak_checker(
+                    config,
+                    workspace_root=workspace_root,
+                    source_files_file=source_files_file,
+                    classpath_entries_file=classpath_entries_file,
+                    inference_dir=None,
+                    diagnostics_path=temp_root / "diagnostics.txt",
+                    release=8,
+                    encoding="ISO-8859-1",
+                )
+            command = run_mock.call_args.args[0]
+            self.assertEqual(command[command.index("--release") + 1], "8")
+            self.assertEqual(command[command.index("-encoding") + 1], "ISO-8859-1")
+
     def test_missing_artifacts_fail_clearly(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_root = Path(temp_dir)

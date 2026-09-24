@@ -6,6 +6,7 @@ from .jdk import (
     Jdk,
     JdkResolutionError,
     java_executable,
+    javac_language_options,
     resolve_jdk,
 )
 
@@ -18,6 +19,7 @@ __all__ = [
     "JdkResolutionError",
     "RLFIXER_MIN_JDK_MAJOR",
     "java_executable",
+    "javac_language_options",
     "render_command_log",
     "resolve_jdk",
     "run_command",

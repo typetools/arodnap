@@ -33,6 +33,16 @@ class JdkResolutionError(RuntimeError):
     pass
 
 
+def javac_language_options(release: int | None, encoding: str | None) -> list[str]:
+    """The build's `--release` and `-encoding`, as javac options for Arodnap's own compiles."""
+    options: list[str] = []
+    if release is not None:
+        options += ["--release", str(release)]
+    if encoding:
+        options += ["-encoding", encoding]
+    return options
+
+
 def resolve_jdk(env: dict[str, str] | None = None) -> Jdk:
     """Find the JDK Arodnap should use: JAVA_HOME if set, else the `java` on PATH."""
     environ = os.environ if env is None else env

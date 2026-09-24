@@ -29,6 +29,7 @@ from arodnap.runtime import (
     CommandExecutionError,
     CommandTimeoutError,
     JdkResolutionError,
+    javac_language_options,
     render_command_log,
     resolve_jdk,
     run_command,
@@ -204,6 +205,10 @@ class CapturedBuildAdapter:
         # The project's own build just compiled successfully while being captured.
         return None
 
+    def java_language(self, project: ProjectModel) -> tuple[int | None, str | None]:
+        inputs = _inputs(project)
+        return inputs.release, inputs.encoding
+
     def write_source_files_file(self, project: ProjectModel, output_path: Path) -> Path:
         inputs = _inputs(project)
         output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -223,10 +228,7 @@ class CapturedBuildAdapter:
         command = [_real_javac(), "-d", str(classes_root), "-proc:none", "-nowarn", "-Xlint:none"]
         if inputs.classpath:
             command += ["-classpath", os.pathsep.join(str(entry) for entry in inputs.classpath)]
-        if inputs.release is not None:
-            command += ["--release", str(inputs.release)]
-        if inputs.encoding:
-            command += ["-encoding", inputs.encoding]
+        command += javac_language_options(inputs.release, inputs.encoding)
         command.append(f"@{sources_file}")
         try:
             result = run_command(command, cwd=self.repo_root, timeout_seconds=self.timeouts.analysis_seconds)

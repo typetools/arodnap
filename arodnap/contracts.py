@@ -112,6 +112,9 @@ class ReanalyzeResult:
     adapter_metadata_path: Path
     # Limitations of this analysis point, e.g. classes whole-program inference could not cover.
     inference_notes: tuple[str, ...] = ()
+    # The build's Java release level and source encoding, used for every compile Arodnap runs.
+    release: int | None = None
+    encoding: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
         payload = {field.name: _to_jsonable(getattr(self, field.name)) for field in fields(self)}
@@ -132,6 +135,8 @@ class ReanalyzeResult:
             classpath_entries_file=Path(data["classpath_entries_file"]),
             adapter_metadata_path=Path(data["adapter_metadata_path"]),
             inference_notes=tuple(data.get("inference_notes", ())),
+            release=data.get("release"),
+            encoding=data.get("encoding"),
         )
 
 

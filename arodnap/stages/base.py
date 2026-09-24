@@ -91,12 +91,19 @@ class CompileInputs:
 
     sources_file: Path
     classpath_file: Path
+    release: int | None = None
+    encoding: str | None = None
 
     def java_properties(self) -> list[str]:
-        return [
+        properties = [
             f"-Darodnap.sourcesFile={self.sources_file.resolve()}",
             f"-Darodnap.classpathFile={self.classpath_file.resolve()}",
         ]
+        if self.release is not None:
+            properties.append(f"-Darodnap.release={self.release}")
+        if self.encoding:
+            properties.append(f"-Darodnap.encoding={self.encoding}")
+        return properties
 
 
 @dataclass(frozen=True)

@@ -57,6 +57,22 @@ class WpiRunnerTest(unittest.TestCase):
             self.assertEqual((inferred / "demo" / "Demo-RLC.ajava").read_text(), "@A @B")
             self.assertIn("FIXPOINT_AFTER_ITERATIONS: 3", result.log_path.read_text())
 
+    def test_every_iteration_uses_the_builds_release_and_encoding(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            inputs = self._make_inputs(Path(temp_dir))
+            commands: list[list[str]] = []
+
+            def fake_run(command, *, cwd, **kwargs):
+                commands.append(command)
+                return CommandResult(tuple(command), Path(cwd), 0, "", "")
+
+            with patch("arodnap.analysis.wpi_runner.run_command", side_effect=fake_run):
+                run_wpi(inputs["config"], **inputs["paths"], release=8, encoding="ISO-8859-1")
+
+            for command in commands:
+                self.assertEqual(command[command.index("--release") + 1], "8")
+                self.assertEqual(command[command.index("-encoding") + 1], "ISO-8859-1")
+
     def test_compile_failure_fails_closed(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             inputs = self._make_inputs(Path(temp_dir))

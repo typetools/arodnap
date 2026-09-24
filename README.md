@@ -124,7 +124,8 @@ Arodnap runs the project's build once per analysis point and records every
 | anything else | `-- <command>` | none | recording `javac` first on `PATH` |
 
 All recorded sources are analyzed together (every module of a multi-module
-build), with the dependencies the build resolved. Files the build generates,
+build), with the dependencies the build resolved, and with the build's own
+`--release` level and `-encoding` (release levels below 8 are analyzed as 8). Files the build generates,
 such as annotation processor output, are analyzed but never patched.
 
 Not supported yet (Arodnap stops with a clear message):
@@ -133,6 +134,8 @@ Not supported yet (Arodnap stops with a clear message):
 - builds that compile Java without calling `javac` or a supported build tool
   (for example a script that uses `$JAVA_HOME/bin/javac` directly)
 - Kotlin and Android sources (Java sources in the same build are analyzed)
+- `repair` on sources that are not valid UTF-8 (for example ISO-8859-1 files with
+  accented characters); `analyze` and `infer` handle them
 
 ## Workspace And Mutation Model
 

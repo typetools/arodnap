@@ -22,7 +22,14 @@ import shutil
 import tempfile
 
 from arodnap.contracts import RunConfig
-from arodnap.runtime import CommandExecutionError, CommandTimeoutError, Jdk, render_command_log, run_command
+from arodnap.runtime import (
+    CommandExecutionError,
+    CommandTimeoutError,
+    Jdk,
+    javac_language_options,
+    render_command_log,
+    run_command,
+)
 
 from .checker_framework import (
     RESOURCE_LEAK_CHECKER,
@@ -64,6 +71,8 @@ def run_wpi(
     classpath_entries_file: Path,
     log_path: Path,
     inference_root: Path,
+    release: int | None = None,
+    encoding: str | None = None,
 ) -> WpiRunResult:
     log_path = log_path.resolve()
     inference_root = inference_root.resolve()
@@ -102,6 +111,7 @@ def run_wpi(
                 classes_dir=temp_root / f"classes{iteration}",
                 log_path=log_path,
                 iteration=iteration,
+                language_options=javac_language_options(release, encoding),
             )
             current = temp_root / f"iteration{iteration}"
             if generated_dir.is_dir():
@@ -143,6 +153,7 @@ def _run_iteration(
     classes_dir: Path,
     log_path: Path,
     iteration: int,
+    language_options: list[str] = (),
 ) -> set[str]:
     """Run one iteration; return the .ajava files the Checker Framework could not write."""
     classes_dir.mkdir()
@@ -157,6 +168,7 @@ def _run_iteration(
         raise WpiRunError(str(exc)) from exc
     if previous is not None:
         command.append(f"-Aajava={previous}")
+    command.extend(language_options)
     command.extend(["-classpath", classpath, "-d", str(classes_dir), f"@{source_files_file}"])
 
     try:

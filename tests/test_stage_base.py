@@ -5,7 +5,12 @@ from unittest.mock import patch
 
 from arodnap.patch_tool import PatchExecution, PatchTool
 from arodnap.runtime import CommandResult
-from arodnap.stages.base import BaseNormalizedPatchStageWrapper, BaseStageWrapper, normalize_unified_diff_paths
+from arodnap.stages.base import (
+    BaseNormalizedPatchStageWrapper,
+    BaseStageWrapper,
+    CompileInputs,
+    normalize_unified_diff_paths,
+)
 
 
 class StageBaseWrapperTest(unittest.TestCase):
@@ -200,6 +205,14 @@ if __name__ == "__main__":
 
 
 class NormalizeUnifiedDiffPathsTest(unittest.TestCase):
+    def test_compile_inputs_pass_the_builds_release_and_encoding_to_the_tools(self) -> None:
+        inputs = CompileInputs(sources_file=Path("/s.txt"), classpath_file=Path("/c.txt"), release=11, encoding="UTF-8")
+        self.assertEqual(
+            inputs.java_properties()[2:], ["-Darodnap.release=11", "-Darodnap.encoding=UTF-8"]
+        )
+        bare = CompileInputs(sources_file=Path("/s.txt"), classpath_file=Path("/c.txt"))
+        self.assertEqual(len(bare.java_properties()), 2)
+
     def test_header_pair_with_a_temporary_copy_resolves_to_the_workspace_file(self) -> None:
         # OwningFieldFixer diffs the workspace file against its edited temporary copy.
         with tempfile.TemporaryDirectory() as temp_dir:

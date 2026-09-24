@@ -46,6 +46,7 @@ def run_repair(config: RunConfig) -> int:
                 ),
             )
             state.current_analysis = current_analysis
+            _require_utf8_readable_sources(current_analysis)
             repair_state = _RepairExecutionState(current_analysis=current_analysis)
 
             for stage_definition in REPAIR_STAGE_REGISTRY:
@@ -108,6 +109,36 @@ def run_repair(config: RunConfig) -> int:
             raise
 
     return 0
+
+
+_UTF8_COMPATIBLE = {"utf-8", "utf8", "us-ascii", "ascii"}
+
+
+def _require_utf8_readable_sources(analysis: ReanalyzeResult) -> None:
+    """Fail before repairing when the repair tools cannot read the sources.
+
+    Analysis passes the build's encoding to javac, but the Java repair tools read and
+    write sources as UTF-8. Sources in another encoding are fine as long as they are
+    also valid UTF-8 (for example, ASCII only).
+    """
+    if not analysis.encoding or analysis.encoding.lower() in _UTF8_COMPATIBLE:
+        return
+    for line in analysis.source_files_file.read_text().splitlines():
+        source = Path(line.strip())
+        if not line.strip() or not source.is_file():
+            continue
+        try:
+            source.read_bytes().decode("utf-8")
+        except UnicodeDecodeError:
+            try:
+                shown = source.relative_to(analysis.workspace_root)
+            except ValueError:
+                shown = source
+            raise UnsupportedProjectError(
+                f"The build compiles sources as {analysis.encoding} and {shown} is not valid UTF-8. "
+                "Arodnap's repair tools read and write sources as UTF-8, so `repair` does not support "
+                "this project yet; `analyze` and `infer` do."
+            ) from None
 
 
 def run_apply(config: RunConfig) -> int:

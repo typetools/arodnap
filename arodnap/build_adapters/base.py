@@ -85,6 +85,10 @@ class BuildAdapterContract(Protocol):
     def validate_compile(self, project: ProjectModel) -> None:
         ...
 
+    def java_language(self, project: ProjectModel) -> tuple[int | None, str | None]:
+        """The build's Java release level and source encoding (None when the build sets none)."""
+        ...
+
     def write_source_files_file(self, project: ProjectModel, output_path: Path) -> Path:
         ...
 

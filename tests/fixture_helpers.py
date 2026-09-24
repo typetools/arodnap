@@ -482,6 +482,10 @@ class FixtureGradleAdapter:
     def validate_compile(self, project: GradleProject) -> None:
         _ = project
 
+    def java_language(self, project: GradleProject) -> tuple[int | None, str | None]:
+        _ = project
+        return None, None
+
     def write_source_files_file(self, project: GradleProject, output_path: Path) -> Path:
         source_files = sorted(path.resolve() for path in project.source_root.rglob("*.java") if path.is_file())
         output_path.parent.mkdir(parents=True, exist_ok=True)

@@ -46,6 +46,8 @@ def _compile_inputs(analysis: ReanalyzeResult) -> CompileInputs:
     return CompileInputs(
         sources_file=analysis.source_files_file,
         classpath_file=analysis.classpath_entries_file,
+        release=analysis.release,
+        encoding=analysis.encoding,
     )
 
 

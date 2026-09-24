@@ -140,6 +140,31 @@ class RealEndToEndTest(unittest.TestCase):
         self.assertEqual(bundle_files, [source])
         self.assertIn("try (FileInputStream in = new FileInputStream(path))", (repo_root / source).read_text())
 
+    def test_latin1_java8_project_is_analyzed_with_the_builds_encoding_and_release(self) -> None:
+        temp_root = Path(tempfile.mkdtemp(prefix="arodnap-e2e-"))
+        self.addCleanup(shutil.rmtree, temp_root, True)
+        repo_root = temp_root / "javac-latin1"
+        shutil.copytree(FIXTURES_ROOT / "javac-latin1", repo_root, ignore=shutil.ignore_patterns("out"))
+        build = ["--", "./build.sh"]
+
+        out_dir = temp_root / "infer-out"
+        self.assertEqual(main(["infer", "--out-dir", str(out_dir), str(repo_root), *build]), 0)
+        report = json.loads((out_dir / "report.json").read_text())
+        self.assertTrue(report["success"], report.get("error"))
+        [run] = report["analysis_runs"]
+        metadata = json.loads(Path(run["adapter_metadata_path"]).read_text())
+        self.assertEqual((metadata["release"], metadata["encoding"]), (8, "ISO-8859-1"))
+        self.assertGreaterEqual(run["warning_count"], 1)
+
+        # The repair tools read sources as UTF-8, so repair stops with a clear message.
+        out_dir = temp_root / "repair-out"
+        original = _snapshot(repo_root)
+        self.assertEqual(main(["repair", "--out-dir", str(out_dir), str(repo_root), *build]), 1)
+        report = json.loads((out_dir / "report.json").read_text())
+        self.assertFalse(report["success"])
+        self.assertIn("is not valid UTF-8", report["error"])
+        self.assertEqual(_snapshot(repo_root), original)
+
     def _repair_and_apply(
         self,
         fixture_name: str,

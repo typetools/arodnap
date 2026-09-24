@@ -139,6 +139,12 @@ class MergeCompileUnitsTest(unittest.TestCase):
             inputs = merge_compile_units((unit,))
         self.assertEqual(inputs.classpath, (retrieved, patched))
 
+    def test_release_levels_older_than_8_are_analyzed_as_8(self) -> None:
+        # javac on JDK 17+ accepts --release 8 and newer.
+        unit = parse_javac_invocation(["-source", "1.6", "-encoding", "Cp1252", "A.java"], cwd=Path("/ws"))
+        inputs = merge_compile_units((unit,))
+        self.assertEqual((inputs.release, inputs.encoding), (8, "Cp1252"))
+
     def test_generated_sources_are_analyzed_separately(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             workspace = Path(temp_dir).resolve()

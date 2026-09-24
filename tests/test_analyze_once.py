@@ -33,6 +33,7 @@ class AnalyzeOnceTest(unittest.TestCase):
                 classpath_entries_file,
                 inference_dir,
                 diagnostics_path,
+                **_kwargs,
             ):
                 self.assertIsNone(inference_dir)
                 self.assertTrue(source_files_file.is_file())

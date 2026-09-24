@@ -42,6 +42,7 @@ def analyze_once(
         )
         project = adapter.inspect()
         adapter.validate_compile(project)
+        release, encoding = adapter.java_language(project)
         source_files_file = adapter.write_source_files_file(project, analysis_paths.source_files_file)
         app_classes_file = adapter.write_app_classes_file(project, analysis_paths.app_classes_file)
         classpath_entries_file = adapter.write_classpath_entries_file(
@@ -64,6 +65,8 @@ def analyze_once(
             classpath_entries_file=classpath_entries_file,
             inference_dir=None,
             diagnostics_path=analysis_paths.diagnostics_path,
+            release=release,
+            encoding=encoding,
         )
     except (
         AdapterExecutionError,
@@ -84,6 +87,8 @@ def analyze_once(
         app_classes_file=app_classes_file,
         classpath_entries_file=classpath_entries_file,
         adapter_metadata_path=adapter_metadata_path,
+        release=release,
+        encoding=encoding,
     )
 
 

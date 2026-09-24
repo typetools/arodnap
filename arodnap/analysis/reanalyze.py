@@ -42,6 +42,7 @@ def reanalyze(
         )
         project = adapter.inspect()
         adapter.validate_compile(project)
+        release, encoding = adapter.java_language(project)
         source_files_file = adapter.write_source_files_file(project, analysis_paths.source_files_file)
         app_classes_file = adapter.write_app_classes_file(project, analysis_paths.app_classes_file)
         classpath_entries_file = adapter.write_classpath_entries_file(
@@ -62,6 +63,8 @@ def reanalyze(
             classpath_entries_file=classpath_entries_file,
             log_path=analysis_paths.wpi_log_path,
             inference_root=analysis_paths.inference_dir,
+            release=release,
+            encoding=encoding,
         )
         rlc_result = run_resource_leak_checker(
             config,
@@ -70,6 +73,8 @@ def reanalyze(
             classpath_entries_file=classpath_entries_file,
             inference_dir=wpi_result.inference_dir,
             diagnostics_path=analysis_paths.diagnostics_path,
+            release=release,
+            encoding=encoding,
         )
     except (
         AdapterExecutionError,
@@ -91,6 +96,8 @@ def reanalyze(
         app_classes_file=app_classes_file,
         classpath_entries_file=classpath_entries_file,
         adapter_metadata_path=adapter_metadata_path,
+        release=release,
+        encoding=encoding,
         inference_notes=tuple(
             f"Whole-program inference could not cover {Path(ajava).name.split('-')[0]}: the Checker "
             f"Framework failed to write {ajava} (see {wpi_result.log_path})."

@@ -26,6 +26,9 @@ public class CompilerUtils {
 
     static final String SOURCES_FILE_PROPERTY = "arodnap.sourcesFile";
     static final String CLASSPATH_FILE_PROPERTY = "arodnap.classpathFile";
+    // The build's --release level and source encoding, when Arodnap passes them.
+    static final String RELEASE_PROPERTY = "arodnap.release";
+    static final String ENCODING_PROPERTY = "arodnap.encoding";
 
     public static List<String> compile(String projectRoot) throws IOException, InterruptedException {
         Path workDir = Files.createTempDirectory("arodnap-compile-");
@@ -36,8 +39,11 @@ public class CompilerUtils {
                     .collect(Collectors.toList()));
             Path compiledOut = Files.createDirectories(workDir.resolve("classes"));
 
-            ProcessBuilder pb = new ProcessBuilder(javacExecutable(), "-g", "-d", compiledOut.toString(),
-                    "-cp", classpath(projectRoot), "@" + srcList);
+            List<String> command = new ArrayList<>(List.of(javacExecutable(), "-g", "-d", compiledOut.toString(),
+                    "-cp", classpath(projectRoot)));
+            command.addAll(languageOptions());
+            command.add("@" + srcList);
+            ProcessBuilder pb = new ProcessBuilder(command);
             pb.redirectErrorStream(true);
 
             Process proc = pb.start();
@@ -53,6 +59,21 @@ public class CompilerUtils {
         } finally {
             deleteRecursively(workDir);
         }
+    }
+
+    static List<String> languageOptions() {
+        List<String> options = new ArrayList<>();
+        String release = System.getProperty(RELEASE_PROPERTY);
+        if (release != null && !release.isBlank()) {
+            options.add("--release");
+            options.add(release);
+        }
+        String encoding = System.getProperty(ENCODING_PROPERTY);
+        if (encoding != null && !encoding.isBlank()) {
+            options.add("-encoding");
+            options.add(encoding);
+        }
+        return options;
     }
 
     private static List<String> sourceFiles(String projectRoot) throws IOException {

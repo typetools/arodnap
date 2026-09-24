@@ -7,7 +7,13 @@ import re
 import tempfile
 
 from arodnap.contracts import RunConfig
-from arodnap.runtime import CommandExecutionError, CommandTimeoutError, render_command_log, run_command
+from arodnap.runtime import (
+    CommandExecutionError,
+    CommandTimeoutError,
+    javac_language_options,
+    render_command_log,
+    run_command,
+)
 
 from .checker_framework import (
     RESOURCE_LEAK_CHECKER,
@@ -50,6 +56,8 @@ def run_resource_leak_checker(
     classpath_entries_file: Path,
     inference_dir: Path | None,
     diagnostics_path: Path,
+    release: int | None = None,
+    encoding: str | None = None,
 ) -> RlcRunResult:
     workspace_root = workspace_root.resolve()
     source_files_file = _require_file(source_files_file, "source files file")
@@ -78,6 +86,7 @@ def run_resource_leak_checker(
         ]
         if inference_dir is not None:
             command.append(f"-Aajava={inference_dir}")
+        command.extend(javac_language_options(release, encoding))
         command.extend(
             [
                 "-classpath",

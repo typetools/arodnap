@@ -43,6 +43,7 @@ class ReanalyzeTest(unittest.TestCase):
                 classpath_entries_file,
                 inference_dir,
                 diagnostics_path,
+                **_kwargs,
             ):
                 self.assertTrue(source_files_file.is_file())
                 self.assertTrue(classpath_entries_file.is_file())

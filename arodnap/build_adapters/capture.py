@@ -178,7 +178,8 @@ def merge_compile_units(
         sources=sources,
         generated_sources=generated,
         classpath=classpath,
-        release=max(releases) if releases else None,
+        # A JDK 17+ javac accepts --release 8 and newer; older levels are analyzed as 8.
+        release=max(max(releases), _OLDEST_RELEASE) if releases else None,
         encoding=encodings[0] if encodings else None,
         analysis_root=analysis_root(all_sources),
     )
@@ -249,6 +250,9 @@ def _java_level(value: str | None) -> int | None:
     if text.startswith("1."):
         text = text[2:]
     return int(text) if text.isdigit() else None
+
+
+_OLDEST_RELEASE = 8
 
 
 def _unique(paths) -> tuple[Path, ...]:
