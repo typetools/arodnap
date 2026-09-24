@@ -70,7 +70,11 @@ def run_doctor(config: RunConfig) -> int:
 
     repo_path_check = _check_repo_path(config.repo_root)
     checks.append(repo_path_check)
-    if repo_path_check.status == "ok":
+    unsupported = _unsupported_project_check(config) if repo_path_check.status == "ok" else None
+    if unsupported is not None:
+        # No build Arodnap can capture: say so without copying the repository first.
+        checks.append(unsupported)
+    elif repo_path_check.status == "ok":
         try:
             with copied_workspace(config.repo_root, keep_workspace=config.keep_workspace) as workspace:
                 checks.extend(
@@ -263,6 +267,26 @@ def _check_repo_path(repo_root: Path) -> DoctorCheck:
         message=f"Repository path exists: {repo_root}",
         details={"repo_root": repo_root},
     )
+
+
+def _unsupported_project_check(config: RunConfig) -> DoctorCheck | None:
+    """Adapter selection on the original repository; it only looks at which build files exist."""
+    try:
+        select_build_adapter(
+            config.repo_root,
+            compile_target=config.compile_target,
+            build_args=config.build_args,
+            build_command=config.build_command,
+            timeouts=config.timeouts,
+        )
+    except UnsupportedProjectError as exc:
+        return DoctorCheck(
+            name="adapter_selection",
+            status="error",
+            message=str(exc),
+            details={"repo_root": config.repo_root},
+        )
+    return None
 
 
 def _run_repo_checks(

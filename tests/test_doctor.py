@@ -102,6 +102,24 @@ class DoctorCommandTest(unittest.TestCase):
             self.assertNotIn("compile_target", checks)
             self.assertIn("[ERROR] repo_support", stdout.getvalue())
 
+    def test_repo_without_a_build_is_reported_without_copying_it(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            repo_root = Path(temp_dir) / "repo"
+            repo_root.mkdir()
+            (repo_root / "Main.java").write_text("class Main {}\n")
+            out_dir = Path(temp_dir) / "out"
+            config = self._make_config(repo_root=repo_root, out_dir=out_dir)
+
+            with patch("arodnap.doctor._run_environment_checks", return_value=[self._ok_env_check()]), \
+                    patch("arodnap.doctor.copied_workspace") as copy_mock, redirect_stdout(io.StringIO()):
+                exit_code = run_doctor(config)
+
+            self.assertEqual(exit_code, 1)
+            copy_mock.assert_not_called()
+            checks = {entry["name"]: entry for entry in json.loads((out_dir / "doctor.json").read_text())["checks"]}
+            self.assertEqual(checks["adapter_selection"]["status"], "error")
+            self.assertIn("No Gradle, Maven or Ant build file", checks["adapter_selection"]["message"])
+
     def test_missing_repo_path_reports_error_and_stops_before_adapter_selection(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
