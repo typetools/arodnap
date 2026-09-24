@@ -17,6 +17,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import os
 from pathlib import Path
+import re
 import shutil
 import tempfile
 
@@ -35,6 +36,11 @@ from .checker_framework import (
 # added there for delombok'd sources, which Arodnap does not produce.
 WPI_ITERATION_FLAGS = ("-Ainfer=ajava", "-Awarns")
 MAX_WPI_ITERATIONS = 20
+# The Checker Framework cannot write an .ajava file for a source whose comments contain a
+# Unicode-escaped lone surrogate (e.g. "\uD800" in Javadoc): it escapes them only in literals.
+# That class then gets no inferred annotations; the rest of the program is unaffected.
+_AJAVA_WRITE_FAILURE = re.compile(r"^error: Error while writing ajava file (\S+)", re.MULTILINE)
+_COMPILER_ERROR = re.compile(r"(^|: )error: ", re.MULTILINE)
 
 
 @dataclass(frozen=True)
@@ -42,6 +48,8 @@ class WpiRunResult:
     log_path: Path
     inference_dir: Path
     iterations: int
+    # .ajava files the Checker Framework could not write (their classes lack inferred annotations)
+    incomplete: tuple[str, ...] = ()
 
 
 class WpiRunError(RuntimeError):
@@ -80,10 +88,11 @@ def run_wpi(
         javac_cwd.mkdir()
         generated_dir = javac_cwd / "build" / "whole-program-inference"
         previous: Path | None = None
+        incomplete: set[str] = set()
 
         for iteration in range(1, MAX_WPI_ITERATIONS + 1):
             shutil.rmtree(generated_dir, ignore_errors=True)
-            _run_iteration(
+            incomplete |= _run_iteration(
                 config,
                 jdk=jdk,
                 classpath=classpath,
@@ -109,11 +118,18 @@ def run_wpi(
 
         with log_path.open("a", encoding="utf-8") as handle:
             handle.write(f"\nFIXPOINT_AFTER_ITERATIONS: {iteration}\n")
+            for ajava in sorted(incomplete):
+                handle.write(f"INCOMPLETE_INFERENCE: {ajava}\n")
         if inference_root.exists():
             shutil.rmtree(inference_root)
         shutil.copytree(current, inference_root)
 
-    return WpiRunResult(log_path=log_path, inference_dir=inference_root, iterations=iteration)
+    return WpiRunResult(
+        log_path=log_path,
+        inference_dir=inference_root,
+        iterations=iteration,
+        incomplete=tuple(sorted(incomplete)),
+    )
 
 
 def _run_iteration(
@@ -127,7 +143,8 @@ def _run_iteration(
     classes_dir: Path,
     log_path: Path,
     iteration: int,
-) -> None:
+) -> set[str]:
+    """Run one iteration; return the .ajava files the Checker Framework could not write."""
     classes_dir.mkdir()
     try:
         command = [
@@ -149,8 +166,15 @@ def _run_iteration(
     with log_path.open("a", encoding="utf-8") as handle:
         handle.write(f"\n== WPI iteration {iteration} ==\n")
         handle.write(render_command_log(result, timeout_seconds=config.timeouts.analysis_seconds))
-    if result.returncode != 0:
+    output = result.stdout + result.stderr
+    ajava_failures = set(_AJAVA_WRITE_FAILURE.findall(output))
+    other_errors = [
+        line for line in output.splitlines()
+        if _COMPILER_ERROR.search(line) and not _AJAVA_WRITE_FAILURE.match(line)
+    ]
+    if result.returncode != 0 and (other_errors or not ajava_failures):
         raise WpiRunError(f"WPI iteration {iteration} failed to compile. See log: {log_path}")
+    return ajava_failures
 
 
 def _same_tree(left: Path, right: Path) -> bool:

@@ -101,15 +101,20 @@ public class PromptParser {
 
         // --- finalizer + allocation (+ resource type) from $$ … $$ ---
         Matcher allocExprMatcher = Pattern.compile(
-                "\\$\\$\\s*\\d+\\s*\\$\\$\\s*method\\s+(\\S+)\\s*\\$\\$\\s*([^$]+?)\\s*\\$\\$(?:\\s*([a-zA-Z0-9_.$]+?)\\s*\\$\\$)?")
+                "\\$\\$\\s*\\d+\\s*\\$\\$\\s*method\\s+(\\S+)\\s*\\$\\$\\s*([^$]+?)\\s*\\$\\$(?:\\s*(.+?)\\s*\\$\\$)?")
                 .matcher(cf);
         if (allocExprMatcher.find()) {
             info.finalizerMethod = allocExprMatcher.group(1).trim();
             info.allocationExprText = allocExprMatcher.group(2).trim();
             // Checker Framework 4.x no longer prints "The type of object is: ..." for the
             // Resource Leak Checker; the same type is the next -Adetailedmsgtext argument.
+            // Like the message-text form, keep only the leading type name: generic arguments
+            // such as "IOStream<capture#664 of ?>" cannot be written in a declaration.
             if (info.resourceType == null && allocExprMatcher.group(3) != null) {
-                info.resourceType = trimDot(allocExprMatcher.group(3));
+                Matcher leadingType = Pattern.compile("^[a-zA-Z0-9_.$]+").matcher(allocExprMatcher.group(3));
+                if (leadingType.find()) {
+                    info.resourceType = trimDot(leadingType.group());
+                }
             }
         }
 

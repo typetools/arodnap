@@ -243,6 +243,7 @@ def _run_timed_analysis(
             "inference_dir": str(result.inference_dir),
             "wpi_log_path": str(result.wpi_log_path),
             "adapter_metadata_path": str(result.adapter_metadata_path),
+            **({"inference_notes": list(result.inference_notes)} if result.inference_notes else {}),
         }
     )
     return result

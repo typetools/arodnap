@@ -108,9 +108,13 @@ class ReanalyzeResult:
     app_classes_file: Path
     classpath_entries_file: Path
     adapter_metadata_path: Path
+    # Limitations of this analysis point, e.g. classes whole-program inference could not cover.
+    inference_notes: tuple[str, ...] = ()
 
     def to_dict(self) -> dict[str, Any]:
-        return {field.name: _to_jsonable(getattr(self, field.name)) for field in fields(self)}
+        payload = {field.name: _to_jsonable(getattr(self, field.name)) for field in fields(self)}
+        payload["inference_notes"] = list(self.inference_notes)
+        return payload
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "ReanalyzeResult":
@@ -125,6 +129,7 @@ class ReanalyzeResult:
             app_classes_file=Path(data["app_classes_file"]),
             classpath_entries_file=Path(data["classpath_entries_file"]),
             adapter_metadata_path=Path(data["adapter_metadata_path"]),
+            inference_notes=tuple(data.get("inference_notes", ())),
         )
 
 

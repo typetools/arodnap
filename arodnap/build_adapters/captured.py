@@ -5,8 +5,8 @@ through the build tool's official extension point, then hands the recorded javac
 to `capture.py`:
 
 - Gradle: an init script records the inputs of every JavaCompile task.
-- Maven: the compiler plugin forks to a recording javac shim
-  (`-Dmaven.compiler.fork=true -Dmaven.compiler.executable=<shim>`).
+- Maven: a core extension records every `maven-compiler-plugin:compile` execution
+  (`-Dmaven.ext.class.path=<jar>`), whether or not the compiler forks.
 - Ant: a recording compiler adapter (`-lib <jar> -Dbuild.compiler=<adapter>`).
 - Any other command: the recording javac shim comes first on PATH.
 
@@ -42,9 +42,9 @@ from .capture import (
 )
 
 ARODNAP_DIR = ".arodnap"
-_ANT_CAPTURE_JAR = (
-    Path(__file__).resolve().parents[2] / "restructure_plugins" / "prebuilt_plugin_jars" / "arodnap-ant-capture.jar"
-)
+_PREBUILT_JARS = Path(__file__).resolve().parents[2] / "restructure_plugins" / "prebuilt_plugin_jars"
+_ANT_CAPTURE_JAR = _PREBUILT_JARS / "arodnap-ant-capture.jar"
+_MAVEN_CAPTURE_JAR = _PREBUILT_JARS / "arodnap-maven-capture.jar"
 _ANT_ADAPTER_CLASS = "org.arodnap.capture.RecordingJavacAdapter"
 _GRADLE_FLAGS = ("--no-daemon", "--console=plain", "--no-build-cache", "--no-configuration-cache")
 
@@ -351,7 +351,11 @@ class MavenCaptureAdapter(CapturedBuildAdapter):
     build_files = ("pom.xml",)
 
     def capture_command(self, *, capture_dir: Path, shim: Path) -> tuple[str, ...]:
-        hook = ("-Dmaven.compiler.fork=true", f"-Dmaven.compiler.executable={shim}")
+        # A fork/executable override is ignored when the POM configures <fork> itself (the
+        # Apache parent POM does), so record through a core extension instead.
+        if not _MAVEN_CAPTURE_JAR.is_file():
+            raise MissingBuildToolError(f"Arodnap's Maven capture jar is missing: {_MAVEN_CAPTURE_JAR}")
+        hook = (f"-Dmaven.ext.class.path={_MAVEN_CAPTURE_JAR}",)
         if self.build_command:
             return (*self.build_command, *hook)
         tool = self._tool("mvnw", "mvn")

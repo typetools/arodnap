@@ -68,6 +68,38 @@ class WpiRunnerTest(unittest.TestCase):
 
             self.assertIn("cannot find symbol", inputs["paths"]["log_path"].read_text())
 
+    def test_ajava_files_the_checker_framework_cannot_write_are_reported_not_fatal(self) -> None:
+        # Upstream bug: a lone surrogate escape in a comment breaks the .ajava writer.
+        with tempfile.TemporaryDirectory() as temp_dir:
+            inputs = self._make_inputs(Path(temp_dir))
+            failure = "error: Error while writing ajava file build/whole-program-inference/demo/Reader-RLC.ajava\n"
+
+            def fake_run(command, *, cwd, **kwargs):
+                generated = Path(cwd) / "build" / "whole-program-inference" / "demo"
+                generated.mkdir(parents=True)
+                (generated / "Other-RLC.ajava").write_text("@A")
+                return CommandResult(tuple(command), Path(cwd), 1, "", failure + "  Exception: MalformedInputException\n1 error\n")
+
+            with patch("arodnap.analysis.wpi_runner.run_command", side_effect=fake_run):
+                result = run_wpi(inputs["config"], **inputs["paths"])
+
+            self.assertEqual(result.incomplete, ("build/whole-program-inference/demo/Reader-RLC.ajava",))
+            self.assertTrue((inputs["paths"]["inference_root"] / "demo" / "Other-RLC.ajava").is_file())
+            self.assertIn("INCOMPLETE_INFERENCE: build/whole-program-inference/demo/Reader-RLC.ajava",
+                          result.log_path.read_text())
+
+    def test_real_compile_errors_still_fail_alongside_ajava_failures(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            inputs = self._make_inputs(Path(temp_dir))
+            output = (
+                "/ws/src/A.java:3: error: cannot find symbol\n"
+                "error: Error while writing ajava file build/whole-program-inference/A-RLC.ajava\n"
+            )
+            failed = CommandResult(("java",), None, 1, "", output)
+            with patch("arodnap.analysis.wpi_runner.run_command", return_value=failed):
+                with self.assertRaisesRegex(WpiRunError, "failed to compile"):
+                    run_wpi(inputs["config"], **inputs["paths"])
+
     def test_no_fixpoint_fails_closed(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             inputs = self._make_inputs(Path(temp_dir))

@@ -71,10 +71,9 @@ class CaptureCommandTest(unittest.TestCase):
             maven = MavenCaptureAdapter(repo, build_command=["mvn", "compile"]).capture_command(
                 capture_dir=capture_dir, shim=shim
             )
-            self.assertEqual(
-                maven,
-                ("mvn", "compile", "-Dmaven.compiler.fork=true", f"-Dmaven.compiler.executable={shim}"),
-            )
+            self.assertEqual(maven[:2], ("mvn", "compile"))
+            self.assertTrue(maven[2].startswith("-Dmaven.ext.class.path="))
+            self.assertTrue(maven[2].endswith("arodnap-maven-capture.jar"))
 
             ant = AntCaptureAdapter(repo, build_command=["ant", "jar"]).capture_command(
                 capture_dir=capture_dir, shim=shim

@@ -90,4 +90,9 @@ def reanalyze(
         app_classes_file=app_classes_file,
         classpath_entries_file=classpath_entries_file,
         adapter_metadata_path=adapter_metadata_path,
+        inference_notes=tuple(
+            f"Whole-program inference could not cover {Path(ajava).name.split('-')[0]}: the Checker "
+            f"Framework failed to write {ajava} (see {wpi_result.log_path})."
+            for ajava in wpi_result.incomplete
+        ),
     )

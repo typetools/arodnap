@@ -41,6 +41,13 @@ class PromptParserWarningFormatTest {
     }
 
     @Test
+    void genericResourceTypesKeepOnlyTheirTypeName() {
+        // Seen on Apache Commons CSV: the type field carries capture variables.
+        String cf = CF_4_2.replace("java.io.FileInputStream", "org.apache.commons.io.function.IOStream<capture#664 of ?>");
+        assertEquals("org.apache.commons.io.function.IOStream", parseOne(cf).resourceType);
+    }
+
+    @Test
     void nestedResourceTypesKeepTheirBinaryName() {
         String cf = CF_4_2.replace("java.io.FileInputStream", "demo.Outer$Handle");
         assertEquals("demo.Outer$Handle", parseOne(cf).resourceType);
