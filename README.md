@@ -252,6 +252,6 @@ Contributor-facing architecture and test guidance lives in:
 - [`docs/testing.md`](docs/testing.md)
 - [`docs/v1_1_release_notes_draft.md`](docs/v1_1_release_notes_draft.md)
 
-The legacy normalized-layout benchmark path is still preserved internally for
-regression coverage, but it is not the preferred public usage story and should
-not drive new architecture.
+The paper's original evaluation scripts (normalized `src/`, `lib/`, `info/`
+layout, Java 11) are kept for reference in [`legacy/`](legacy/README.md). They
+are not maintained and are not used by `arodnap`.

@@ -16,8 +16,8 @@ These source projects are part of the current public Arodnap pipeline:
 | `RLPatcher/` | `prebuilt_plugin_jars/RLPatcher-1.0-SNAPSHOT.jar` | RL patch materialization stage | shipping |
 
 The shipping repair pipeline also uses RLFixer, but RLFixer does not live under
-`restructure_plugins/`. Its current sources live under `rlfixer/wala/`, and the
-pipeline invokes it through `RLFixerRunner.py`.
+`restructure_plugins/`. Its sources and Maven build live under `rlfixer/wala/`,
+and the `rlfixer` stage (`arodnap/stages/rlfixer.py`) runs its jar directly.
 
 ## Internal Or Experimental Modules
 

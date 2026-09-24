@@ -18,7 +18,6 @@ from arodnap.stages.base import write_stage_result
 
 FIXTURES_ROOT = Path(__file__).resolve().parent / "fixtures"
 GRADLE_BASELINE_FIXTURE = FIXTURES_ROOT / "gradle-pipeline-baseline"
-LEGACY_BASELINE_FIXTURE = FIXTURES_ROOT / "legacy-pipeline-baseline"
 
 _WRAPPER_PATH = "src/main/java/com/arodnap/fixture/WrapperMissingClose.java"
 _OWNING_PATH = "src/main/java/com/arodnap/fixture/OwningFieldReassignment.java"
@@ -549,7 +548,6 @@ __all__ = [
     "FixtureGradleAdapter",
     "FixtureRepairHarness",
     "GRADLE_BASELINE_FIXTURE",
-    "LEGACY_BASELINE_FIXTURE",
     "OWNING_FIELD_SCENARIO",
     "copy_fixture",
     "snapshot_files",

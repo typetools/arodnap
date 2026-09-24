@@ -16,7 +16,8 @@ Current fixture usage:
 - `maven-dependency-leak/`: Maven with a Maven Central dependency
 - `ant-vendored-jar/`: Ant compiling against a jar checked into `lib/`
 - `javac-script/`: no build tool; captured with `-- ./build.sh`
-- the legacy normalized fixture remains internal regression coverage only
+- `javac-latin1/`: ISO-8859-1 sources compiled for Java 8; `infer` must use the
+  build's encoding and release, and `repair` must stop with a clear message
 
 Keep fixtures intentionally small. A single high-signal fixture is preferred to
 many partially maintained ones.
@@ -103,6 +104,5 @@ When adding tests for post-v1.1 work:
 - start from the smallest fixture or helper that exercises the real contract
 - prefer adapter-driven and stage-driven assertions over path-assumption tests
 - keep the original-repo non-mutation property explicit
-- do not turn the internal legacy normalized path into the preferred public
-  story
+- do not build on the paper's scripts in `legacy/`
 - only add golden-style coverage after unstable fields are normalized first

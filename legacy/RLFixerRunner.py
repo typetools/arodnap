@@ -72,7 +72,7 @@ CHECKERFRAMEWORK = "checkerframework"
 HERE = os.path.dirname(os.path.abspath(__file__))
 RLFIXER_ROOT = os.path.abspath(os.path.join(HERE, "rlfixer"))
 
-COMPILED_FOLDER = f"{RLFIXER_ROOT}/wala/classes/"
+COMPILED_FOLDER = f"{RLFIXER_ROOT}/classes/"
 DRIVER_CLASS = "main.Main"
 WALA_CORE_JAR = f"{RLFIXER_ROOT}/lib/com.ibm.wala.core-1.5.7.jar"
 WALA_SHRIKE_JAR = f"{RLFIXER_ROOT}/lib/com.ibm.wala.shrike-1.5.7.jar"

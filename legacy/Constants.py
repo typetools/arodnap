@@ -2,6 +2,8 @@
 import os
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+# The repository root: the legacy scripts live in legacy/, the tools they run do not.
+REPO_ROOT = os.path.dirname(HERE)
 
 # Paths
 SOURCE_PROJECT_FOLDER = "null"
@@ -10,11 +12,11 @@ RLFIXER_RESULTS_FOLDER = os.path.abspath(os.path.join("tool_results", "rlfixer_r
 PATCH_AND_LOGS_FOLDER = os.path.abspath(os.path.join("tool_results", "inference_and_patches"))
 COMPILED_CLASSES_FOLDER = "cf_classes"
 SRC_FILES = "cf_srcs.txt"
-JARS_ROOT = os.path.abspath(os.path.join(HERE, "restructure_plugins", "prebuilt_plugin_jars"))
+JARS_ROOT = os.path.abspath(os.path.join(REPO_ROOT, "restructure_plugins", "prebuilt_plugin_jars"))
 OWNING_FIELD_JAR = os.path.join(JARS_ROOT, "OwningFieldFixer-1.0-SNAPSHOT.jar")
 CLOSE_INJECTOR_JAR = os.path.join(JARS_ROOT, "AutoCloseInjector-1.0-SNAPSHOT.jar")
 RLPATCHER_JAR = os.path.join(JARS_ROOT, "RLPatcher-1.0-SNAPSHOT.jar")
-STUBS_FOLDER = os.path.abspath(os.path.join(HERE, "checker_framework", "stubs"))
+STUBS_FOLDER = os.path.abspath(os.path.join(REPO_ROOT, "checker_framework", "stubs"))
 
 # `javac` flags
 JAVAC_WITH_FLAGS = (
@@ -30,7 +32,7 @@ JAVAC_WITH_FLAGS = (
     "-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED"
 )
 # Checker Framework command
-CF_ROOT = os.path.abspath(os.path.join(HERE, "checker_framework", "checker-framework-3.49.0"))
+CF_ROOT = os.path.abspath(os.path.join(REPO_ROOT, "checker_framework", "checker-framework-3.49.0"))
 CF_COMMAND = "-processor org.checkerframework.checker.resourceleak.ResourceLeakChecker -Adetailedmsgtext"
 CF_DIST_JAR_ARG = f"-processorpath {CF_ROOT}/checker/dist/checker.jar"
 CHECKER_QUAL_JAR = f"{CF_ROOT}/checker/dist/checker-qual.jar"

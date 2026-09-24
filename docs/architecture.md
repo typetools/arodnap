@@ -301,9 +301,9 @@ Additive changes (new optional fields) do not require a gate update.
 
 ## Legacy Boundary
 
-The repository still keeps a legacy normalized regression path internally for
-coverage. That path is not the preferred public usage story and should not be
-used as the architecture source of truth for future work.
+The paper's original normalized-layout pipeline lives in `legacy/` for
+reference. Nothing in `arodnap/` uses it, and it should not be used as the
+architecture source of truth for future work.
 
 When extending Arodnap after v1.1, prefer:
 

@@ -16,7 +16,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[2]
 FIXTURES_ROOT = REPO_ROOT / "tests" / "fixtures"
 DEFAULT_SOURCE = FIXTURES_ROOT / "gradle-pipeline-baseline"
-DEFAULT_TARGET = FIXTURES_ROOT / "legacy-pipeline-baseline"
+DEFAULT_TARGET = REPO_ROOT / "legacy" / "fixtures" / "legacy-pipeline-baseline"
 CHECKER_QUAL = (
     REPO_ROOT
     / "checker_framework"

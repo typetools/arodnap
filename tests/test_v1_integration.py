@@ -11,14 +11,10 @@ from tests.fixture_helpers import (
     BASELINE_SCENARIO,
     CLOSE_INJECTOR_SCENARIO,
     FixtureRepairHarness,
-    GRADLE_BASELINE_FIXTURE,
-    LEGACY_BASELINE_FIXTURE,
     OWNING_FIELD_SCENARIO,
     copy_fixture,
-    snapshot_files,
     workspace_text_snapshot,
 )
-from tests.fixtures.sync_legacy_fixture import sync_fixture
 
 
 class V1IntegrationTest(unittest.TestCase):
@@ -45,20 +41,6 @@ class V1IntegrationTest(unittest.TestCase):
             expected_final_warning_count=1,
             changed_stage="owning_field",
         )
-
-    def test_internal_legacy_normalized_fixture_stays_in_sync(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
-            temp_root = Path(temp_dir)
-            generated = temp_root / "legacy-pipeline-baseline"
-            sync_fixture(GRADLE_BASELINE_FIXTURE, generated)
-            excluded = {"README.md", ".gitignore", "jarfile/.gitkeep", "lib/.gitkeep"}
-
-            expected = snapshot_files(
-                LEGACY_BASELINE_FIXTURE,
-                exclude=excluded,
-            )
-            observed = snapshot_files(generated, exclude=excluded)
-            self.assertEqual(observed, expected)
 
     def _assert_repair_and_apply_flow(
         self,

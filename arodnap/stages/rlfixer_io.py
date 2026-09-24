@@ -1,6 +1,6 @@
 """Readers and writers for RLFixer's input and output formats.
 
-Ported from the legacy RLFixerRunner.py / RLPatcherRunner.py scripts. The formats are
+Ported from the paper's legacy/RLFixerRunner.py and legacy/RLPatcherRunner.py. The formats are
 unchanged; file paths are now expressed relative to the adapter-discovered source root
 instead of being derived from a `/src/` path convention.
 """
