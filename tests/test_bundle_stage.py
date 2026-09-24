@@ -1,6 +1,5 @@
 import hashlib
 import json
-import shutil
 import tempfile
 import unittest
 from pathlib import Path
@@ -9,7 +8,6 @@ from arodnap.stages.base import StageExecutionError
 from arodnap.stages.bundle import run_bundle_stage
 
 
-@unittest.skipUnless(shutil.which("gpatch") or shutil.which("patch"), "a patch binary is required")
 class BundleStageTest(unittest.TestCase):
     def test_no_changes_emits_empty_manifest(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:

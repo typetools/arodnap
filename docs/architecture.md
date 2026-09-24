@@ -294,7 +294,7 @@ Each check object minimum keys:
 | `details` | object \| null | optional structured detail |
 
 Stable `name` values: `python_runtime`, `java_runtime`,
-`patch_binary`, `checker_framework_path`, `checker_framework_tools`,
+`checker_framework_path`, `checker_framework_tools`,
 `plugin_jars`, `repo_path`, `adapter_selection`, `repo_support`,
 `source_root`, `compile_target`.
 

@@ -96,9 +96,9 @@ class ResultsTest(unittest.TestCase):
                 with patch(
                     "arodnap.orchestrator.results.discover_patch_tool",
                     return_value=PatchTool(
-                        binary="/opt/homebrew/bin/gpatch",
-                        flavor="gnu",
-                        version="GNU patch 2.7.6",
+                        binary="arodnap built-in",
+                        flavor="builtin",
+                        version="arodnap 1.1.0",
                     ),
                 ):
                     write_run_manifest(

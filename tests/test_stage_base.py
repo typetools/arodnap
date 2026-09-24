@@ -174,10 +174,10 @@ class StageBaseWrapperTest(unittest.TestCase):
                 with patch(
                     "arodnap.stages.base.apply_normalized_patch",
                     return_value=PatchExecution(
-                        tool=PatchTool(binary="/usr/local/bin/gpatch", flavor="gnu", version="GNU patch 2.7.6"),
-                        command=["/usr/local/bin/gpatch", "-p", "0", "-u"],
+                        tool=PatchTool(binary="arodnap built-in", flavor="builtin", version="arodnap 1.1.0"),
+                        command=["arodnap-patch", "-p0", "demo.patch"],
                         completed=CommandResult(
-                            command=("/usr/local/bin/gpatch", "-p", "0", "-u"),
+                            command=("arodnap-patch", "-p0", "demo.patch"),
                             cwd=workspace_root.resolve(),
                             returncode=0,
                             stdout="applied\n",

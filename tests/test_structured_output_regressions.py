@@ -154,9 +154,9 @@ class StructuredOutputRegressionTest(unittest.TestCase):
                     "build_tool_source": None,
                     "java_version": "openjdk version \"21.0.2\"",
                     "patch_tool": {
-                        "binary": "/opt/homebrew/bin/gpatch",
-                        "flavor": "gnu",
-                        "version": "GNU patch 2.7.6",
+                        "binary": "arodnap built-in",
+                        "flavor": "builtin",
+                        "version": "arodnap 1.1.0",
                     },
                     "started_at": "<timestamp>",
                     "completed_at": "<timestamp>",
@@ -410,9 +410,9 @@ class StructuredOutputRegressionTest(unittest.TestCase):
                     "build_tool_source": None,
                     "java_version": "openjdk version \"21.0.2\"",
                     "patch_tool": {
-                        "binary": "/opt/homebrew/bin/gpatch",
-                        "flavor": "gnu",
-                        "version": "GNU patch 2.7.6",
+                        "binary": "arodnap built-in",
+                        "flavor": "builtin",
+                        "version": "arodnap 1.1.0",
                     },
                     "started_at": "<timestamp>",
                     "completed_at": "<timestamp>",
@@ -624,9 +624,9 @@ class StructuredOutputRegressionTest(unittest.TestCase):
                 with patch(
                     "arodnap.orchestrator.results.discover_patch_tool",
                     return_value=PatchTool(
-                        binary="/opt/homebrew/bin/gpatch",
-                        flavor="gnu",
-                        version="GNU patch 2.7.6",
+                        binary="arodnap built-in",
+                        flavor="builtin",
+                        version="arodnap 1.1.0",
                     ),
                 ):
                     self.assertEqual(

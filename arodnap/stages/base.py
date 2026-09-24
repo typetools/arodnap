@@ -382,11 +382,12 @@ class BaseNormalizedPatchStageWrapper(BaseStageWrapper, ABC):
         return apply_normalized_patch(
             workspace_root=workspace_root,
             patch_path=patch_path,
-            extra_args=self.patch_apply_extra_args(),
+            fuzz=self.patch_apply_fuzz(),
         )
 
-    def patch_apply_extra_args(self) -> list[str] | None:
-        return None
+    def patch_apply_fuzz(self) -> int:
+        """Context lines at each end of a hunk that may differ when applying (like patch -F)."""
+        return 0
 
     @abstractmethod
     def build_command(
@@ -426,7 +427,7 @@ def apply_normalized_patch(
     *,
     workspace_root: Path,
     patch_path: Path,
-    extra_args: list[str] | None = None,
+    fuzz: int = 0,
 ) -> PatchExecution:
     try:
         return run_patch(
@@ -436,7 +437,7 @@ def apply_normalized_patch(
             check_only=False,
             require_gnu=True,
             operation_label="stage patch apply",
-            extra_args=extra_args,
+            fuzz=fuzz,
             forward=True,
             ignore_whitespace=True,
         )

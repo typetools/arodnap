@@ -41,23 +41,15 @@ class CloseInjectorStageTest(unittest.TestCase):
                         )
                     )
                     return subprocess.CompletedProcess(command, 0, stdout="patched\n", stderr="")
-                if program in {"patch", "gpatch"} and len(command) > 1 and command[1] == "--version":
-                    return subprocess.CompletedProcess(command, 0, stdout="GNU patch 2.7.6\n", stderr="")
-                if program in {"patch", "gpatch"}:
-                    return subprocess.CompletedProcess(command, 0, stdout="applied\n", stderr="")
                 raise AssertionError(f"Unexpected command: {command}")
 
-            with patch(
-                "arodnap.patch_tool.shutil.which",
-                side_effect=lambda name: "/usr/local/bin/gpatch" if name == "gpatch" else "/usr/bin/patch",
-            ):
-                with patch("subprocess.run", side_effect=fake_run):
-                    result = run_close_injector_stage(
-                        self._make_config(temp_root),
-                        workspace_root=workspace_root,
-                        diagnostics_path=diagnostics_path,
-                        stage_output_dir=stage_output_dir,
-                    )
+            with patch("subprocess.run", side_effect=fake_run):
+                result = run_close_injector_stage(
+                    self._make_config(temp_root),
+                    workspace_root=workspace_root,
+                    diagnostics_path=diagnostics_path,
+                    stage_output_dir=stage_output_dir,
+                )
 
             self.assertEqual(
                 result,
@@ -79,8 +71,8 @@ class CloseInjectorStageTest(unittest.TestCase):
             self.assertIn("+++ src/main/java/com/example/Demo.java", normalized_patch)
             self.assertFalse(raw_patch_path.exists())
             log_contents = (stage_output_dir / "stage.log").read_text()
-            self.assertIn("PATCH_BINARY: /usr/local/bin/gpatch", log_contents)
-            self.assertIn("PATCH_VERSION: GNU patch 2.7.6", log_contents)
+            self.assertIn("PATCH_BINARY: arodnap built-in", log_contents)
+            self.assertIn("patching file src/main/java/com/example/Demo.java", log_contents)
 
             stage_result_payload = json.loads((stage_output_dir / "stage_result.json").read_text())
             self.assertEqual(stage_result_payload, result.to_dict())

@@ -1,207 +1,52 @@
 import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import patch
 
-from arodnap.patch_tool import (
-    PatchExecution,
-    PatchTool,
-    PatchToolError,
-    append_patch_execution_log,
-    discover_patch_tool,
-    run_patch,
-)
-from arodnap.runtime import CommandExecutionError, CommandResult
+from arodnap.patch_tool import PatchToolError, append_patch_execution_log, discover_patch_tool, run_patch
 
 
 class PatchToolTest(unittest.TestCase):
-    def test_prefers_gpatch_when_available(self) -> None:
-        with patch(
-            "arodnap.patch_tool.shutil.which",
-            side_effect=lambda name: {
-                "gpatch": "/opt/homebrew/bin/gpatch",
-                "patch": "/usr/bin/patch",
-            }.get(name),
-        ):
-            with patch("arodnap.patch_tool.run_command", side_effect=self._fake_version_run):
-                tool = discover_patch_tool(require_gnu=False, operation_label="apply")
+    def test_the_built_in_applier_needs_no_patch_program(self) -> None:
+        tool = discover_patch_tool(require_gnu=True, operation_label="apply")
+        self.assertEqual((tool.binary, tool.flavor), ("arodnap built-in", "builtin"))
 
-        self.assertEqual(tool.binary, "/opt/homebrew/bin/gpatch")
-        self.assertEqual(tool.flavor, "gnu")
-        self.assertEqual(tool.version, "GNU patch 2.7.6")
-
-    def test_uses_plain_patch_when_it_is_gnu(self) -> None:
-        with patch(
-            "arodnap.patch_tool.shutil.which",
-            side_effect=lambda name: {
-                "patch": "/usr/local/bin/patch",
-            }.get(name),
-        ):
-            with patch("arodnap.patch_tool.run_command", side_effect=self._fake_version_run):
-                tool = discover_patch_tool(require_gnu=False, operation_label="apply")
-
-        self.assertEqual(tool.binary, "/usr/local/bin/patch")
-        self.assertEqual(tool.flavor, "gnu")
-
-    def test_fails_clearly_when_only_bsd_patch_is_available_for_gnu_required_operation(self) -> None:
-        with patch(
-            "arodnap.patch_tool.shutil.which",
-            side_effect=lambda name: {
-                "patch": "/usr/bin/patch",
-            }.get(name),
-        ):
-            with patch(
-                "arodnap.patch_tool.run_command",
-                return_value=CommandResult(
-                    command=("/usr/bin/patch", "--version"),
-                    cwd=None,
-                    returncode=0,
-                    stdout="patch 2.0-12u11-Apple\n",
-                    stderr="",
-                ),
-            ):
-                with self.assertRaisesRegex(PatchToolError, "GNU patch is required for stage patch apply"):
-                    discover_patch_tool(require_gnu=True, operation_label="stage patch apply")
-
-    def test_append_patch_execution_log_includes_binary_and_version(self) -> None:
+    def test_dry_run_checks_without_writing_and_apply_writes(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
-            log_path = Path(temp_dir) / "patch.log"
-            execution = PatchExecution(
-                tool=PatchTool(
-                    binary="/opt/homebrew/bin/gpatch",
-                    flavor="gnu",
-                    version="GNU patch 2.7.6",
-                ),
-                command=["/opt/homebrew/bin/gpatch", "-p", "0", "-u", "-i", "demo.patch"],
-                completed=CommandResult(
-                    command=("/opt/homebrew/bin/gpatch", "-p", "0", "-u", "-i", "demo.patch"),
-                    cwd=log_path.parent.resolve(),
-                    returncode=0,
-                    stdout="applied\n",
-                    stderr="",
-                ),
-            )
+            root = Path(temp_dir)
+            target = root / "src" / "A.java"
+            target.parent.mkdir(parents=True)
+            target.write_text("class A {}\n")
+            patch_path = root / "change.patch"
+            patch_path.write_text("--- src/A.java\n+++ src/A.java\n@@ -1 +1 @@\n-class A {}\n+final class A {}\n")
 
-            append_patch_execution_log(log_path, title="apply_patch", execution=execution)
+            check = run_patch(cwd=root, patch_path=patch_path, strip_level=0, check_only=True)
+            self.assertEqual(check.completed.returncode, 0)
+            self.assertIn("--dry-run", check.command)
+            self.assertEqual(target.read_text(), "class A {}\n")
 
-            log_contents = log_path.read_text()
-            self.assertIn("PATCH_BINARY: /opt/homebrew/bin/gpatch", log_contents)
-            self.assertIn("PATCH_FLAVOR: gnu", log_contents)
-            self.assertIn("PATCH_VERSION: GNU patch 2.7.6", log_contents)
-            self.assertIn("TOOL: patch", log_contents)
-            self.assertIn(f"CWD: {log_path.parent.resolve()}", log_contents)
+            applied = run_patch(cwd=root, patch_path=patch_path, strip_level=0, check_only=False)
+            self.assertEqual(applied.completed.returncode, 0)
+            self.assertEqual(target.read_text(), "final class A {}\n")
 
-    def test_run_patch_uses_gnu_dry_run_flag(self) -> None:
+            log = root / "patch.log"
+            append_patch_execution_log(log, title="apply", execution=applied)
+            self.assertIn("PATCH_BINARY: arodnap built-in", log.read_text())
+            self.assertIn("patching file src/A.java", log.read_text())
+
+    def test_failures_are_reported_with_exit_code_and_message(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
-            with patch(
-                "arodnap.patch_tool.discover_patch_tool",
-                return_value=PatchTool(
-                    binary="/opt/homebrew/bin/gpatch",
-                    flavor="gnu",
-                    version="GNU patch 2.7.6",
-                ),
-            ):
-                with patch(
-                    "arodnap.patch_tool.run_command",
-                    return_value=CommandResult(
-                        command=("/opt/homebrew/bin/gpatch", "--dry-run"),
-                        cwd=Path(temp_dir).resolve(),
-                        returncode=0,
-                        stdout="ok\n",
-                        stderr="",
-                    ),
-                ):
-                    execution = run_patch(
-                        cwd=Path(temp_dir),
-                        patch_path=Path(temp_dir) / "demo.patch",
-                        strip_level=0,
-                        check_only=True,
-                        require_gnu=False,
-                        operation_label="apply dry-run validation",
-                    )
+            root = Path(temp_dir)
+            (root / "A.java").write_text("class B {}\n")
+            patch_path = root / "change.patch"
+            patch_path.write_text("--- A.java\n+++ A.java\n@@ -1 +1 @@\n-class A {}\n+final class A {}\n")
+            result = run_patch(cwd=root, patch_path=patch_path, strip_level=0, check_only=True).completed
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("A.java: hunk #1 FAILED at 1", result.stderr)
 
-        self.assertIn("--dry-run", execution.command)
-        self.assertNotIn("-C", execution.command)
-
-    def test_run_patch_uses_bsd_dry_run_flag(self) -> None:
+    def test_unreadable_patch_file_fails_clearly(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
-            with patch(
-                "arodnap.patch_tool.discover_patch_tool",
-                return_value=PatchTool(
-                    binary="/usr/bin/patch",
-                    flavor="bsd",
-                    version="patch 2.0-12u11-Apple",
-                ),
-            ):
-                with patch(
-                    "arodnap.patch_tool.run_command",
-                    return_value=CommandResult(
-                        command=("/usr/bin/patch", "-C"),
-                        cwd=Path(temp_dir).resolve(),
-                        returncode=0,
-                        stdout="ok\n",
-                        stderr="",
-                    ),
-                ):
-                    execution = run_patch(
-                        cwd=Path(temp_dir),
-                        patch_path=Path(temp_dir) / "demo.patch",
-                        strip_level=0,
-                        check_only=True,
-                        require_gnu=False,
-                        operation_label="apply dry-run validation",
-                    )
-
-        self.assertIn("-C", execution.command)
-        self.assertNotIn("--dry-run", execution.command)
-
-    def test_run_patch_wraps_command_start_failure(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
-            with patch(
-                "arodnap.patch_tool.discover_patch_tool",
-                return_value=PatchTool(
-                    binary="/opt/homebrew/bin/gpatch",
-                    flavor="gnu",
-                    version="GNU patch 2.7.6",
-                ),
-            ):
-                with patch(
-                    "arodnap.patch_tool.run_command",
-                    side_effect=CommandExecutionError(
-                        command=("/opt/homebrew/bin/gpatch", "-p", "0"),
-                        cwd=Path(temp_dir).resolve(),
-                        cause=OSError("boom"),
-                    ),
-                ):
-                    with self.assertRaisesRegex(PatchToolError, "Failed to execute command"):
-                        run_patch(
-                            cwd=Path(temp_dir),
-                            patch_path=Path(temp_dir) / "demo.patch",
-                            strip_level=0,
-                            check_only=False,
-                            require_gnu=False,
-                            operation_label="apply",
-                        )
-
-    def _fake_version_run(self, command, **kwargs):
-        binary = Path(command[0]).name
-        if binary == "gpatch":
-            return CommandResult(
-                command=tuple(command),
-                cwd=kwargs.get("cwd"),
-                returncode=0,
-                stdout="GNU patch 2.7.6\n",
-                stderr="",
-            )
-        if binary == "patch":
-            return CommandResult(
-                command=tuple(command),
-                cwd=kwargs.get("cwd"),
-                returncode=0,
-                stdout="GNU patch 2.5.9\n",
-                stderr="",
-            )
-        raise AssertionError(f"Unexpected version probe: {command}")
+            with self.assertRaisesRegex(PatchToolError, "Cannot read patch"):
+                run_patch(cwd=Path(temp_dir), patch_path=Path(temp_dir) / "missing.patch", strip_level=0, check_only=True)
 
 
 if __name__ == "__main__":

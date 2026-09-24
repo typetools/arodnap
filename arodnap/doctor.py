@@ -15,7 +15,6 @@ from arodnap.build_adapters import (
 from arodnap.contracts import RunConfig
 from arodnap.orchestrator.results import write_json
 from arodnap.orchestrator.workspace import copied_workspace
-from arodnap.patch_tool import PatchToolError, discover_patch_tool
 from arodnap.analysis.checker_framework import (
     CheckerFrameworkError,
     resolve_analysis_jdk,
@@ -111,7 +110,6 @@ def _run_environment_checks(config: RunConfig) -> list[DoctorCheck]:
     return [
         _check_python_runtime(),
         _check_java_runtime(config.cf_root),
-        _check_patch_binary(),
         _check_checker_framework_path(config.cf_root),
         _check_checker_framework_tools(config.cf_root),
         _check_plugin_jars(config),
@@ -152,34 +150,6 @@ def _check_java_runtime(cf_root: Path) -> DoctorCheck:
         status="ok",
         message=f"JDK {jdk.major_version} is available at {jdk.home} (from {jdk.source}).",
         details=details,
-    )
-
-
-def _check_patch_binary() -> DoctorCheck:
-    try:
-        tool = discover_patch_tool(require_gnu=False, operation_label="arodnap doctor")
-    except PatchToolError as exc:
-        return DoctorCheck(
-            name="patch_binary",
-            status="error",
-            message=str(exc),
-        )
-
-    if tool.flavor == "gnu":
-        status: DoctorStatus = "ok"
-        message = f"GNU patch is available via {tool.binary}."
-    else:
-        status = "warning"
-        message = (
-            f"{tool.flavor.upper()} patch is available via {tool.binary}. "
-            "GNU patch is preferred for repair-stage dry-run validation."
-        )
-
-    return DoctorCheck(
-        name="patch_binary",
-        status=status,
-        message=message,
-        details={"binary": tool.binary, "flavor": tool.flavor, "version": tool.version},
     )
 
 

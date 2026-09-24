@@ -1,18 +1,25 @@
+"""Applies patches for the pipeline and `apply`, with Arodnap's built-in applier
+(`arodnap.unified_patch`), so no external `patch` program is needed.
+
+The interface keeps the shape of a command execution (command, exit code, output) so stage logs
+and error messages stay the same as when GNU patch was used.
+"""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-import shutil
 from typing import Literal
 
-from arodnap.runtime import CommandExecutionError, CommandResult, render_command_log, run_command
+from arodnap.runtime import CommandResult, render_command_log
+from arodnap.unified_patch import apply_patch
+from arodnap.version import __version__
 
-
-PatchFlavor = Literal["gnu", "bsd", "unknown"]
+PatchFlavor = Literal["builtin"]
 
 
 class PatchToolError(RuntimeError):
-    """Raised when no compatible patch binary is available."""
+    """Raised when a patch file cannot be read."""
 
 
 @dataclass(frozen=True)
@@ -29,31 +36,12 @@ class PatchExecution:
     completed: CommandResult
 
 
-def discover_patch_tool(*, require_gnu: bool, operation_label: str) -> PatchTool:
-    discovered: list[PatchTool] = []
-    for candidate in ("gpatch", "patch"):
-        tool = _probe_patch_tool(candidate)
-        if tool is None:
-            continue
-        discovered.append(tool)
-        if tool.flavor == "gnu":
-            return tool
+BUILTIN = PatchTool(binary="arodnap built-in", flavor="builtin", version=f"arodnap {__version__}")
 
-    if require_gnu:
-        raise PatchToolError(_gnu_requirement_error(operation_label=operation_label, discovered=discovered))
 
-    for tool in discovered:
-        if tool.flavor in {"gnu", "bsd"}:
-            return tool
-
-    if not discovered:
-        raise PatchToolError(
-            f"No patch binary was found for {operation_label}. Install GNU patch as 'gpatch' or 'patch'."
-        )
-
-    raise PatchToolError(
-        f"Unsupported patch implementation for {operation_label}: {discovered[0].binary} ({discovered[0].version})"
-    )
+def discover_patch_tool(*, require_gnu: bool = False, operation_label: str = "") -> PatchTool:
+    """The patch applier; always the built-in one (kept for callers that report it)."""
+    return BUILTIN
 
 
 def run_patch(
@@ -62,28 +50,45 @@ def run_patch(
     patch_path: Path,
     strip_level: int,
     check_only: bool,
-    require_gnu: bool,
-    operation_label: str,
-    extra_args: list[str] | None = None,
+    require_gnu: bool = False,
+    operation_label: str = "",
+    fuzz: int = 0,
     forward: bool = False,
     ignore_whitespace: bool = False,
 ) -> PatchExecution:
-    tool = discover_patch_tool(require_gnu=require_gnu, operation_label=operation_label)
-    command = [tool.binary]
+    """Apply (or with `check_only`, only check) a unified diff under `cwd`.
+
+    `forward` is accepted for compatibility: the applier never reverses a patch, and reports a
+    patch whose changes are already present as a failure.
+    """
+    try:
+        patch_text = patch_path.read_text(encoding="utf-8", errors="surrogateescape")
+    except OSError as exc:
+        raise PatchToolError(f"Cannot read patch {patch_path}: {exc}") from exc
+    outcome = apply_patch(
+        cwd,
+        patch_text,
+        strip_level=strip_level,
+        check_only=check_only,
+        fuzz=fuzz,
+        ignore_whitespace=ignore_whitespace,
+    )
+    command = ["arodnap-patch", f"-p{strip_level}"]
     if check_only:
-        command.append("--dry-run" if tool.flavor == "gnu" else "-C")
-    if forward:
-        command.append("--forward")
-    command.extend(["-p", str(strip_level), "-u"])
-    command.extend(extra_args or [])
+        command.append("--dry-run")
+    if fuzz:
+        command.append(f"--fuzz={fuzz}")
     if ignore_whitespace:
         command.append("--ignore-whitespace")
-    command.extend(["-i", str(patch_path)])
-    try:
-        completed = run_command(command, cwd=cwd)
-    except CommandExecutionError as exc:
-        raise PatchToolError(str(exc)) from exc
-    return PatchExecution(tool=tool, command=command, completed=completed)
+    command.append(str(patch_path))
+    completed = CommandResult(
+        command=tuple(command),
+        cwd=cwd,
+        returncode=0 if outcome.ok else 1,
+        stdout="".join(f"{message}\n" for message in outcome.messages),
+        stderr="".join(f"{error}\n" for error in outcome.errors),
+    )
+    return PatchExecution(tool=BUILTIN, command=command, completed=completed)
 
 
 def append_patch_execution_log(log_path: Path, *, title: str, execution: PatchExecution) -> None:
@@ -97,52 +102,6 @@ def append_patch_execution_log(log_path: Path, *, title: str, execution: PatchEx
     ]
     with log_path.open("a", encoding="utf-8") as handle:
         handle.write("\n".join(lines))
-
-
-def _probe_patch_tool(candidate: str) -> PatchTool | None:
-    binary = shutil.which(candidate)
-    if binary is None:
-        return None
-
-    try:
-        completed = run_command([binary, "--version"])
-    except CommandExecutionError:
-        return None
-
-    version_output = "\n".join(part for part in (completed.stdout, completed.stderr) if part).strip()
-    version = _first_nonempty_line(version_output) or "<unknown version>"
-    flavor = _detect_patch_flavor(version_output or version)
-    return PatchTool(binary=binary, flavor=flavor, version=version)
-
-
-def _detect_patch_flavor(output: str) -> PatchFlavor:
-    normalized = output.lower()
-    if "gnu patch" in normalized:
-        return "gnu"
-    if "apple" in normalized or "bsd" in normalized or "freebsd" in normalized:
-        return "bsd"
-    return "unknown"
-
-
-def _first_nonempty_line(text: str) -> str:
-    for line in text.splitlines():
-        if line.strip():
-            return line.strip()
-    return ""
-
-
-def _gnu_requirement_error(*, operation_label: str, discovered: list[PatchTool]) -> str:
-    if not discovered:
-        return (
-            f"GNU patch is required for {operation_label}, but no patch binary was found. "
-            "Install GNU patch and expose it as 'gpatch' or 'patch'."
-        )
-
-    detected = ", ".join(f"{tool.binary} ({tool.version})" for tool in discovered)
-    return (
-        f"GNU patch is required for {operation_label}, but no GNU-compatible patch binary was found. "
-        f"Detected: {detected}. Install GNU patch and expose it as 'gpatch' or 'patch'."
-    )
 
 
 __all__ = [

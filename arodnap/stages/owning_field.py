@@ -55,8 +55,8 @@ class OwningFieldStageWrapper(BaseNormalizedPatchStageWrapper):
     def changed_note(self, *, changed_files: list[str]) -> str:
         return f"Applied owning-field patch affecting {len(changed_files)} file(s)."
 
-    def patch_apply_extra_args(self) -> list[str] | None:
-        return ["-F3"]
+    def patch_apply_fuzz(self) -> int:
+        return 3
 
 
 _WRAPPER = OwningFieldStageWrapper()

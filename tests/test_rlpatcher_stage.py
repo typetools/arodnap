@@ -5,21 +5,11 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from arodnap.patch_tool import PatchToolError, discover_patch_tool
 from arodnap.runtime import CommandResult
 from arodnap.stages.base import StageTimeoutError
 from arodnap.stages.rlpatcher import StageExecutionError, _changes_code, run_rlpatcher_stage
 
 
-def _has_gnu_patch() -> bool:
-    try:
-        discover_patch_tool(require_gnu=True, operation_label="test")
-    except PatchToolError:
-        return False
-    return True
-
-
-@unittest.skipUnless(_has_gnu_patch(), "GNU patch is required to apply materialized patches")
 class RLPatcherStageTest(unittest.TestCase):
     def setUp(self) -> None:
         java_patcher = patch("arodnap.stages.rlpatcher.java_executable", return_value="java")

@@ -1,12 +1,12 @@
 """End-to-end repair runs with the real toolchain: Gradle, WPI, the Resource Leak Checker,
-the Java stage tools, RLFixer, RLPatcher and GNU patch. Nothing is mocked.
+the Java stage tools, RLFixer and RLPatcher. Nothing is mocked.
 
 These runs take about a minute per fixture, so they are opt-in:
 
     ARODNAP_E2E=1 python -m unittest tests.test_e2e_real
 
 They use the Checker Framework from $ARODNAP_CHECKER_FRAMEWORK (default: the bundled
-4.2.3) and need a JDK new enough for it and for RLFixer (17+), as JAVA_HOME or first on PATH, `gradle` on PATH, GNU patch, and network access or a warm Gradle cache for
+4.2.3) and need a JDK new enough for it and for RLFixer (17+), as JAVA_HOME or first on PATH, `gradle` on PATH, and network access or a warm Gradle cache for
 the dependency fixture.
 """
 

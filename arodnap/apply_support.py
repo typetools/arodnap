@@ -214,7 +214,7 @@ def _format_patch_failure(
     return (
         f"Patch {mode} failed for {entry.patch_file} "
         f"(stage={entry.stage}, strip_level={entry.strip_level}, target_root={entry.target_root}, "
-        f"patch_binary={execution.tool.binary}, patch_version={execution.tool.version}): {output}"
+        f"patch_tool={execution.tool.version}): {output}"
     )
 
 
