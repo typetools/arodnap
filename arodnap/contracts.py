@@ -57,6 +57,8 @@ class RunConfig:
     timeouts: Timeouts
     # The project's build command from `-- <command>`; empty means detect the build system.
     build_command: tuple[str, ...] = ()
+    # Which fields the field transformations may change: "resources", "all" or "off".
+    field_transformations: str = "resources"
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -75,6 +77,7 @@ class RunConfig:
             "rlpatcher_jar": str(self.rlpatcher_jar),
             "timeouts": self.timeouts.to_dict(),
             "build_command": list(self.build_command),
+            "field_transformations": self.field_transformations,
         }
 
     @classmethod
@@ -95,6 +98,7 @@ class RunConfig:
             rlpatcher_jar=Path(data["rlpatcher_jar"]),
             timeouts=Timeouts.from_dict(data["timeouts"]),
             build_command=tuple(data.get("build_command", ())),
+            field_transformations=data.get("field_transformations", "resources"),
         )
 
 

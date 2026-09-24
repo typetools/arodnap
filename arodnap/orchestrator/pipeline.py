@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+import json
 from dataclasses import dataclass
 from pathlib import Path
 import time
 
 from arodnap.apply_support import apply_patch_bundle
 from arodnap.analysis.analyze import analyze_once
-from arodnap.analysis.reanalyze import reanalyze
+from arodnap.analysis.reanalyze import CapturedBuild, capture_build, reanalyze
 from arodnap.build_adapters import default_build_tool_selection, select_build_adapter, UnsupportedProjectError
 from arodnap.contracts import PipelineState, ReanalyzeResult, RunConfig, StageResult
 from arodnap.orchestrator.results import OutputLayout, write_report, write_run_manifest
@@ -15,6 +16,8 @@ from arodnap.orchestrator.workspace import copied_workspace
 from arodnap.reporting.html import write_html_report
 from arodnap.reporting.leaks import build_leak_report
 from arodnap.reporting.summary import format_summary
+from arodnap.stages.base import CompileInputs
+from arodnap.stages.field_transformations import run_field_transformations_stage
 from arodnap.stages.registry import REPAIR_STAGE_REGISTRY, StageRunInput
 
 
@@ -38,6 +41,23 @@ def run_repair(config: RunConfig) -> int:
         state = _initial_state(config, workspace_root=workspace.workspace_root, artifacts_root=output_layout.root)
 
         try:
+            # One capture of the project's build serves every analysis point of the run.
+            captured = capture_build(config, workspace_root=workspace.workspace_root)
+            field_stage_dir = output_layout.stage_dir("field_transformations")
+            compile_inputs = _captured_compile_inputs(captured, field_stage_dir / "inputs")
+            _require_utf8_readable_sources(compile_inputs, workspace_root=workspace.workspace_root)
+            # Field transformations run before the first analysis, so they cost no extra analysis.
+            field_result = _run_timed_stage(
+                stage_timings,
+                stage_name="field_transformations",
+                runner=lambda: run_field_transformations_stage(
+                    config,
+                    workspace_root=workspace.workspace_root,
+                    stage_output_dir=field_stage_dir,
+                    compile_inputs=compile_inputs,
+                ),
+            )
+            state.stage_history.append(field_result)
             current_analysis = _run_timed_analysis(
                 analysis_runs,
                 label="initial",
@@ -46,10 +66,10 @@ def run_repair(config: RunConfig) -> int:
                     workspace_root=workspace.workspace_root,
                     label="initial",
                     artifacts_root=output_layout.root,
+                    captured=captured,
                 ),
             )
             state.current_analysis = current_analysis
-            _require_utf8_readable_sources(current_analysis)
             repair_state = _RepairExecutionState(current_analysis=current_analysis)
             analyses: list[tuple[str, ReanalyzeResult]] = [("initial", current_analysis)]
             rlfixer_label: str | None = None
@@ -87,6 +107,7 @@ def run_repair(config: RunConfig) -> int:
                             workspace_root=workspace.workspace_root,
                             label=stage_definition.rerun_analysis_label,
                             artifacts_root=output_layout.root,
+                            captured=captured,
                         ),
                     )
                     state.current_analysis = repair_state.current_analysis
@@ -130,28 +151,39 @@ def run_repair(config: RunConfig) -> int:
 _UTF8_COMPATIBLE = {"utf-8", "utf8", "us-ascii", "ascii"}
 
 
-def _require_utf8_readable_sources(analysis: ReanalyzeResult) -> None:
+def _captured_compile_inputs(captured: CapturedBuild, inputs_dir: Path) -> CompileInputs:
+    inputs_dir.mkdir(parents=True, exist_ok=True)
+    release, encoding = captured.adapter.java_language(captured.project)
+    return CompileInputs(
+        sources_file=captured.adapter.write_source_files_file(captured.project, inputs_dir / "sources.txt"),
+        classpath_file=captured.adapter.write_classpath_entries_file(captured.project, inputs_dir / "classpath.txt"),
+        release=release,
+        encoding=encoding,
+    )
+
+
+def _require_utf8_readable_sources(inputs: CompileInputs, *, workspace_root: Path) -> None:
     """Fail before repairing when the repair tools cannot read the sources.
 
     Analysis passes the build's encoding to javac, but the Java repair tools read and
     write sources as UTF-8. Sources in another encoding are fine as long as they are
     also valid UTF-8 (for example, ASCII only).
     """
-    if not analysis.encoding or analysis.encoding.lower() in _UTF8_COMPATIBLE:
+    if not inputs.encoding or inputs.encoding.lower() in _UTF8_COMPATIBLE:
         return
-    for line in analysis.source_files_file.read_text().splitlines():
-        source = Path(line.strip())
+    for line in inputs.sources_file.read_text().splitlines():
+        source = Path(line.strip().strip('"'))
         if not line.strip() or not source.is_file():
             continue
         try:
             source.read_bytes().decode("utf-8")
         except UnicodeDecodeError:
             try:
-                shown = source.relative_to(analysis.workspace_root)
+                shown = source.relative_to(workspace_root.resolve())
             except ValueError:
                 shown = source
             raise UnsupportedProjectError(
-                f"The build compiles sources as {analysis.encoding} and {shown} is not valid UTF-8. "
+                f"The build compiles sources as {inputs.encoding} and {shown} is not valid UTF-8. "
                 "Arodnap's repair tools read and write sources as UTF-8, so `repair` does not support "
                 "this project yet; `analyze` and `infer` do."
             ) from None
@@ -186,6 +218,7 @@ def _leak_results(
             rlfixer_label=rlfixer_label,
             stage_results=stage_results,
         )
+        leaks["field_changes"] = _field_changes(stage_results.get("field_transformations"))
         html_path = write_html_report(
             output_layout.root / "report.html",
             leaks=leaks,
@@ -207,6 +240,18 @@ def _leak_results(
         html_path=html_path,
     )
     return leaks, summary
+
+
+def _field_changes(result: StageResult | None) -> dict[str, object]:
+    """The field transformations that were kept, for the report."""
+    if result is None or "field_changes" not in result.artifacts:
+        return {"mode": None, "changes": [], "patch": None}
+    data = json.loads(Path(result.artifacts["field_changes"]).read_text())
+    return {
+        "mode": data["mode"],
+        "changes": [change for change in data["changes"] if change["kept"]],
+        "patch": result.artifacts.get("patch"),
+    }
 
 
 def run_apply(config: RunConfig) -> int:

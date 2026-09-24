@@ -13,7 +13,7 @@ from unittest.mock import patch
 from arodnap.build_adapters.base import BuildToolSelection, GradleProject
 from arodnap.contracts import ReanalyzeResult, StageResult
 from arodnap.orchestrator.results import OutputLayout
-from arodnap.stages.base import write_stage_result
+from arodnap.stages.base import CompileInputs, write_stage_result
 
 
 FIXTURES_ROOT = Path(__file__).resolve().parent / "fixtures"
@@ -86,6 +86,39 @@ OWNING_FIELD_SCENARIO = RepairScenario(
 )
 
 
+@contextmanager
+def fake_capture_and_field_stage() -> Iterator[None]:
+    """Stand-ins for the build capture and the field transformations stage, for tests that fake
+    the analysis: no build runs, and the stage records that it changed nothing."""
+
+    def compile_inputs(captured, inputs_dir):
+        inputs_dir.mkdir(parents=True, exist_ok=True)
+        (inputs_dir / "sources.txt").write_text("")
+        (inputs_dir / "classpath.txt").write_text("")
+        return CompileInputs(sources_file=inputs_dir / "sources.txt", classpath_file=inputs_dir / "classpath.txt")
+
+    def field_stage(config, *, workspace_root, stage_output_dir, compile_inputs):
+        stage_output_dir.mkdir(parents=True, exist_ok=True)
+        log = stage_output_dir / "stage.log"
+        log.write_text("")
+        result = StageResult(
+            stage="field_transformations",
+            changed=False,
+            changed_files=[],
+            rerun_required=False,
+            artifacts={"log": str(log.resolve())},
+            notes=["Made 0 resource field(s) final and turned 0 into local variables (resources)."],
+            success=True,
+        )
+        write_stage_result(stage_output_dir, result)
+        return result
+
+    with patch("arodnap.orchestrator.pipeline.capture_build", return_value=None), \
+            patch("arodnap.orchestrator.pipeline._captured_compile_inputs", side_effect=compile_inputs), \
+            patch("arodnap.orchestrator.pipeline.run_field_transformations_stage", side_effect=field_stage):
+        yield
+
+
 def copy_fixture(name: str, destination_root: Path) -> Path:
     source = FIXTURES_ROOT / name
     destination = destination_root / name
@@ -132,7 +165,8 @@ class FixtureRepairHarness:
         # Stage functions are now invoked through runner callables registered in
         # arodnap.stages.registry, not imported directly into pipeline.py.
         # Patch them at the registry module so interceptions work correctly.
-        with patch("arodnap.orchestrator.pipeline.reanalyze", side_effect=self._fake_reanalyze):
+        with fake_capture_and_field_stage(), \
+                patch("arodnap.orchestrator.pipeline.reanalyze", side_effect=self._fake_reanalyze):
             with patch(
                 "arodnap.stages.registry.run_close_injector_stage",
                 side_effect=self._fake_close_injector,
@@ -148,7 +182,7 @@ class FixtureRepairHarness:
                         ):
                             yield self
 
-    def _fake_reanalyze(self, config, *, workspace_root, label, artifacts_root):
+    def _fake_reanalyze(self, config, *, workspace_root, label, artifacts_root, captured=None):
         workspace_root = Path(workspace_root).resolve()
         if workspace_root == self.repo_root:
             raise AssertionError("repair should analyze a copied workspace, not the original repo")

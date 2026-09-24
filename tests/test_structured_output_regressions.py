@@ -53,6 +53,17 @@ class StructuredOutputRegressionTest(unittest.TestCase):
                 },
                 "stage_history": [
                     {
+                        "stage": "field_transformations",
+                        "changed": False,
+                        "changed_files": [],
+                        "rerun_required": False,
+                        "artifacts": {
+                            "log": "<out>/stages/field_transformations/stage.log",
+                        },
+                        "notes": ["Made 0 resource field(s) final and turned 0 into local variables (resources)."],
+                        "success": True,
+                    },
+                    {
                         "stage": "close_injector",
                         "changed": False,
                         "changed_files": [],
@@ -191,6 +202,19 @@ class StructuredOutputRegressionTest(unittest.TestCase):
                 ],
                 "stage_timings": [
                     {
+                        "stage": "field_transformations",
+                        "started_at": "<timestamp>",
+                        "completed_at": "<timestamp>",
+                        "elapsed_seconds": "<elapsed>",
+                        "success": True,
+                        "changed": False,
+                        "rerun_required": False,
+                        "changed_files": [],
+                        "artifacts": {
+                            "log": "<out>/stages/field_transformations/stage.log",
+                        },
+                    },
+                    {
                         "stage": "close_injector",
                         "started_at": "<timestamp>",
                         "completed_at": "<timestamp>",
@@ -264,10 +288,10 @@ class StructuredOutputRegressionTest(unittest.TestCase):
                 ],
                 "stage_execution_summary": {
                     "changed": 1,
-                    "executed": 5,
+                    "executed": 6,
                     "failed_attempts": 0,
                     "reruns_requested": 1,
-                    "successful": 5,
+                    "successful": 6,
                 },
             },
         )
@@ -298,6 +322,15 @@ class StructuredOutputRegressionTest(unittest.TestCase):
                     "final_warning_count": 1,
                 },
                 "executed_stages": [
+                    {
+                        "stage": "field_transformations",
+                        "changed": False,
+                        "rerun_required": False,
+                        "success": True,
+                        "artifacts": {
+                            "log": "<out>/stages/field_transformations/stage.log",
+                        },
+                    },
                     {
                         "stage": "close_injector",
                         "changed": False,
@@ -425,6 +458,19 @@ class StructuredOutputRegressionTest(unittest.TestCase):
                 ],
                 "stage_timings": [
                     {
+                        "stage": "field_transformations",
+                        "started_at": "<timestamp>",
+                        "completed_at": "<timestamp>",
+                        "elapsed_seconds": "<elapsed>",
+                        "success": True,
+                        "changed": False,
+                        "rerun_required": False,
+                        "changed_files": [],
+                        "artifacts": {
+                            "log": "<out>/stages/field_transformations/stage.log",
+                        },
+                    },
+                    {
                         "stage": "close_injector",
                         "started_at": "<timestamp>",
                         "completed_at": "<timestamp>",
@@ -498,10 +544,10 @@ class StructuredOutputRegressionTest(unittest.TestCase):
                 ],
                 "stage_execution_summary": {
                     "changed": 1,
-                    "executed": 5,
+                    "executed": 6,
                     "failed_attempts": 0,
                     "reruns_requested": 1,
-                    "successful": 5,
+                    "successful": 6,
                 },
             },
         )

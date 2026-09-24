@@ -92,7 +92,7 @@ class V1IntegrationTest(unittest.TestCase):
 
             self.assertEqual(
                 [stage["stage"] for stage in manifest["stage_history"]],
-                ["close_injector", "owning_field", "rlfixer", "rlpatcher", "bundle"],
+                ["field_transformations", "close_injector", "owning_field", "rlfixer", "rlpatcher", "bundle"],
             )
             # One bundle carries every stage's changes relative to the original repo.
             self.assertEqual(top_level_patch_manifest["stage"], "bundle")

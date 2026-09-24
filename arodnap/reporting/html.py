@@ -86,6 +86,22 @@ def render_html_report(
         parts.append(_warning_row(warning, reasons))
     parts.append("</section>")
 
+    field_changes = leaks.get("field_changes", {})
+    if field_changes.get("changes"):
+        parts.append("<section><h2>Field changes</h2><p class='muted'>Private resource fields made "
+                     "<code>final</code> or turned into local variables before the analysis. They do not "
+                     "change behavior and make ownership explicit, which removes false leak warnings.</p>"
+                     "<table class='reasons'>")
+        for change in field_changes["changes"]:
+            what = "made final" if change["change"] == "final" else "turned into a local variable"
+            parts.append(f"<tr><td><code>{escape(change['file'])}:{change['line']}</code></td>"
+                         f"<td><code>{escape(change['field'])}</code> {what}</td></tr>")
+        parts.append("</table>")
+        patch = field_changes.get("patch")
+        if patch and Path(patch).is_file():
+            parts.append(f"<details><summary>Diff</summary>{_diff(Path(patch).read_text(errors='replace'))}</details>")
+        parts.append("</section>")
+
     if patched_files:
         parts.append("<section><h2>All changes</h2>")
         for filename, diff in patched_files:

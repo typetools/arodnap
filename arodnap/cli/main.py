@@ -23,6 +23,15 @@ def build_parser() -> argparse.ArgumentParser:
 
     repair_parser = subparsers.add_parser("repair")
     _add_shared_arguments(repair_parser)
+    repair_parser.add_argument(
+        "--field-transformations",
+        choices=("resources", "all", "off"),
+        default="resources",
+        help=(
+            "make private fields final or local before analysis: only fields that can hold a "
+            "resource (default), every eligible field as in the paper, or none"
+        ),
+    )
     repair_parser.set_defaults(handler=repair.run)
 
     apply_parser = subparsers.add_parser("apply")

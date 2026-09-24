@@ -156,6 +156,26 @@ class RealEndToEndTest(unittest.TestCase):
         self.assertEqual(bundle_files, [source])
         self.assertIn("try (FileInputStream in = new FileInputStream(path))", (repo_root / source).read_text())
 
+    def test_resource_fields_are_made_final_or_local_before_analysis(self) -> None:
+        report, bundle_files, repo_root = self._repair_and_apply(
+            "javac-field-transformations", build_command=["./build.sh"], verify=["./build.sh"]
+        )
+
+        changes = {(c["file"], c["field"], c["change"]) for c in report["leaks"]["field_changes"]["changes"]}
+        self.assertEqual(changes, {
+            ("src/demo/TempFileWriter.java", "stream", "final"),
+            ("src/demo/Server.java", "socket", "final"),
+            ("src/demo/LineCounter.java", "reader", "local"),
+        })
+        writer = (repo_root / "src/demo/TempFileWriter.java").read_text()
+        self.assertIn("private final PrintStream stream;", writer)
+        self.assertIn("private String path;", writer, "a field that holds no resource is left alone")
+        server = (repo_root / "src/demo/Server.java").read_text()
+        self.assertIn("ServerSocket tempSocket = null;", server)
+        self.assertIn("this.socket = tempSocket;", server)
+        self.assertNotIn("private BufferedReader reader;", (repo_root / "src/demo/LineCounter.java").read_text())
+        self.assertEqual(report["leaks"]["summary"]["remaining"], 0)
+
     def test_latin1_java8_project_is_analyzed_with_the_builds_encoding_and_release(self) -> None:
         temp_root = Path(tempfile.mkdtemp(prefix="arodnap-e2e-"))
         self.addCleanup(shutil.rmtree, temp_root, True)

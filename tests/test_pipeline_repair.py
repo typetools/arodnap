@@ -7,6 +7,7 @@ from unittest.mock import patch
 from arodnap.contracts import ReanalyzeResult, RunConfig, StageResult, Timeouts
 from arodnap.orchestrator.pipeline import run_repair
 from arodnap.orchestrator.results import OutputLayout
+from tests.fixture_helpers import fake_capture_and_field_stage
 
 
 class RepairPipelineTest(unittest.TestCase):
@@ -21,7 +22,7 @@ class RepairPipelineTest(unittest.TestCase):
 
             analysis_calls: list[str] = []
 
-            def fake_reanalyze(config, *, workspace_root, label, artifacts_root):
+            def fake_reanalyze(config, *, workspace_root, label, artifacts_root, captured=None):
                 analysis_calls.append(label)
                 output_layout = OutputLayout.from_root(artifacts_root)
                 analysis_paths = output_layout.analysis_paths(label)
@@ -98,7 +99,8 @@ class RepairPipelineTest(unittest.TestCase):
                     "debug": str((stage_output_dir / "debug.txt").resolve()),
                 }
 
-            with patch("arodnap.orchestrator.pipeline.reanalyze", side_effect=fake_reanalyze):
+            with fake_capture_and_field_stage(), \
+                    patch("arodnap.orchestrator.pipeline.reanalyze", side_effect=fake_reanalyze):
                 with patch(
                     "arodnap.stages.registry.run_close_injector_stage",
                     side_effect=fake_stage("close_injector", changed_files=["src/main/java/App.java"]),
@@ -143,22 +145,22 @@ class RepairPipelineTest(unittest.TestCase):
             manifest = json.loads(layout.manifest_path.read_text())
             self.assertTrue(manifest["success"])
             self.assertEqual(manifest["final_patch_manifest"], str(layout.patches_manifest_path))
-            self.assertEqual(len(manifest["stage_history"]), 5)
+            self.assertEqual(len(manifest["stage_history"]), 6)
             self.assertEqual(manifest["run_metadata"]["command"], "repair")
             self.assertEqual(manifest["adapter"]["selected_build_tool"], ["gradle"])
             self.assertEqual(len(manifest["analysis_runs"]), 2)
-            self.assertEqual(len(manifest["stage_timings"]), 5)
+            self.assertEqual(len(manifest["stage_timings"]), 6)
 
             report = json.loads(layout.report_path.read_text())
             self.assertTrue(report["success"])
             self.assertEqual(report["diagnostics"]["final_warning_count"], 1)
             self.assertEqual(
                 [stage["stage"] for stage in report["executed_stages"]],
-                ["close_injector", "owning_field", "rlfixer", "rlpatcher", "bundle"],
+                ["field_transformations", "close_injector", "owning_field", "rlfixer", "rlpatcher", "bundle"],
             )
             self.assertEqual(report["artifacts"]["patches_manifest"], str(layout.patches_manifest_path))
             self.assertEqual(report["artifacts"]["patch_bundle_dir"], str(layout.patches_dir))
-            self.assertEqual(report["stage_execution_summary"]["executed"], 5)
+            self.assertEqual(report["stage_execution_summary"]["executed"], 6)
             self.assertEqual(report["stage_execution_summary"]["reruns_requested"], 1)
 
     def _make_config(self, root: Path, *, repo_root: Path) -> RunConfig:

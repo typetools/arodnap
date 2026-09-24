@@ -36,6 +36,7 @@ def build_run_config(
             stage_seconds=getattr(args, "stage_timeout", None),
         ),
         build_command=tuple(getattr(args, "build_command", None) or ()),
+        field_transformations=getattr(args, "field_transformations", None) or "resources",
     )
 
 

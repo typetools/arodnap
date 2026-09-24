@@ -86,6 +86,11 @@ Common options:
 - `--checker-framework`: use another Checker Framework distribution (the
   directory containing `checker/dist/checker.jar`). Defaults to
   `$ARODNAP_CHECKER_FRAMEWORK`, then the bundled 4.2.3.
+- `--field-transformations resources|all|off` (`repair` only): before analysis,
+  private fields that can hold a resource are made `final`, or turned into local
+  variables when every method assigns them before use. This makes ownership
+  explicit and removes false leak warnings. `all` changes every eligible field,
+  as in the paper; `off` skips it.
 - `--build-timeout`, `--analysis-timeout`, `--stage-timeout` (seconds): optional
   limits. There are none by default. Each limit applies to every single command
   of its kind: the captured build; each Checker Framework run (every inference

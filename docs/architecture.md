@@ -151,8 +151,26 @@ Each `RepairStageDefinition` declares:
   artifact is promoted to the top-level `patches/manifest.json` (currently
   `bundle`); promotion copies the patch files next to the manifest
 
+`repair` captures the project's build once and reuses that capture at every
+analysis point (`reanalyze(..., captured=...)`): stages only edit existing
+source files, so each analysis recompiles the current sources instead of
+re-running the build.
+
 The current repair order is:
 
+0. `field_transformations`, before the initial analysis so it costs no extra
+   analysis run: the Error Prone checks in `restructure_plugins/FieldTransformations`
+   make private fields `final` (a temporary and `finally` when the assignment
+   is inside `try`, only if nothing can observe the field in between) or turn
+   them into local variables (skipped for fields with initializers, annotations,
+   or names used in string literals). With `--field-transformations=resources`
+   (default) only fields whose type can hold a resource are changed: a type is
+   a resource if it is `AutoCloseable`, `@MustCall`, or a program class that
+   disposes of a resource field in some method (recursively; the method name does
+   not matter) or allocates one in its constructor. `all` changes every eligible
+   field as the paper did; `off` skips the stage. Each edit is compile-checked for
+   its file, then the whole program is compiled and edits in files with errors
+   are undone. `field_changes.json` lists every field and whether it was kept.
 1. `close_injector` (rerun analysis if it changed sources)
 2. `owning_field` (rerun analysis if it changed sources)
 3. `rlfixer`: runs the RLFixer jar on build-discovered inputs and fails if

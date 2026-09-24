@@ -27,6 +27,11 @@ def format_summary(
         lines.append("  Remaining because:")
         for code, count in summary["remaining_by_reason"].items():
             lines.append(f"    {count:>{width}}  {leaks['reasons'].get(code, code)}")
+    fields = leaks.get("field_changes", {}).get("changes", [])
+    if fields:
+        finals = sum(1 for change in fields if change["change"] == "final")
+        locals_ = len(fields) - finals
+        lines.append(f"Fields: {finals} resource field(s) made final, {locals_} turned into local variables")
     others = summary["other_checker_warnings"] + summary["javac_warnings"]
     if others:
         lines.append(f"  Also reported: {others} other warning(s) that are not resource leaks (see the report)")
