@@ -44,7 +44,10 @@ public class TryWrapAndFinallyTransformer {
         List<String> original = Files.readAllLines(src);
 
         // -------- Phase 1: try-with-resources wrap for all leaks --------
+        // If any leak cannot be wrapped without reordering code, use the try-finally form.
         CompilationUnit cu = LexicalPreservingPrinter.setup(StaticJavaParser.parse(src));
+        SourceText text = new SourceText(Files.readString(src));
+        boolean allWrapped = true;
 
         for (PromptInfo info : infos) {
             if (info.patchType != PatchType.TRY_WRAP_AND_FINALLY)
@@ -58,14 +61,20 @@ public class TryWrapAndFinallyTransformer {
                 continue;
 
             CallableDeclaration<?> owner = ownerOpt.get();
-            applyTryWithResourcesWindow(cu, owner, info);
+            if (!applyTryWithResourcesWindow(cu, owner, info, text)) {
+                allWrapped = false;
+                break;
+            }
         }
 
         // Write, compile, compare to baseline
-        Files.write(src, LexicalPreservingPrinter.print(cu).getBytes());
-        List<String> patched = CompilerUtils.compile(projectRoot);
+        List<String> patched = null;
+        if (allWrapped) {
+            Files.write(src, render(text, cu).getBytes());
+            patched = CompilerUtils.compile(projectRoot);
+        }
 
-        if (!CompilerUtils.outputsDiffer(baselineOutput, patched)) {
+        if (allWrapped && !CompilerUtils.outputsDiffer(baselineOutput, patched)) {
             Path backup = Files.createTempFile("orig-", ".java");
             Files.write(backup, original);
             List<String> diff = PatchUtils.diff(backup.toString(), src.toString());
@@ -79,6 +88,7 @@ public class TryWrapAndFinallyTransformer {
 
         // -------- Phase 2: classic try+finally wrap (stub for now) --------
         cu = LexicalPreservingPrinter.setup(StaticJavaParser.parse(src));
+        text = new SourceText(Files.readString(src));
 
         for (PromptInfo info : infos) {
             if (info.patchType != PatchType.TRY_WRAP_AND_FINALLY)
@@ -92,12 +102,13 @@ public class TryWrapAndFinallyTransformer {
                 continue;
 
             CallableDeclaration<?> owner = ownerOpt.get();
-            // TODO: implement classic try+finally window wrap fallback
-            // leave empty per request
-            applyTryFinallyWindow(cu, owner, info);
+            if (!applyTryFinallyWindow(cu, owner, info, text)) {
+                throw new UnsafeEditException("could not place a close() for the leak at line "
+                        + info.cfLeakLine + " without changing what the code does");
+            }
         }
 
-        Files.write(src, LexicalPreservingPrinter.print(cu).getBytes());
+        Files.write(src, render(text, cu).getBytes());
         patched = CompilerUtils.compile(projectRoot);
 
         if (!CompilerUtils.outputsDiffer(baselineOutput, patched)) {
@@ -114,10 +125,16 @@ public class TryWrapAndFinallyTransformer {
         return false; // no changes made
     }
 
+    /** The text rendering when every edit could be expressed as text, else the AST printer's. */
+    private static String render(SourceText text, CompilationUnit cu) {
+        return text.result().orElseGet(() -> LexicalPreservingPrinter.print(cu));
+    }
+
     // ---------- TWR window wrap ----------
     private static boolean applyTryWithResourcesWindow(CompilationUnit cu,
             CallableDeclaration<?> owner,
-            PromptInfo info) {
+            PromptInfo info,
+            SourceText text) {
         int startLine = info.tryWrapStartLine > 0 ? info.tryWrapStartLine : info.cfLeakLine;
         int initEndLine = info.tryWrapEndLine > 0 ? info.tryWrapEndLine : info.finallyInsertLine;
 
@@ -184,43 +201,41 @@ public class TryWrapAndFinallyTransformer {
         VariableDeclarationExpr resourceDecl;
         String resourceVarName;
         List<Statement> notToAddOnTryBody = new ArrayList<>();
+        Expression allocation = null;
+        // The resource header runs before the wrapped statements, so it may only take over
+        // code that already ran first among them; see MoveSafety.
+        Statement firstStmt = originalSlice.get(0);
         if (varNameOpt.isPresent()) {
             resourceVarName = varNameOpt.get();
-            VariableDeclarator vd = owner.findAll(VariableDeclarator.class).stream()
-                    .filter(v -> v.getNameAsString().equals(resourceVarName))
-                    .findFirst().orElse(null);
-            if (vd == null)
+            if (!firstStmt.isExpressionStmt()
+                    || !firstStmt.asExpressionStmt().getExpression().isVariableDeclarationExpr())
+                return false;
+            resourceDecl = firstStmt.asExpressionStmt().getExpression().asVariableDeclarationExpr();
+            if (resourceDecl.getVariables().size() != 1
+                    || !resourceDecl.getVariable(0).getNameAsString().equals(resourceVarName)
+                    || resourceDecl.getVariable(0).getInitializer().isEmpty())
                 return false;
 
-            resourceDecl = (VariableDeclarationExpr) vd.getParentNode().get();
-
             // remove original declaration statement; it will live in the TWR header now
-            Statement declStmt = resourceDecl.findAncestor(Statement.class).orElse(null);
-            if (declStmt != null) {
-                notToAddOnTryBody.add(declStmt);
-            }
+            notToAddOnTryBody.add(firstStmt);
 
             // no replacement in body needed; code already refers to resourceVarName
         } else {
             // nested allocation – introduce temp var and replace allocation expr inside the
             // slice
-            resourceVarName = "__arodnap_temp" + info.index;
-            String declSrc = info.resourceType + " " + resourceVarName + " = " + info.allocationExprText + ";";
-            resourceDecl = StaticJavaParser
-                    .parseBlock("{ " + declSrc + " }")
-                    .getStatement(0)
-                    .asExpressionStmt()
-                    .getExpression()
-                    .asVariableDeclarationExpr();
-
-            NameExpr tempRef = new NameExpr(resourceVarName);
+            List<Expression> matches = new ArrayList<>();
             for (Statement s : originalSlice) {
-                s.findAll(Expression.class).forEach(expr -> {
-                    if (equalsNoSpace(expr.toString(), info.allocationExprText)) {
-                        expr.replace(tempRef.clone());
-                    }
-                });
+                matches.addAll(Allocations.find(s, info));
             }
+            if (info.resourceType == null || matches.size() != 1
+                    || !MoveSafety.isFirstEffectOf(matches.get(0), firstStmt))
+                return false;
+            allocation = matches.get(0);
+            resourceVarName = "__arodnap_temp" + info.index;
+            resourceDecl = new VariableDeclarationExpr(new VariableDeclarator(
+                    StaticJavaParser.parseClassOrInterfaceType(TypeNames.inFile(cu, info.resourceType)), resourceVarName,
+                    allocation.clone()));
+            allocation.replace(new NameExpr(resourceVarName));
         }
 
         NodeList<Expression> resources = new NodeList<>();
@@ -234,6 +249,12 @@ public class TryWrapAndFinallyTransformer {
                 continue;
             findInnermostDeletableStmt(owner, ln).ifPresent(toDelete::add);
         }
+        String headerSource = allocation == null
+                ? text.text(resourceDecl.getRange().get())
+                : resourceDecl.toString();
+        WindowRendering.renderTryWithResources(text, container, originalSlice, headerSource,
+                allocation == null ? firstStmt : null, allocation, resourceVarName, toDelete);
+
         // 6) MOVE the original slice into try body (preserve tokens)
         int count = to - from + 1;
         for (int i = 0; i < count; i++) {
@@ -261,6 +282,12 @@ public class TryWrapAndFinallyTransformer {
     }
 
     // ---------- helpers ----------
+
+    /** The variable's declared type, or {@code fallback} for {@code var}. */
+    private static String declaredType(VariableDeclarator vd, String fallback) {
+        String type = vd.getType().toString();
+        return type.equals("var") ? fallback : type;
+    }
 
     private static boolean equalsNoSpace(String a, String b) {
         if (a == null || b == null)
@@ -328,7 +355,8 @@ public class TryWrapAndFinallyTransformer {
 
     private static boolean applyTryFinallyWindow(CompilationUnit cu,
             CallableDeclaration<?> owner,
-            PromptInfo info) {
+            PromptInfo info,
+            SourceText text) {
         int startLine = info.tryWrapStartLine > 0 ? info.tryWrapStartLine : info.cfLeakLine;
         int initEndLine = info.tryWrapEndLine > 0 ? info.tryWrapEndLine : info.finallyInsertLine;
 
@@ -387,6 +415,8 @@ public class TryWrapAndFinallyTransformer {
         Optional<String> varNameOpt = OnlyFinallyTransformer
                 .extractLeakedVariableName(cu, info.cfLeakLine, info.allocationExprText);
         String varName = varNameOpt.orElse("__arodnap_temp" + info.index);
+        Expression alloc = null; // the nested allocation, when there is no variable
+        WindowRendering.FinallyEdits edits = new WindowRendering.FinallyEdits();
 
         // 3) Build try/finally
         // 6) finally { if (var != null) { try { var.<finalizer>(); } catch (Exception
@@ -425,8 +455,9 @@ public class TryWrapAndFinallyTransformer {
                             && r.end.line <= endLine(sliceNodes.get(sliceNodes.size() - 1))).orElse(false);
 
                     if (declInsideSlice) {
-                        // Insert "Type var = null;" before try
-                        String nullDecl = info.resourceType + " " + varName + " = null;";
+                        // Insert "Type var = null;" before try, with the variable's declared type
+                        String nullDecl = declaredType(vd, TypeNames.inFile(cu, info.resourceType)) + " " + varName + " = null;";
+                        edits.nullDeclaration = nullDecl;
                         container.addStatement(from, StaticJavaParser.parseStatement(nullDecl));
                         from++; // shift insertion point
                         to++; // shift end of slice
@@ -436,9 +467,12 @@ public class TryWrapAndFinallyTransformer {
                         VariableDeclarationExpr vde = (VariableDeclarationExpr) vd.getParentNode().get();
                         if (initExpr != null) {
                             if (vde.getVariables().size() == 1) {
+                                edits.declarationToAssignment = declStmt;
+                                edits.variableName = vd.getName();
                                 declStmt.replace(new ExpressionStmt(
                                         new AssignExpr(new NameExpr(varName), initExpr, AssignExpr.Operator.ASSIGN)));
                             } else {
+                                text.giveUp();
                                 vd.setInitializer((Expression) null);
                                 BlockStmt blk = (BlockStmt) declStmt.getParentNode().get();
                                 int idx = blk.getStatements().indexOf(declStmt);
@@ -447,19 +481,37 @@ public class TryWrapAndFinallyTransformer {
                             }
                         } else {
                             // No initializer; keep declaration removed from slice (already null-declared)
+                            edits.declarationToRemove = declStmt;
                             declStmt.remove();
                         }
                     } else {
                         // Declared outside slice → ensure it is initialized to null
                         if (!vd.getInitializer().isPresent()) {
+                            text.giveUp();
                             vd.setInitializer(new com.github.javaparser.ast.expr.NullLiteralExpr());
                         }
                     }
                 }
             }
         } else {
-            // 3b) Nested allocation → declare temp before try
-            String nullDecl = info.resourceType + " " + varName + " = null;";
+            // 3b) Nested allocation → declare temp before try. "temp = allocation;" is placed
+            // before the allocation's statement, so it must be that statement's first effect.
+            if (info.resourceType == null)
+                return false;
+            for (Statement s : sliceNodes) {
+                alloc = Allocations.find(s, info).stream().findFirst().orElse(null);
+                if (alloc != null) {
+                    if (!MoveSafety.isFirstEffectOf(alloc, s))
+                        return false;
+                    edits.allocation = alloc;
+                    edits.allocationStatement = s;
+                    break;
+                }
+            }
+            if (alloc == null)
+                return false;
+            String nullDecl = TypeNames.inFile(cu, info.resourceType) + " " + varName + " = null;";
+            edits.nullDeclaration = nullDecl;
             container.addStatement(from, StaticJavaParser.parseStatement(nullDecl));
             from++; // shift insertion point
             to++; // shift end of slice
@@ -470,6 +522,8 @@ public class TryWrapAndFinallyTransformer {
                 continue;
             findInnermostDeletableStmt(owner, ln).ifPresent(toDelete::add);
         }
+        WindowRendering.renderTryFinally(text, container, sliceNodes, varName,
+                info.finalizerMethod + "(" + args + ")", catchType, edits, toDelete);
 
         // 4) MOVE slice statements into try body
         int count = to - from + 1;
@@ -488,31 +542,25 @@ public class TryWrapAndFinallyTransformer {
 
         // 5) If nested allocation, insert "temp = <allocExpr>;" before the statement
         // that contains it
-        if (!varNameOpt.isPresent() && info.allocationExprText != null) {
-            Expression allocExpr = wrapped.getTryBlock().findFirst(Expression.class,
-                    e -> equalsNoSpace(e.toString(), info.allocationExprText)).orElse(null);
-            if (allocExpr != null) {
-                // Find the top-level statement in try body containing the allocation
-                Node n = allocExpr;
-                Statement allocationStmt = null;
-                BlockStmt tryBlk = wrapped.getTryBlock();
-                while (n != null) {
-                    if (n instanceof Statement && n.getParentNode().orElse(null) == tryBlk) {
-                        allocationStmt = (Statement) n;
-                        break;
-                    }
-                    n = n.getParentNode().orElse(null);
+        if (!varNameOpt.isPresent()) {
+            // Find the top-level statement in try body containing the allocation
+            Node n = alloc;
+            Statement allocationStmt = null;
+            BlockStmt tryBlk = wrapped.getTryBlock();
+            while (n != null) {
+                if (n instanceof Statement && n.getParentNode().orElse(null) == tryBlk) {
+                    allocationStmt = (Statement) n;
+                    break;
                 }
-                if (allocationStmt != null) {
-                    String assignSrc = varName + " = " + info.allocationExprText + ";";
-                    int idx = tryBlk.getStatements().indexOf(allocationStmt);
-                    tryBlk.addStatement(idx, StaticJavaParser.parseStatement(assignSrc));
-                    allocExpr.replace(new NameExpr(varName));
-                }
+                n = n.getParentNode().orElse(null);
             }
+            if (allocationStmt == null)
+                return false;
+            int idx = tryBlk.getStatements().indexOf(allocationStmt);
+            tryBlk.addStatement(idx, new ExpressionStmt(
+                    new AssignExpr(new NameExpr(varName), alloc.clone(), AssignExpr.Operator.ASSIGN)));
+            alloc.replace(new NameExpr(varName));
         }
-
-        
 
         // 7) Apply RLFixer delete-line hints (best-effort)
 

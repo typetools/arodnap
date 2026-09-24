@@ -118,6 +118,19 @@ public class PromptParser {
             }
         }
 
+        // --- source offsets of the reported expression: "$$ ( start, end ) $$" ---
+        Matcher offsetsMatcher = Pattern.compile("\\$\\$\\s*\\(\\s*(\\d+)\\s*,\\s*(\\d+)\\s*\\)\\s*\\$\\$")
+                .matcher(cf);
+        if (offsetsMatcher.find() && info.leakSourceFile != null) {
+            try {
+                String source = java.nio.file.Files.readString(java.nio.file.Paths.get(info.leakSourceFile));
+                Allocations.setPositions(info, source, toInt(offsetsMatcher.group(1), -1),
+                        toInt(offsetsMatcher.group(2), -1));
+            } catch (java.io.IOException e) {
+                // Without the file the expression text is used instead.
+            }
+        }
+
         // --- RLFixer: file + line ---
         Matcher fileLineMatcher = Pattern.compile("vim \\+(\\d+) (/.+\\.java)").matcher(hint);
         if (fileLineMatcher.find()) {

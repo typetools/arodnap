@@ -67,18 +67,23 @@ public class RLPatcher {
         boolean allTryWrapAndFinally = infos.stream().allMatch(pi -> pi.patchType == PatchType.TRY_WRAP_AND_FINALLY);
         boolean allPreCloseFieldBefore = infos.stream().allMatch(pi -> pi.patchType == PatchType.PRE_CLOSE_FIELD_BEFORE);
         boolean success = false;
-        if (allOnlyFinally) {
-            System.out.println("Applying ONLY_FINALLY patches...");
-            success = OnlyFinallyTransformer.apply(infos, projectRoot.toString(), baselineOutput);
-        } else if (allTryWrapAndFinally) {
-            System.out.println("Applying TRY_WRAP_AND_FINALLY patches...");
-            success = TryWrapAndFinallyTransformer.apply(infos, projectRoot.toString(), baselineOutput);
-        } else if (allPreCloseFieldBefore) {
-            System.out.println("Applying PRE_CLOSE_FIELD_BEFORE patches...");
-            success = PreCloseFieldBeforeTransformer.apply(infos, projectRoot.toString(), baselineOutput);
-        } else {
-            System.err.println(
-                    "❌ Mixed patch types detected. Only ALL ONLY_FINALLY or ALL TRY_WRAP_AND_FINALLY is supported.");
+        try {
+            if (allOnlyFinally) {
+                System.out.println("Applying ONLY_FINALLY patches...");
+                success = OnlyFinallyTransformer.apply(infos, projectRoot.toString(), baselineOutput);
+            } else if (allTryWrapAndFinally) {
+                System.out.println("Applying TRY_WRAP_AND_FINALLY patches...");
+                success = TryWrapAndFinallyTransformer.apply(infos, projectRoot.toString(), baselineOutput);
+            } else if (allPreCloseFieldBefore) {
+                System.out.println("Applying PRE_CLOSE_FIELD_BEFORE patches...");
+                success = PreCloseFieldBeforeTransformer.apply(infos, projectRoot.toString(), baselineOutput);
+            } else {
+                System.err.println(
+                        "❌ Mixed patch types detected. Only ALL ONLY_FINALLY or ALL TRY_WRAP_AND_FINALLY is supported.");
+                return;
+            }
+        } catch (UnsafeEditException e) {
+            System.out.println("❌ Patch not materialized (unsafe edit): " + leakFile + ": " + e.getMessage());
             return;
         }
 

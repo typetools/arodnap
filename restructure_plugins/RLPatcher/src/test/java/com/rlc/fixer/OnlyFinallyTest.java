@@ -79,7 +79,7 @@ class OnlyFinallyTest {
         Path patch = Paths.get("rlfixer.patch");
         assertTrue(Files.exists(patch));
         String diff = Files.readString(patch);
-        assertTrue(diff.contains("try (java.net.Socket __arodnap_temp0 = new Socket"), "diff must show TWR header");
+        assertTrue(diff.contains("try (Socket __arodnap_temp0 = new Socket"), "diff must show TWR header");
 
         // Source restored?
         List<String> current = Files.readAllLines(srcFile);

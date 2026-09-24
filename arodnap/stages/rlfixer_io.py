@@ -16,6 +16,9 @@ _WARNING_HEADER = re.compile(r"^(?P<path>/.+?):(?P<line>\d+):\s+warning:", re.MU
 # Checker Framework 3.x prints "(key)"; 4.x prints "[key]" or "[checker:key]".
 _REQUIRED_METHOD_NOT_CALLED = re.compile(r"[(\[](?:[\w.]+:)?required\.method\.not\.called[)\]]")
 _OWNING_FIELD_OVERWRITE = "Non-final owning field might be overwritten"
+# RLFixer's hint lines that ask for a source edit; anything else is a note.
+_SOURCE_EDIT = re.compile(r"^\+\+\+ (?:Add following code|Delete Line number)", re.MULTILINE)
+_NOTHING_TO_BE_DONE = "Nothing to be done"
 _FIX_BLOCK = re.compile(
     r"""
     ^\s*(?P<number>\d+)\]\s*
@@ -72,7 +75,7 @@ def rlfixer_warnings_argument(
     entries = []
     skipped = []
     for warning in warnings:
-        if not _REQUIRED_METHOD_NOT_CALLED.search(warning.message.splitlines()[0]):
+        if not is_leak_warning(warning):
             continue
         relpath = _relative_to(warning.filepath, source_root)
         if relpath is None:
@@ -81,6 +84,16 @@ def rlfixer_warnings_argument(
         owning_overwrite = _OWNING_FIELD_OVERWRITE in warning.message
         entries.append(f"{relpath},{warning.line_number},None,{owning_overwrite}")
     return ("#".join(entries) + "#" if entries else ""), skipped
+
+
+def is_leak_warning(warning: CheckerWarning) -> bool:
+    """True for the `required.method.not.called` warnings RLFixer is asked to fix."""
+    return bool(_REQUIRED_METHOD_NOT_CALLED.search(warning.message.splitlines()[0]))
+
+
+def has_nothing_to_do(suggestion: FixSuggestion) -> bool:
+    """True when RLFixer says the leak needs no edit (e.g. a returned resource with no callers)."""
+    return _NOTHING_TO_BE_DONE in suggestion.suggestion and not _SOURCE_EDIT.search(suggestion.suggestion)
 
 
 def parse_fix_suggestions(fixes_text: str, *, source_root: Path) -> list[FixSuggestion]:
@@ -145,8 +158,14 @@ def match_fixes_to_warnings(
     suggestions: list[FixSuggestion],
     warnings: list[CheckerWarning],
 ) -> list[tuple[FixSuggestion, CheckerWarning]]:
-    """Pair each suggestion with the warning at the same absolute path and line."""
-    by_location = {(warning.filepath, warning.line_number): warning for warning in warnings}
+    """Pair each suggestion with the leak warning at the same absolute path and line.
+
+    Other warnings (such as an `assignment` type error) can be reported on the same line;
+    RLFixer only saw the leak warnings, so only those are paired.
+    """
+    by_location = {
+        (warning.filepath, warning.line_number): warning for warning in warnings if is_leak_warning(warning)
+    }
     return [
         (suggestion, by_location[(suggestion.filepath, suggestion.line_number)])
         for suggestion in suggestions

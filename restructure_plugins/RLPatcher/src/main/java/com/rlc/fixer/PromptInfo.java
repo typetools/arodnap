@@ -21,6 +21,9 @@ public class PromptInfo {
     public List<Integer> linesToDelete = new ArrayList<>(); // Lines to delete in the original file
 
     public String allocationExprText;
+    // Source range of the reported expression, from the warning's "( start, end )" offsets.
+    public com.github.javaparser.Position allocationBegin;
+    public com.github.javaparser.Position allocationEnd;
     public String finalizerMethod = "close"; 
     public List<String> finalizerDefaultArgs = new ArrayList<>();
     int index;

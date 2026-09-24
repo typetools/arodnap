@@ -81,7 +81,10 @@ public class OnlyFinallyVarOutsideTryTest {
         Path patch = Paths.get("rlfixer.patch");
         assertTrue(Files.exists(patch), "patch file should exist");
         String diff = Files.readString(patch);
-        assertTrue(diff.contains("try (InputStream"), "diff must add try-with-resources");
+        // Moving the declaration into a try-with-resources header would run it after
+        // "new Properties()" and inside the catch, so the finally form is used instead.
+        assertFalse(diff.contains("try (InputStream"), "declaration must not move into the try");
+        assertTrue(diff.contains("finally {") && diff.contains("stream.close()"), "diff must close in finally");
 
         // Ensure source reverted after patch emission
         assertEquals(originalSource, Files.readAllLines(srcFile));

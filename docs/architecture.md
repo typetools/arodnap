@@ -156,7 +156,12 @@ The current repair order is:
    RLFixer crashes or prints no fixes report
 4. `rlpatcher`: materializes RLFixer suggestions and applies them to the
    workspace, skipping any that conflict with an earlier patch (rerun analysis
-   as `final` if it changed sources)
+   as `final` if it changed sources). Its `patch_manifest.json` records one
+   outcome per suggestion under `fixes`: `materialized`, `no_change` (RLFixer
+   or RLPatcher found nothing to change), `rejected` (failed RLPatcher's
+   compile check), `unsafe` (the close could only be placed by moving the
+   allocation ahead of code that runs before it, which would change behavior),
+   `unsupported` or `crashed`
 5. `bundle`: diffs the original repository against the final workspace into
    one patch and verifies it by replaying it onto a clean copy
 

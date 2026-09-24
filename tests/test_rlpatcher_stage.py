@@ -326,6 +326,9 @@ class RLPatcherStageTest(unittest.TestCase):
         cases = {
             "no_change": CommandResult((), None, 0, "Patch applied successfully: App.java\n", ""),
             "rejected": CommandResult((), None, 0, "Patch failed (compilation check failed): App.java\n", ""),
+            "unsafe": CommandResult(
+                (), None, 0, "❌ Patch not materialized (unsafe edit): App.java: could not place a close()\n", ""
+            ),
             "unsupported": CommandResult((), None, 0, "", "Mixed patch types detected.\n"),
             "crashed": CommandResult((), None, 1, "", "Exception in thread main\n"),
         }
@@ -358,6 +361,37 @@ class RLPatcherStageTest(unittest.TestCase):
                     manifest["fixes"],
                     [{"index": 1, "file": "com/example/App.java", "line": 10, "outcome": outcome}],
                 )
+
+    def test_rlpatcher_is_not_run_when_rlfixer_says_nothing_is_needed(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_root = Path(temp_dir)
+            workspace_root, diagnostics_path, inference_dir, fixes_path, debug_path, rlpatcher_jar, source_file = (
+                self._make_inputs(temp_root)
+            )
+            fixes_path.write_text(
+                fixes_path.read_text().replace(
+                    "Introduce a safe close pattern.",
+                    "+++ Nothing to be done. No callers found for method with resource return",
+                )
+            )
+            stage_output_dir = temp_root / "arodnap-out" / "stages" / "rlpatcher"
+
+            with patch("arodnap.stages.rlpatcher.run_stage_command") as run_mock:
+                result = run_rlpatcher_stage(
+                    workspace_root=workspace_root,
+                    diagnostics_path=diagnostics_path,
+                    inference_dir=inference_dir,
+                    fixes_path=fixes_path,
+                    debug_path=debug_path,
+                    stage_output_dir=stage_output_dir,
+                    rlpatcher_jar=rlpatcher_jar,
+                    source_root=workspace_root / "src" / "main" / "java",
+                )
+
+            run_mock.assert_not_called()
+            self.assertFalse(result.changed)
+            manifest = json.loads((stage_output_dir / "patch_manifest.json").read_text())
+            self.assertEqual([fix["outcome"] for fix in manifest["fixes"]], ["no_change"])
 
     def _make_inputs(self, root: Path) -> tuple[Path, Path, Path, Path, Path, Path, Path]:
         workspace_root = root / "workspace"

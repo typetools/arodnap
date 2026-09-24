@@ -27,6 +27,7 @@ from .rlfixer_io import (
     match_fixes_to_warnings,
     parse_checker_warnings,
     parse_debug_fixable,
+    has_nothing_to_do,
     parse_fix_suggestions,
     select_fixable_suggestions,
 )
@@ -34,10 +35,12 @@ from .rlfixer_io import (
 _STAGE_NAME = "rlpatcher"
 _PATCH_SUCCESS_TEXT = "Patch applied successfully"
 _PATCH_REJECTED_TEXT = "Patch failed"
+_PATCH_UNSAFE_TEXT = "Patch not materialized (unsafe edit)"
 # Per-fix outcomes of running RLPatcher on one RLFixer suggestion.
 MATERIALIZED = "materialized"  # RLPatcher produced a patch that passed its compile check
-NO_CHANGE = "no_change"  # RLPatcher found nothing to change for this suggestion
+NO_CHANGE = "no_change"  # RLFixer or RLPatcher found nothing to change for this suggestion
 REJECTED = "rejected"  # RLPatcher's edit did not pass its compile check
+UNSAFE = "unsafe"  # RLPatcher could not place the fix without changing what the code does
 UNSUPPORTED = "unsupported"  # RLPatcher does not handle this kind of suggestion
 CRASHED = "crashed"  # RLPatcher exited with an error
 
@@ -324,6 +327,10 @@ class RLPatcherStageWrapper(BaseStageWrapper):
         inputs: RLPatcherStageInputs,
         match: MatchedFixWarning,
     ) -> tuple[str, str | None]:
+        if has_nothing_to_do(match.fix):
+            # RLPatcher would fall back to a finally block built from the warning's
+            # (possibly truncated) expression text, so it is not run at all.
+            return NO_CHANGE, None
         inputs.paths.raw_patch_path.unlink(missing_ok=True)
         command = [
             java_executable(),
@@ -364,6 +371,8 @@ class RLPatcherStageWrapper(BaseStageWrapper):
             return CRASHED, None
         if _PATCH_REJECTED_TEXT in completed.stdout:
             return REJECTED, None
+        if _PATCH_UNSAFE_TEXT in completed.stdout:
+            return UNSAFE, None
         if _PATCH_SUCCESS_TEXT not in completed.stdout:
             return UNSUPPORTED, None
         if not _changes_code(patch_text):
@@ -438,7 +447,7 @@ def _changes_code(patch_text: str) -> bool:
 
 
 def _outcome_note(fix_outcomes: list[dict[str, object]], *, applied: int, skipped: int) -> str:
-    counts = {outcome: 0 for outcome in (MATERIALIZED, NO_CHANGE, REJECTED, UNSUPPORTED, CRASHED)}
+    counts = {outcome: 0 for outcome in (MATERIALIZED, NO_CHANGE, REJECTED, UNSAFE, UNSUPPORTED, CRASHED)}
     for entry in fix_outcomes:
         counts[str(entry["outcome"])] += 1
     note = (
@@ -450,6 +459,7 @@ def _outcome_note(fix_outcomes: list[dict[str, object]], *, applied: int, skippe
         for outcome, label in (
             (NO_CHANGE, "needed no change"),
             (REJECTED, "failed RLPatcher's compile check"),
+            (UNSAFE, "could not be placed without changing what the code does"),
             (UNSUPPORTED, "are not supported by RLPatcher"),
             (CRASHED, "crashed RLPatcher"),
         )

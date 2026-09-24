@@ -6,6 +6,7 @@ from arodnap.stages.rlfixer_io import (
     CheckerWarning,
     FixSuggestion,
     build_rlpatcher_prompt,
+    has_nothing_to_do,
     match_fixes_to_warnings,
     parse_checker_warnings,
     parse_debug_fixable,
@@ -90,12 +91,35 @@ class RLFixerIoTest(unittest.TestCase):
         self.assertEqual(select_fixable_suggestions([keep, drop], {("a/A.java", 3)}), [keep])
         self.assertEqual(select_fixable_suggestions([keep, drop], set()), [keep, drop])
 
-        warning = CheckerWarning("/ws/src/main/java/a/A.java", 3, "msg")
+        msg = "/ws/src/main/java/a/A.java:3: warning: [required.method.not.called] $$ leak"
+        warning = CheckerWarning("/ws/src/main/java/a/A.java", 3, msg)
         self.assertEqual(match_fixes_to_warnings([keep, drop], [warning]), [(keep, warning)])
         self.assertEqual(
             json.loads(build_rlpatcher_prompt(warning, keep)),
-            {"CF Leaks": ["msg"], "RLFixer hint": ["s1"]},
+            {"CF Leaks": [msg], "RLFixer hint": ["s1"]},
         )
+
+    def test_suggestions_pair_with_the_leak_warning_not_another_warning_on_the_same_line(self) -> None:
+        # Seen on Apache Ivy: `in = PGPUtil.getDecoderStream(in);` has both.
+        path = "/ws/src/main/java/a/A.java"
+        leak = CheckerWarning(path, 7, f"{path}:7: warning: [required.method.not.called] $$ leak")
+        assignment = CheckerWarning(path, 7, f"{path}:7: warning: [assignment] $$ 2 $$ incompatible types")
+        fix = FixSuggestion(path, "a/A.java", 7, "s")
+        self.assertEqual(match_fixes_to_warnings([fix], [leak, assignment]), [(fix, leak)])
+        self.assertEqual(match_fixes_to_warnings([fix], [assignment]), [])
+
+    def test_suggestions_without_a_source_edit(self) -> None:
+        def suggestion(text: str) -> FixSuggestion:
+            return FixSuggestion("/ws/A.java", "A.java", 1, text)
+
+        nothing = (
+            "vim +135 /ws/A.java\n\n"
+            "+++ NOTE: Resource escapes via return statement and needs to be closed in the callers of resolveEntity\n"
+            "+++ Nothing to be done. No callers found for method with resource return"
+        )
+        self.assertTrue(has_nothing_to_do(suggestion(nothing)))
+        self.assertFalse(has_nothing_to_do(suggestion("+++ Add following code above line:3 (A.java)\ntry{")))
+        self.assertFalse(has_nothing_to_do(suggestion(nothing + "\n+++ Delete Line number 9 (A.java)")))
 
 
 if __name__ == "__main__":
