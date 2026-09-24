@@ -24,7 +24,15 @@ import shutil
 import sys
 import time
 
-from arodnap.runtime import CommandExecutionError, JdkResolutionError, render_command_log, resolve_jdk, run_command
+from arodnap.contracts import Timeouts
+from arodnap.runtime import (
+    CommandExecutionError,
+    CommandTimeoutError,
+    JdkResolutionError,
+    render_command_log,
+    resolve_jdk,
+    run_command,
+)
 
 from .base import (
     AdapterExecutionError,
@@ -120,11 +128,13 @@ class CapturedBuildAdapter:
         compile_target: str | None = None,
         build_args: list[str] | None = None,
         build_command: list[str] | tuple[str, ...] | None = None,
+        timeouts: Timeouts | None = None,
     ) -> None:
         self.repo_root = repo_root.resolve()
         self.compile_target = compile_target
         self.build_args = list(build_args or [])
         self.build_command = tuple(build_command or ())
+        self.timeouts = timeouts or Timeouts()
 
     # Contract -------------------------------------------------------------------------
 
@@ -153,10 +163,16 @@ class CapturedBuildAdapter:
             }
         )
         try:
-            result = run_command(list(command), cwd=self.repo_root, env=env)
+            result = run_command(list(command), cwd=self.repo_root, env=env, timeout_seconds=self.timeouts.build_seconds)
+        except CommandTimeoutError as exc:
+            raise AdapterExecutionError(
+                f"The build did not finish within {exc.timeout_seconds} seconds (--build-timeout): {' '.join(command)}"
+            ) from exc
         except CommandExecutionError as exc:
             raise MissingBuildToolError(f"Could not run the build command {command[0]!r}: {exc}") from exc
-        build_log.write_text(render_command_log(result, tool_name=f"{self.build_system} build"))
+        build_log.write_text(
+            render_command_log(result, tool_name=f"{self.build_system} build", timeout_seconds=self.timeouts.build_seconds)
+        )
         if result.returncode != 0:
             raise UnsupportedProjectError(
                 f"The build failed (exit code {result.returncode}): {' '.join(command)}\n"
@@ -213,7 +229,7 @@ class CapturedBuildAdapter:
             command += ["-encoding", inputs.encoding]
         command.append(f"@{sources_file}")
         try:
-            result = run_command(command, cwd=self.repo_root)
+            result = run_command(command, cwd=self.repo_root, timeout_seconds=self.timeouts.analysis_seconds)
         except CommandExecutionError as exc:
             raise AdapterExecutionError(str(exc)) from exc
         if result.returncode != 0:

@@ -86,6 +86,13 @@ Common options:
 - `--checker-framework`: use another Checker Framework distribution (the
   directory containing `checker/dist/checker.jar`). Defaults to
   `$ARODNAP_CHECKER_FRAMEWORK`, then the bundled 4.2.3.
+- `--build-timeout`, `--analysis-timeout`, `--stage-timeout` (seconds): optional
+  limits. There are none by default. Each limit applies to every single command
+  of its kind: the captured build; each Checker Framework run (every inference
+  iteration, every leak check) and the analysis compile; each repair tool run
+  (RLPatcher once per suggestion). A command over its limit is killed with its
+  child processes and the run fails with a message naming the limit, except
+  for RLPatcher, where that suggestion is recorded as `timed_out`.
 - `apply` also requires `--patch-dir`, usually `./arodnap-out/patches`.
 
 ## Typical Workflow

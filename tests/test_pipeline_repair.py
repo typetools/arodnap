@@ -176,7 +176,7 @@ class RepairPipelineTest(unittest.TestCase):
             owning_field_jar=(root / "owning.jar").resolve(),
             rlfixer_jar=(root / "rlfixer.jar").resolve(),
             rlpatcher_jar=(root / "rlpatcher.jar").resolve(),
-            timeouts=Timeouts(build_seconds=1, analysis_seconds=2, stage_seconds=3),
+            timeouts=Timeouts(),
         )
 
 

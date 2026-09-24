@@ -7,7 +7,7 @@ import re
 import tempfile
 
 from arodnap.contracts import RunConfig
-from arodnap.runtime import CommandExecutionError, render_command_log, run_command
+from arodnap.runtime import CommandExecutionError, CommandTimeoutError, render_command_log, run_command
 
 from .checker_framework import (
     RESOURCE_LEAK_CHECKER,
@@ -88,7 +88,11 @@ def run_resource_leak_checker(
             ]
         )
         try:
-            command_result = run_command(command, cwd=workspace_root)
+            command_result = run_command(
+                command, cwd=workspace_root, timeout_seconds=config.timeouts.analysis_seconds
+            )
+        except CommandTimeoutError as exc:
+            raise RlcRunError(f"The Resource Leak Checker exceeded --analysis-timeout. {exc}") from exc
         except CommandExecutionError as exc:
             raise RlcRunError(str(exc)) from exc
 

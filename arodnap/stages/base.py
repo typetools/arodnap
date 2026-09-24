@@ -9,11 +9,15 @@ from typing import Protocol
 
 from arodnap.contracts import RunConfig, StageResult
 from arodnap.patch_tool import PatchExecution, PatchToolError, append_patch_execution_log, run_patch
-from arodnap.runtime import CommandExecutionError, CommandResult, render_command_log, run_command
+from arodnap.runtime import CommandExecutionError, CommandResult, CommandTimeoutError, render_command_log, run_command
 
 
 class StageExecutionError(RuntimeError):
     """Raised when a stage tool fails or its outputs cannot be normalized."""
+
+
+class StageTimeoutError(StageExecutionError):
+    """Raised when a stage tool runs longer than the user's --stage-timeout."""
 
 
 class StageNotImplementedError(NotImplementedError):
@@ -125,9 +129,12 @@ def run_stage_command(
     *,
     command: list[str],
     cwd: Path,
+    timeout_seconds: int | None = None,
 ) -> CommandResult:
     try:
-        return run_command(command, cwd=cwd)
+        return run_command(command, cwd=cwd, timeout_seconds=timeout_seconds)
+    except CommandTimeoutError as exc:
+        raise StageTimeoutError(f"{exc} (--stage-timeout)") from exc
     except CommandExecutionError as exc:
         raise StageExecutionError(str(exc)) from exc
 
@@ -249,7 +256,9 @@ class BaseNormalizedPatchStageWrapper(BaseStageWrapper, ABC):
             diagnostics_path=diagnostics_path,
             java_properties=java_properties,
         )
-        completed = run_stage_command(command=command, cwd=workspace_root)
+        completed = run_stage_command(
+            command=command, cwd=workspace_root, timeout_seconds=stage_timeout_seconds(config)
+        )
         append_command_log(
             stage_paths.log_path,
             title=self.command_log_title,

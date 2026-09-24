@@ -188,7 +188,9 @@ class RLFixerStageWrapper(BaseStageWrapper):
             "-wpiOutDir",
             str(inputs.inference_dir),
         ]
-        completed = run_stage_command(command=command, cwd=paths.root)
+        completed = run_stage_command(
+            command=command, cwd=paths.root, timeout_seconds=stage_timeout_seconds(inputs.config)
+        )
         append_command_log(
             paths.log_path,
             title="rlfixer",

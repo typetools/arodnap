@@ -278,6 +278,7 @@ def _run_repo_checks(
             compile_target=config.compile_target,
             build_args=config.build_args,
             build_command=config.build_command,
+            timeouts=config.timeouts,
         )
     except UnsupportedProjectError as exc:
         checks.append(

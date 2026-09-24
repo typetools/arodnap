@@ -45,7 +45,7 @@ class DoctorCommandTest(unittest.TestCase):
                 def validate_compile(self_nonlocal, project: ProjectModel) -> None:
                     observed["validated_compile_target"] = project.compile_target
 
-            def fake_select_build_adapter(repo_root, *, compile_target, build_args, build_command=()):
+            def fake_select_build_adapter(repo_root, *, compile_target, build_args, build_command=(), **_kwargs):
                 observed["workspace_root"] = repo_root.resolve()
                 observed["compile_target"] = compile_target
                 observed["build_args"] = list(build_args)
@@ -153,7 +153,7 @@ class DoctorCommandTest(unittest.TestCase):
                         f"Gradle compile target '{project.compile_target}' failed for {project.repo_root}.\nboom"
                     )
 
-            def fake_select_build_adapter(repo_root, *, compile_target, build_args, build_command=()):
+            def fake_select_build_adapter(repo_root, *, compile_target, build_args, build_command=(), **_kwargs):
                 observed["workspace_root"] = repo_root.resolve()
                 return FakeAdapter()
 
@@ -183,7 +183,7 @@ class DoctorCommandTest(unittest.TestCase):
             owning_field_jar=repo_root / "owning.jar",
             rlfixer_jar=repo_root / "rlfixer.jar",
             rlpatcher_jar=repo_root / "rlpatcher.jar",
-            timeouts=Timeouts(build_seconds=900, analysis_seconds=1800, stage_seconds=900),
+            timeouts=Timeouts(),
         )
 
     @staticmethod

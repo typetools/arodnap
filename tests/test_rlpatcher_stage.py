@@ -7,6 +7,7 @@ from unittest.mock import patch
 
 from arodnap.patch_tool import PatchToolError, discover_patch_tool
 from arodnap.runtime import CommandResult
+from arodnap.stages.base import StageTimeoutError
 from arodnap.stages.rlpatcher import StageExecutionError, _changes_code, run_rlpatcher_stage
 
 
@@ -39,7 +40,7 @@ class RLPatcherStageTest(unittest.TestCase):
             ) = self._make_inputs(temp_root)
             stage_output_dir = temp_root / "arodnap-out" / "stages" / "rlpatcher"
 
-            def fake_run_stage_command(*, command: list[str], cwd: Path) -> CommandResult:
+            def fake_run_stage_command(*, command: list[str], cwd: Path, timeout_seconds: int | None = None) -> CommandResult:
                 raw_patch_path = cwd / "rlfixer.patch"
                 raw_patch_path.write_text(
                     "\n".join(
@@ -109,7 +110,7 @@ class RLPatcherStageTest(unittest.TestCase):
             stage_output_dir = temp_root / "arodnap-out" / "stages" / "rlpatcher"
             original_hash = hashlib.sha256(source_file.read_bytes()).hexdigest()
 
-            def fake_run_stage_command(*, command: list[str], cwd: Path) -> CommandResult:
+            def fake_run_stage_command(*, command: list[str], cwd: Path, timeout_seconds: int | None = None) -> CommandResult:
                 (cwd / "rlfixer.patch").write_text(
                     "\n".join(
                         [
@@ -175,7 +176,7 @@ class RLPatcherStageTest(unittest.TestCase):
             stage_output_dir = temp_root / "arodnap-out" / "stages" / "rlpatcher"
             replacements = iter(['String first = "1";', 'String second = "2";'])
 
-            def fake_run_stage_command(*, command: list[str], cwd: Path) -> CommandResult:
+            def fake_run_stage_command(*, command: list[str], cwd: Path, timeout_seconds: int | None = None) -> CommandResult:
                 (cwd / "rlfixer.patch").write_text(
                     f"--- {source_file.resolve()}\n+++ {source_file.resolve()}\n@@ -1 +1 @@\n"
                     f"-class App {{ String old = \"old\"; }}\n+class App {{ {next(replacements)} }}\n"
@@ -256,7 +257,7 @@ class RLPatcherStageTest(unittest.TestCase):
             ) = self._make_inputs(temp_root)
             stage_output_dir = temp_root / "arodnap-out" / "stages" / "rlpatcher"
 
-            def fake_run_stage_command(*, command: list[str], cwd: Path) -> CommandResult:
+            def fake_run_stage_command(*, command: list[str], cwd: Path, timeout_seconds: int | None = None) -> CommandResult:
                 (cwd / "rlfixer.patch").write_text(
                     "\n".join(
                         [
@@ -302,7 +303,7 @@ class RLPatcherStageTest(unittest.TestCase):
             source_file.write_bytes(b"class App { String old = \"old\"; }")  # no trailing newline
             original = source_file.read_bytes()
 
-            def fake_run_stage_command(*, command: list[str], cwd: Path) -> CommandResult:
+            def fake_run_stage_command(*, command: list[str], cwd: Path, timeout_seconds: int | None = None) -> CommandResult:
                 # RLPatcher restoring its backup with a trailing newline, reporting no patch.
                 source_file.write_bytes(original + b"\n")
                 return CommandResult(tuple(command), cwd, 0, "Patch applied successfully: App.java\n", "")
@@ -331,6 +332,7 @@ class RLPatcherStageTest(unittest.TestCase):
             ),
             "unsupported": CommandResult((), None, 0, "", "Mixed patch types detected.\n"),
             "crashed": CommandResult((), None, 1, "", "Exception in thread main\n"),
+            "timed_out": StageTimeoutError("Command timed out after 5 seconds (--stage-timeout)"),
         }
         for outcome, completed in cases.items():
             with self.subTest(outcome=outcome), tempfile.TemporaryDirectory() as temp_dir:
@@ -340,7 +342,10 @@ class RLPatcherStageTest(unittest.TestCase):
                 )
                 stage_output_dir = temp_root / "arodnap-out" / "stages" / "rlpatcher"
 
-                with patch("arodnap.stages.rlpatcher.run_stage_command", return_value=completed):
+                outcome_of_run = (
+                    {"side_effect": completed} if isinstance(completed, Exception) else {"return_value": completed}
+                )
+                with patch("arodnap.stages.rlpatcher.run_stage_command", **outcome_of_run):
                     result = run_rlpatcher_stage(
                         workspace_root=workspace_root,
                         diagnostics_path=diagnostics_path,

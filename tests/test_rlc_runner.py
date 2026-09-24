@@ -171,7 +171,7 @@ class RlcRunnerTest(unittest.TestCase):
             owning_field_jar=root / "owning.jar",
             rlfixer_jar=root / "rlfixer.jar",
             rlpatcher_jar=root / "rlpatcher.jar",
-            timeouts=Timeouts(build_seconds=1, analysis_seconds=2, stage_seconds=3),
+            timeouts=Timeouts(),
         )
 
     def _make_run_command_side_effect(self, template: CommandResult):

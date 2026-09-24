@@ -46,6 +46,9 @@ Current v1.1 responsibilities:
 
 - shared subprocess execution through `run_command(...)`
 - shared `CommandResult` and `CommandExecutionError`
+- optional per-command time limits (`--build-timeout`, `--analysis-timeout`,
+  `--stage-timeout`; none by default): a command over its limit is killed with
+  its process group and raises `CommandTimeoutError`
 - shared command-log rendering for analysis, stages, and patch execution
 - small environment overlay support via `environment_with_overrides(...)`
 - JDK resolution via `resolve_jdk()`: `JAVA_HOME`, else the `java` on `PATH`
@@ -161,7 +164,7 @@ The current repair order is:
    or RLPatcher found nothing to change), `rejected` (failed RLPatcher's
    compile check), `unsafe` (the close could only be placed by moving the
    allocation ahead of code that runs before it, which would change behavior),
-   `unsupported` or `crashed`
+   `unsupported`, `crashed` or `timed_out` (ran longer than `--stage-timeout`)
 5. `bundle`: diffs the original repository against the final workspace into
    one patch and verifies it by replaying it onto a clean copy
 

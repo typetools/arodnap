@@ -25,6 +25,26 @@ class CliTest(unittest.TestCase):
         self.assertIsNone(getattr(args, "patch_dir", None))
         self.assertTrue(args.out_dir.endswith("arodnap-out"))
 
+    def test_time_limits_default_to_none_and_are_passed_to_the_config(self) -> None:
+        from arodnap.orchestrator.config import build_run_config
+
+        parser = build_parser()
+        defaults = build_run_config(parser.parse_args(["repair", "/tmp/repo"]), command="repair")
+        self.assertEqual(defaults.timeouts.to_dict(),
+                         {"build_seconds": None, "analysis_seconds": None, "stage_seconds": None})
+
+        args = parser.parse_args(
+            ["repair", "--build-timeout", "600", "--analysis-timeout", "3600", "--stage-timeout", "120", "/tmp/repo"]
+        )
+        limits = build_run_config(args, command="repair").timeouts
+        self.assertEqual((limits.build_seconds, limits.analysis_seconds, limits.stage_seconds), (600, 3600, 120))
+
+    def test_time_limits_must_be_positive_whole_seconds(self) -> None:
+        parser = build_parser()
+        for value in ("0", "-5", "1.5", "ten"):
+            with self.subTest(value=value), self.assertRaises(SystemExit):
+                parser.parse_args(["repair", "--stage-timeout", value, "/tmp/repo"])
+
     def test_apply_requires_patch_dir(self) -> None:
         parser = build_parser()
 

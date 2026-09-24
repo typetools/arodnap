@@ -13,6 +13,7 @@ from .base import (
     BaseStageWrapper,
     CompileInputs,
     StageExecutionError,
+    StageTimeoutError,
     append_command_log,
     apply_normalized_patch,
     normalize_unified_diff_paths,
@@ -43,6 +44,7 @@ REJECTED = "rejected"  # RLPatcher's edit did not pass its compile check
 UNSAFE = "unsafe"  # RLPatcher could not place the fix without changing what the code does
 UNSUPPORTED = "unsupported"  # RLPatcher does not handle this kind of suggestion
 CRASHED = "crashed"  # RLPatcher exited with an error
+TIMED_OUT = "timed_out"  # RLPatcher ran longer than --stage-timeout and was stopped
 
 
 @dataclass(frozen=True)
@@ -348,7 +350,14 @@ class RLPatcherStageWrapper(BaseStageWrapper):
         touched = {Path(match.warning.filepath), Path(match.fix.filepath)}
         originals = {path: path.read_bytes() for path in touched if path.is_file()}
         try:
-            completed = run_stage_command(command=command, cwd=inputs.paths.root)
+            completed = run_stage_command(
+                command=command, cwd=inputs.paths.root, timeout_seconds=stage_timeout_seconds(inputs.config)
+            )
+        except StageTimeoutError as exc:
+            with inputs.paths.log_path.open("a", encoding="utf-8") as handle:
+                handle.write(f"== rlpatcher_{match.index:04d} ==\nTIMED_OUT: {exc}\n\n")
+            inputs.paths.raw_patch_path.unlink(missing_ok=True)
+            return TIMED_OUT, None
         finally:
             for path, content in originals.items():
                 if not path.is_file() or path.read_bytes() != content:
@@ -447,7 +456,7 @@ def _changes_code(patch_text: str) -> bool:
 
 
 def _outcome_note(fix_outcomes: list[dict[str, object]], *, applied: int, skipped: int) -> str:
-    counts = {outcome: 0 for outcome in (MATERIALIZED, NO_CHANGE, REJECTED, UNSAFE, UNSUPPORTED, CRASHED)}
+    counts = {outcome: 0 for outcome in (MATERIALIZED, NO_CHANGE, REJECTED, UNSAFE, UNSUPPORTED, CRASHED, TIMED_OUT)}
     for entry in fix_outcomes:
         counts[str(entry["outcome"])] += 1
     note = (
@@ -462,6 +471,7 @@ def _outcome_note(fix_outcomes: list[dict[str, object]], *, applied: int, skippe
             (UNSAFE, "could not be placed without changing what the code does"),
             (UNSUPPORTED, "are not supported by RLPatcher"),
             (CRASHED, "crashed RLPatcher"),
+            (TIMED_OUT, "exceeded --stage-timeout"),
         )
         if counts[outcome]
     ]

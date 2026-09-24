@@ -188,7 +188,7 @@ class ApplyBundleTest(unittest.TestCase):
             owning_field_jar=(repo_root.parent / "owning.jar").resolve(),
             rlfixer_jar=(repo_root.parent / "rlfixer.jar").resolve(),
             rlpatcher_jar=(repo_root.parent / "rlpatcher.jar").resolve(),
-            timeouts=Timeouts(build_seconds=1, analysis_seconds=1, stage_seconds=1),
+            timeouts=Timeouts(),
         )
 
     def _make_repo(self, root: Path, files: dict[str, str]) -> Path:

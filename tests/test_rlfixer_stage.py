@@ -49,7 +49,7 @@ class RLFixerStageTest(unittest.TestCase):
             )
             captured: dict[str, list[str]] = {}
 
-            def fake_run_stage_command(*, command: list[str], cwd: Path) -> CommandResult:
+            def fake_run_stage_command(*, command: list[str], cwd: Path, timeout_seconds: int | None = None) -> CommandResult:
                 captured["command"] = command
                 Path(command[command.index("-debugOutput") + 1]).write_text("Index^Source File\n")
                 return CommandResult(
@@ -211,7 +211,7 @@ class RLFixerStageTest(unittest.TestCase):
             owning_field_jar=root / "owning.jar",
             rlfixer_jar=rlfixer_jar,
             rlpatcher_jar=root / "rlpatcher.jar",
-            timeouts=Timeouts(build_seconds=1, analysis_seconds=1, stage_seconds=1),
+            timeouts=Timeouts(),
         )
         return {
             "config": config,

@@ -4,6 +4,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable, Sequence
 
+from arodnap.contracts import Timeouts
+
 from .base import BuildAdapterContract, BuildToolSelection, UnsupportedProjectError
 from .captured import (
     AntCaptureAdapter,
@@ -27,12 +29,14 @@ class RegisteredBuildAdapter:
         compile_target: str | None = None,
         build_args: list[str] | None = None,
         build_command: Sequence[str] = (),
+        timeouts: Timeouts | None = None,
     ) -> BuildAdapterContract:
         return self.factory(
             repo_root,
             compile_target=compile_target,
             build_args=build_args,
             build_command=build_command,
+            timeouts=timeouts,
         )
 
 
@@ -70,8 +74,14 @@ def select_build_adapter(
     compile_target: str | None = None,
     build_args: list[str] | None = None,
     build_command: Sequence[str] = (),
+    timeouts: Timeouts | None = None,
 ) -> BuildAdapterContract:
-    options = {"compile_target": compile_target, "build_args": build_args, "build_command": tuple(build_command)}
+    options = {
+        "compile_target": compile_target,
+        "build_args": build_args,
+        "build_command": tuple(build_command),
+        "timeouts": timeouts,
+    }
     if build_command:
         executable = Path(build_command[0]).name
         for registration in BUILD_ADAPTER_REGISTRY:

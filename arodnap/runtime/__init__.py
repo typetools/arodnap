@@ -1,6 +1,6 @@
 from .commands import CommandResult, render_command_log, run_command
 from .environment import environment_with_overrides
-from .errors import CommandExecutionError
+from .errors import CommandExecutionError, CommandTimeoutError
 from .jdk import (
     RLFIXER_MIN_JDK_MAJOR,
     Jdk,
@@ -11,6 +11,7 @@ from .jdk import (
 
 __all__ = [
     "CommandExecutionError",
+    "CommandTimeoutError",
     "CommandResult",
     "environment_with_overrides",
     "Jdk",

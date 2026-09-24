@@ -144,7 +144,7 @@ class StageBaseWrapperTest(unittest.TestCase):
             stage_output_dir = temp_root / "out" / "stages" / "demo"
             raw_patch_path = stage_output_dir / "demo.raw.patch"
 
-            def fake_stage_command(*, command: list[str], cwd: Path) -> CommandResult:
+            def fake_stage_command(*, command: list[str], cwd: Path, timeout_seconds: int | None = None) -> CommandResult:
                 raw_patch_path.write_text(
                     "\n".join(
                         [

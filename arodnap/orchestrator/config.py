@@ -30,7 +30,11 @@ def build_run_config(
         owning_field_jar=_plugin_jars_root() / "OwningFieldFixer-1.0-SNAPSHOT.jar",
         rlfixer_jar=_plugin_jars_root() / "RLFixer-1.0-SNAPSHOT.jar",
         rlpatcher_jar=_plugin_jars_root() / "RLPatcher-1.0-SNAPSHOT.jar",
-        timeouts=Timeouts(build_seconds=900, analysis_seconds=1800, stage_seconds=900),
+        timeouts=Timeouts(
+            build_seconds=getattr(args, "build_timeout", None),
+            analysis_seconds=getattr(args, "analysis_timeout", None),
+            stage_seconds=getattr(args, "stage_timeout", None),
+        ),
         build_command=tuple(getattr(args, "build_command", None) or ()),
     )
 

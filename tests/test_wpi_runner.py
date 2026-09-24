@@ -148,7 +148,7 @@ class WpiRunnerTest(unittest.TestCase):
             owning_field_jar=root / "owning.jar",
             rlfixer_jar=root / "rlfixer.jar",
             rlpatcher_jar=root / "rlpatcher.jar",
-            timeouts=Timeouts(build_seconds=1, analysis_seconds=1, stage_seconds=1),
+            timeouts=Timeouts(),
         )
         return {
             "config": config,

@@ -22,7 +22,7 @@ import shutil
 import tempfile
 
 from arodnap.contracts import RunConfig
-from arodnap.runtime import CommandExecutionError, Jdk, render_command_log, run_command
+from arodnap.runtime import CommandExecutionError, CommandTimeoutError, Jdk, render_command_log, run_command
 
 from .checker_framework import (
     RESOURCE_LEAK_CHECKER,
@@ -160,7 +160,9 @@ def _run_iteration(
     command.extend(["-classpath", classpath, "-d", str(classes_dir), f"@{source_files_file}"])
 
     try:
-        result = run_command(command, cwd=javac_cwd)
+        result = run_command(command, cwd=javac_cwd, timeout_seconds=config.timeouts.analysis_seconds)
+    except CommandTimeoutError as exc:
+        raise WpiRunError(f"WPI iteration {iteration} exceeded --analysis-timeout. {exc}") from exc
     except CommandExecutionError as exc:
         raise WpiRunError(str(exc)) from exc
     with log_path.open("a", encoding="utf-8") as handle:

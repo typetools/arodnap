@@ -63,7 +63,30 @@ def _add_shared_arguments(parser: argparse.ArgumentParser) -> None:
             "Defaults to $ARODNAP_CHECKER_FRAMEWORK, then the bundled 4.2.3."
         ),
     )
+    limits = parser.add_argument_group(
+        "time limits",
+        "Each limit applies to every single command of its kind and kills it (with its child "
+        "processes) when exceeded. There are no limits by default.",
+    )
+    limits.add_argument("--build-timeout", type=_seconds, metavar="SECONDS",
+                        help="limit for the project's build while Arodnap captures it")
+    limits.add_argument("--analysis-timeout", type=_seconds, metavar="SECONDS",
+                        help="limit for each Checker Framework run (every inference iteration, "
+                             "every leak check) and the analysis compile")
+    limits.add_argument("--stage-timeout", type=_seconds, metavar="SECONDS",
+                        help="limit for each repair tool run (close injector, owning-field fixer, "
+                             "RLFixer, and RLPatcher per suggestion)")
     parser.add_argument("repo_root")
+
+
+def _seconds(value: str) -> int:
+    try:
+        seconds = int(value)
+    except ValueError:
+        raise argparse.ArgumentTypeError(f"expected a whole number of seconds, got {value!r}") from None
+    if seconds <= 0:
+        raise argparse.ArgumentTypeError(f"expected a positive number of seconds, got {seconds}")
+    return seconds
 
 
 if __name__ == "__main__":

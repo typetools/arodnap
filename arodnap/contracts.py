@@ -25,9 +25,11 @@ def _convert_path(value: Any) -> Path | None:
 
 @dataclass(frozen=True)
 class Timeouts:
-    build_seconds: int
-    analysis_seconds: int
-    stage_seconds: int
+    """Per-command limits in seconds, set by the user. None (the default) means no limit."""
+
+    build_seconds: int | None = None
+    analysis_seconds: int | None = None
+    stage_seconds: int | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return {field.name: getattr(self, field.name) for field in fields(self)}
