@@ -33,10 +33,14 @@ The paper's earlier Error Prone plugins and their Error Prone 2.28 jars are in
 
 ## Rebuilding
 
-From each subproject root, with JDK 21:
+With JDK 21, from the repository root:
 
 ```bash
-mvn clean package
+python scripts/java_tools.py build --copy
 ```
 
-Then copy the jar from `target/` into `prebuilt_plugin_jars/`.
+That builds and tests every project above (and RLFixer) and copies each jar
+whose code changed into `prebuilt_plugin_jars/`. CI rebuilds them from source
+and fails when a committed jar does not match (`python scripts/java_tools.py
+check`). Jar contents depend on the javac version, so build with JDK 21 or the
+check reports a difference.

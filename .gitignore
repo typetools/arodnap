@@ -6,3 +6,5 @@ restructure_plugins/*/target/
 arodnap-out/
 build/
 dist/
+# RLPatcher tests write their patch to the working directory
+restructure_plugins/RLPatcher/rlfixer.patch
