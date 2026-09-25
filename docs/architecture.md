@@ -94,8 +94,9 @@ units and merges into one analysis universe: all units' sources plus
 generated sources, the union of classpaths minus artifacts the capture build
 wrote, the highest release level, and an analysis root for RLFixer. The
 adapter then compiles the merged sources itself into
-`<workspace>/.arodnap/analysis-classes`, so app classes and RLFixer's
-classpath do not depend on the build's output layout.
+`arodnap-state/analysis-classes` beside the workspace copy, so app classes and
+RLFixer's classpath do not depend on the build's output layout. Capture state
+stays outside the copy so the project's build never sees it.
 
 The adapter contract (`inspect`, `validate_compile`, `write_*_file`) is
 unchanged, so `analyze`, `reanalyze`, `doctor` and the stages are

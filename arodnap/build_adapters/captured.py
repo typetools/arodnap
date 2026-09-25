@@ -46,7 +46,11 @@ from .base import (
 )
 from .capture import AnalysisInputs, load_compile_units, merge_compile_units
 
-ARODNAP_DIR = ".arodnap"
+# Capture state (the javac shim, the recorded invocations, the analysis classes) lives next to
+# the workspace copy, not inside it, so the project's build never sees it: license checks such
+# as Apache RAT reject unknown files, and some builds compile or package every file they find.
+# `inspect` only runs on a workspace copy, whose parent directory Arodnap creates and owns.
+STATE_DIRNAME = "arodnap-state"
 _PREBUILT_JARS = jars_dir()
 _ANT_CAPTURE_JAR = _PREBUILT_JARS / "arodnap-ant-capture.jar"
 _MAVEN_CAPTURE_JAR = _PREBUILT_JARS / "arodnap-maven-capture.jar"
@@ -137,6 +141,7 @@ class CapturedBuildAdapter:
         self.build_args = list(build_args or [])
         self.build_command = tuple(build_command or ())
         self.timeouts = timeouts or Timeouts()
+        self.state_root = self.repo_root.parent / STATE_DIRNAME
 
     # Contract -------------------------------------------------------------------------
 
@@ -146,7 +151,7 @@ class CapturedBuildAdapter:
 
     def inspect(self) -> CapturedProject:
         build_file = self._build_file()
-        capture_dir = self.repo_root / ARODNAP_DIR / "capture"
+        capture_dir = self.state_root / "capture"
         shutil.rmtree(capture_dir, ignore_errors=True)
         capture_dir.mkdir(parents=True)
         capture_file = capture_dir / "javac-invocations.jsonl"
@@ -195,7 +200,7 @@ class CapturedBuildAdapter:
             build_tool_source=self._build_tool_source(command[0]),
             compile_target=self.compile_target or "",
             source_root=inputs.analysis_root,
-            compiled_classes_root=self.repo_root / ARODNAP_DIR / "analysis-classes",
+            compiled_classes_root=self.state_root / "analysis-classes",
             inputs=inputs,
             build_command=tuple(command),
             capture_file=capture_file,
@@ -431,8 +436,7 @@ def _real_javac() -> str:
 def _touch_java_sources(root: Path) -> None:
     now = time.time()
     for path in root.rglob("*.java"):
-        if ARODNAP_DIR not in path.relative_to(root).parts:
-            os.utime(path, (now, now))
+        os.utime(path, (now, now))
 
 
 def _tail(text: str, lines: int = 40) -> str:
