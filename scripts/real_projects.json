@@ -1,0 +1,150 @@
+{
+  "projects": [
+    {
+      "name": "commons-csv",
+      "repo": "https://github.com/apache/commons-csv.git",
+      "ref": "rel/commons-csv-1.14.1",
+      "build": "maven",
+      "expected": {
+        "initial": 12,
+        "found_during_repair": 2,
+        "fixed": 7,
+        "remaining": 7,
+        "patched_files": 2
+      },
+      "observed": {
+        "minutes": 1.3,
+        "peak_memory_mb": 1742
+      }
+    },
+    {
+      "name": "commons-io",
+      "repo": "https://github.com/apache/commons-io.git",
+      "ref": "rel/commons-io-2.22.0",
+      "build": "maven",
+      "expected": {
+        "initial": 92,
+        "found_during_repair": 4,
+        "fixed": 15,
+        "remaining": 81,
+        "patched_files": 8
+      },
+      "observed": {
+        "minutes": 19.2,
+        "peak_memory_mb": 1739
+      }
+    },
+    {
+      "name": "commons-compress",
+      "repo": "https://github.com/apache/commons-compress.git",
+      "ref": "rel/commons-compress-1.28.0",
+      "build": "maven",
+      "expected": {
+        "initial": 201,
+        "found_during_repair": 9,
+        "fixed": 20,
+        "remaining": 190,
+        "patched_files": 14
+      },
+      "observed": {
+        "minutes": 67.1,
+        "peak_memory_mb": 3298
+      }
+    },
+    {
+      "name": "jsoup",
+      "repo": "https://github.com/jhy/jsoup.git",
+      "ref": "jsoup-1.23.2",
+      "build": "maven",
+      "expected": {
+        "initial": 26,
+        "found_during_repair": 15,
+        "fixed": 5,
+        "remaining": 36,
+        "patched_files": 3
+      },
+      "observed": {
+        "minutes": 12.0,
+        "peak_memory_mb": 2058
+      }
+    },
+    {
+      "name": "hikaricp",
+      "repo": "https://github.com/brettwooldridge/HikariCP.git",
+      "ref": "HikariCP-7.1.0",
+      "build": "maven",
+      "expected": {
+        "initial": 5,
+        "found_during_repair": 0,
+        "fixed": 0,
+        "remaining": 5,
+        "patched_files": 0
+      },
+      "observed": {
+        "minutes": 3.0,
+        "peak_memory_mb": 1406
+      }
+    },
+    {
+      "name": "zookeeper",
+      "repo": "https://github.com/apache/zookeeper.git",
+      "ref": "release-3.9.6",
+      "build": "maven",
+      "expected": {
+        "initial": 112,
+        "found_during_repair": 14,
+        "fixed": 16,
+        "remaining": 110,
+        "patched_files": 16
+      },
+      "observed": {
+        "minutes": 70.5,
+        "peak_memory_mb": 3128
+      }
+    },
+    {
+      "name": "pdfbox",
+      "repo": "https://github.com/apache/pdfbox.git",
+      "ref": "3.0.8",
+      "build": "maven"
+    },
+    {
+      "name": "apktool",
+      "repo": "https://github.com/iBotPeaches/Apktool.git",
+      "ref": "v3.0.3",
+      "build": "gradle",
+      "expected": {
+        "initial": 12,
+        "found_during_repair": 0,
+        "fixed": 3,
+        "remaining": 9,
+        "patched_files": 2
+      },
+      "observed": {
+        "minutes": 6.5,
+        "peak_memory_mb": 2481
+      }
+    },
+    {
+      "name": "ant-ivy",
+      "repo": "https://github.com/apache/ant-ivy.git",
+      "ref": "rel/2.6.0",
+      "build": "ant",
+      "args": [
+        "--compile-target",
+        "compile-optional"
+      ],
+      "expected": {
+        "initial": 83,
+        "found_during_repair": 0,
+        "fixed": 39,
+        "remaining": 44,
+        "patched_files": 26
+      },
+      "observed": {
+        "minutes": 18.1,
+        "peak_memory_mb": 3432
+      }
+    }
+  ]
+}

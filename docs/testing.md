@@ -50,6 +50,22 @@ request and every push to `master`:
 - `e2e`: the real end-to-end tests on JDK 17, 21 and 25 with Gradle, Maven and
   Ant installed; a skipped test fails the job
 
+[`.github/workflows/real-projects.yml`](../.github/workflows/real-projects.yml)
+runs weekly, on demand, and on pull requests that change the project list. It
+repairs real open-source projects listed in
+[`scripts/real_projects.json`](../scripts/real_projects.json), each cloned
+fresh from its own repository at a pinned release, and checks that `repair`
+succeeds and that the leak counts match the recorded ones. Run the same
+locally:
+
+```bash
+python scripts/real_projects.py run commons-csv   # or --all
+```
+
+When a change to Arodnap is meant to change the results, rerun with `--record`
+and commit the new counts. To test a newer release of a project, change its
+`ref` and record again.
+
 ## Fixture-Based Integration Tests
 
 Current integration-style tests build on
