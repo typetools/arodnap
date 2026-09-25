@@ -156,6 +156,16 @@ class RealEndToEndTest(unittest.TestCase):
         self.assertEqual(bundle_files, [source])
         self.assertIn("try (FileInputStream in = new FileInputStream(path))", (repo_root / source).read_text())
 
+    def test_a_leak_returned_through_a_cycle_of_callers_is_left_unfixed(self) -> None:
+        report, bundle_files, repo_root = self._repair_and_apply(
+            "javac-return-cycle", build_command=["./build.sh"], verify=["./build.sh"]
+        )
+
+        self.assertEqual(bundle_files, ["src/demo/FirstByte.java"])
+        remaining = [leak for leak in report["leaks"]["warnings"] if leak["status"] == "remaining"]
+        self.assertEqual([(leak["file"], leak["reason"]) for leak in remaining],
+                         [("src/demo/Cycle.java", "rlfixer_unfixable")])
+
     def test_resource_fields_are_made_final_or_local_before_analysis(self) -> None:
         report, bundle_files, repo_root = self._repair_and_apply(
             "javac-field-transformations", build_command=["./build.sh"], verify=["./build.sh"]

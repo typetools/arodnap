@@ -54,6 +54,13 @@ public class ParamFix {
 				}
 				return;
 			}
+			if (fakeWarningInstruction.iIndex() < 0) {
+				// The argument is a merge of values from several branches (a phi) or a similar
+				// SSA-only definition. It has no instruction in the method body to fix at.
+				warning.unfixable = true;
+				warning.comments += "Argument defined on several branches;";
+				continue;
+			}
 			Warning fakeWarning = new Warning(caller.fst.getMethod().getDeclaringClass(), caller.fst,fakeWarningInstruction);
 			
 			// Identify aliases

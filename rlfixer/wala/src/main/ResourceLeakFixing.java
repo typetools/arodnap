@@ -1,5 +1,10 @@
 package main;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import sourceFixStrategies.*;
 import utils.CommonUtils;
 import utils.ResourceEscapeType;
@@ -7,7 +12,26 @@ import utils.Warning;
 
 public class ResourceLeakFixing {
 
+	// Statements whose fix is being computed. ReturnFix and ParamFix compute a fix at each caller
+	// through this method, so callers that call back into each other (A returns B(), B returns
+	// A()) would recurse forever. A statement met again on the same path is left unfixed.
+	private static final Set<List<Object>> inProgress = new HashSet<>();
+
 	public static void computeSourceCodeFix(Warning w) {
+		List<Object> statement = Arrays.asList(w.matchedCgnode, w.matchedInstruction);
+		if (!inProgress.add(statement)) {
+			w.unfixable = true;
+			w.comments += "Escapes through a cycle of callers;";
+			return;
+		}
+		try {
+			computeFix(w);
+		} finally {
+			inProgress.remove(statement);
+		}
+	}
+
+	private static void computeFix(Warning w) {
 		if (w.escapeTypes.contains(ResourceEscapeType.FIELD_SOURCE)) {
 			w.escapeTypes.remove(ResourceEscapeType.FIELD_SOURCE);
 			w.escapeTypes.add(ResourceEscapeType.FIELD);

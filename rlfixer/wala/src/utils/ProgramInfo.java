@@ -38,7 +38,6 @@ import com.ibm.wala.ipa.cha.ClassHierarchyFactory;
 import com.ibm.wala.ssa.SSAInvokeInstruction;
 import com.ibm.wala.ssa.SSAPutInstruction;
 import com.ibm.wala.util.CancelException;
-import com.ibm.wala.core.util.config.AnalysisScopeReader;
 import com.ibm.wala.ssa.IR;
 import com.ibm.wala.ssa.SSAInstruction;
 
@@ -92,7 +91,7 @@ public class ProgramInfo {
 	// Boilerplate code for making callgraph and class-hierarchy
 	public static void initializeProgramInfo(String classpath, String exclusionsFileName, String appClassesFile, String srcFilesList, String projectDir, File exclusionsFile)
 			throws ClassHierarchyException, IOException, IllegalArgumentException, CancelException {
-		analysisScope = AnalysisScopeReader.instance.makeJavaBinaryAnalysisScope(classpath, exclusionsFile);
+		analysisScope = ClassPathScope.make(classpath, exclusionsFile);
 		cha = ClassHierarchyFactory.make(analysisScope);
 		readApplicationClasses(appClassesFile);
 		populateClassesMap();
@@ -108,7 +107,7 @@ public class ProgramInfo {
 	// simplified version of the method with the same name
 	public static void simplifiedInitializeProgramInfo(String classpath, String appClassesFile)
 			throws ClassHierarchyException, IOException, IllegalArgumentException, CancelException {
-		analysisScope = AnalysisScopeReader.instance.makeJavaBinaryAnalysisScope(classpath, null);
+		analysisScope = ClassPathScope.make(classpath, null);
 		cha = ClassHierarchyFactory.make(analysisScope);
 		readApplicationClasses(appClassesFile);
 		populateClassesMap();
