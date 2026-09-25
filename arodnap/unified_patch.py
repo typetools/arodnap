@@ -213,9 +213,9 @@ def _apply_hunks(lines: list[str], hunks: list[Hunk], *, fuzz: int, ignore_white
     return result, failures
 
 
-def _replacement(hunk_lines: list[tuple[str, str]], matched: list[str], ending: str) -> list[str]:
+def _replacement(hunk_lines: list[tuple[str, str]], matched: list[str], ending: str | None) -> list[str]:
     """The hunk's new lines: context lines as they are in the file, inserted lines with the
-    file's line ending."""
+    file's line ending (or the patch's, when the file has no line endings to follow)."""
     new = []
     old_index = 0
     for tag, text in hunk_lines:
@@ -225,13 +225,17 @@ def _replacement(hunk_lines: list[tuple[str, str]], matched: list[str], ending: 
         elif tag == "-":
             old_index += 1
         else:
-            new.append(text.rstrip("\r\n") + ending if text.endswith("\n") else text)
+            new.append(text.rstrip("\r\n") + ending if ending and text.endswith("\n") else text)
     return new
 
 
-def _file_line_ending(lines: list[str]) -> str:
-    crlf = sum(1 for line in lines if line.endswith("\r\n"))
-    return "\r\n" if crlf > len(lines) - crlf else "\n"
+def _file_line_ending(lines: list[str]) -> str | None:
+    """The file's line ending, or None for a file without any (empty, or one unterminated line)."""
+    ended = [line for line in lines if line.endswith("\n")]
+    if not ended:
+        return None
+    crlf = sum(1 for line in ended if line.endswith("\r\n"))
+    return "\r\n" if crlf > len(ended) - crlf else "\n"
 
 
 def _find(lines: list[str], wanted: list[str], expected: int, floor: int, ignore_whitespace: bool) -> int | None:

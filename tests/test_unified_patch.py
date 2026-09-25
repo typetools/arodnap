@@ -132,6 +132,12 @@ class UnifiedPatchTest(unittest.TestCase):
         self.assertTrue(apply_patch(self.root, _diff("A.java", old, new)).ok)
         self.assertEqual(self.read(path), new)
 
+    def test_a_file_without_line_endings_takes_the_patchs(self) -> None:
+        path = self.write("New.java", "")
+        new = "a\r\nb\r\n"
+        self.assertTrue(apply_patch(self.root, _diff("New.java", "", new)).ok)
+        self.assertEqual(self.read(path), new)
+
     def test_only_newline_ends_a_line(self) -> None:
         # Form feeds, lone "\r" and Unicode line separators occur inside source lines.
         self.assertEqual(split_lines("a\x0cb\nc\u2028d\re\nlast"), ["a\x0cb\n", "c\u2028d\re\n", "last"])
