@@ -1,0 +1,92 @@
+TOOL: rlc
+CWD: /work/space/gradle-pipeline-coverage
+COMMAND: /opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home/bin/java -jar /work/checker-framework/checker-framework-4.2.3/checker/dist/checker.jar -processor org.checkerframework.checker.resourceleak.ResourceLeakChecker -Adetailedmsgtext -Awarns -Xmaxwarns 10000 -ApermitStaticOwning -AshowPrefixInWarningMessages -AenableReturnsReceiverForRlc -Astubs=/work/checker-framework/stubs -Aajava=/work/out/inference/post_close_injector --release 11 -classpath /private/var/folders/t3/wtnh1tm94ys_t6r6pmqngtmr0000gn/T/arodnap-workspace-9607097486719402743/arodnap-state/analysis-classes -d /var/folders/t3/wtnh1tm94ys_t6r6pmqngtmr0000gn/T/arodnap-rlc-classes-14245926371139081485 @/work/out/logs/post_close_injector/source-files.txt
+EXIT_CODE: 0
+STDOUT:
+
+STDERR:
+warning: /work/checker-framework/stubs/Logger.astub:(line 1,col 1): Package not found: org.apache.log4j
+warning: /work/checker-framework/stubs/Logger.astub:(line 5,col 1): Type not found: org.apache.log4j.Category
+warning: /work/checker-framework/stubs/Slf4j.astub:(line 1,col 1): Package not found: org.slf4j
+warning: /work/checker-framework/stubs/Slf4j.astub:(line 5,col 1): Type not found: org.slf4j.Logger
+warning: /work/checker-framework/stubs/com.google.json.stream.astub:(line 1,col 1): Package not found: com.google.gson.stream
+warning: /work/checker-framework/stubs/com.google.json.stream.astub:(line 5,col 1): Type not found: com.google.gson.stream.JsonWriter
+/work/space/gradle-pipeline-coverage/src/main/java/loop_fixes/DoubleLoop.java:20: warning: [required.method.not.called] $$ 4 $$ method close $$ myWriter $$ java.io.FileWriter $$ possible exceptional exit due to myWriter.write(j) with exception type java.io.IOException $$ ( 347, 387 ) $$ [required.method.not.called]
+					FileWriter myWriter = new FileWriter(j);
+					           ^
+/work/space/gradle-pipeline-coverage/src/main/java/loop_fixes/EscapedTryCatchInLoop.java:20: warning: [required.method.not.called] $$ 4 $$ method close $$ myWriter $$ java.io.FileWriter $$ possible exceptional exit due to myWriter.write("ss") with exception type java.io.IOException $$ ( 383, 411 ) $$ [required.method.not.called]
+				myWriter = new FileWriter(i);
+				         ^
+/work/space/gradle-pipeline-coverage/src/main/java/loop_fixes/Loop.java:18: warning: [required.method.not.called] $$ 4 $$ method close $$ myWriter $$ java.io.FileWriter $$ possible exceptional exit due to myWriter.write("foo") with exception type java.io.IOException $$ ( 309, 349 ) $$ [required.method.not.called]
+			FileWriter myWriter = new FileWriter(i);
+			           ^
+/work/space/gradle-pipeline-coverage/src/main/java/loop_fixes/LoopInTryCatch.java:19: warning: [required.method.not.called] $$ 4 $$ method close $$ myWriter $$ java.io.FileWriter $$ possible exceptional exit due to myWriter.write("foo") with exception type java.io.IOException $$ ( 319, 359 ) $$ [required.method.not.called]
+				FileWriter myWriter = new FileWriter(i);
+				           ^
+/work/space/gradle-pipeline-coverage/src/main/java/loop_fixes/ResourceEscapeDoubleLoop.java:21: warning: [required.method.not.called] $$ 4 $$ method close $$ myWriter $$ java.io.FileWriter $$ variable overwritten by assignment myWriter = new FileWriter(i) $$ ( 424, 452 ) $$ [required.method.not.called]
+					myWriter = new FileWriter(i);
+					         ^
+/work/space/gradle-pipeline-coverage/src/main/java/loop_fixes/ResourceEscapeLoop.java:20: warning: [required.method.not.called] $$ 4 $$ method close $$ myWriter $$ java.io.FileWriter $$ variable overwritten by assignment myWriter = new FileWriter(i) $$ ( 376, 404 ) $$ [required.method.not.called]
+				myWriter = new FileWriter(i);
+				         ^
+/work/space/gradle-pipeline-coverage/src/main/java/loop_fixes/ResourceUseNotDominated.java:20: warning: [required.method.not.called] $$ 4 $$ method close $$ myWriter $$ java.io.FileWriter $$ possible exceptional exit due to myWriter.write("foo") with exception type java.io.IOException $$ ( 402, 430 ) $$ [required.method.not.called]
+				myWriter = new FileWriter(i);
+				         ^
+/work/space/gradle-pipeline-coverage/src/main/java/loop_fixes/TryCatchInLoop.java:19: warning: [required.method.not.called] $$ 4 $$ method close $$ myWriter $$ java.io.FileWriter $$ possible exceptional exit due to myWriter.write("foo") with exception type java.io.IOException $$ ( 319, 359 ) $$ [required.method.not.called]
+				FileWriter myWriter = new FileWriter(i);
+				           ^
+/work/space/gradle-pipeline-coverage/src/main/java/owning/PackagePrivateSink.java:12: warning: [required.method.not.called] $$ 4 $$ method close $$ field out $$ java.io.FileWriter $$  Non-final owning field might be overwritten $$ ( 339, 365 ) $$ [required.method.not.called]
+        out = new FileWriter(path);
+            ^
+/work/space/gradle-pipeline-coverage/src/main/java/owning/PublicSink.java:12: warning: [required.method.not.called] $$ 4 $$ method close $$ field out $$ java.io.FileWriter $$  Non-final owning field might be overwritten $$ ( 325, 351 ) $$ [required.method.not.called]
+        out = new FileWriter(path);
+            ^
+/work/space/gradle-pipeline-coverage/src/main/java/return_fixes/ReturnWithThrows.java:20: warning: [required.method.not.called] $$ 4 $$ method close $$ a $$ java.io.FileWriter $$ possible exceptional exit due to a.write("Files in Java might be tricky!") with exception type java.io.IOException $$ ( 381, 415 ) $$ [required.method.not.called]
+	    a = new FileWriter("filename.txt");
+	      ^
+/work/space/gradle-pipeline-coverage/src/main/java/return_fixes/ReturnWithTryCatch.java:11: warning: [required.method.not.called] $$ 4 $$ method close $$ b $$ java.io.FileWriter $$ regular method exit $$ ( 226, 247 ) $$ [required.method.not.called]
+		FileWriter b = foo();
+		           ^
+/work/space/gradle-pipeline-coverage/src/main/java/return_fixes/ReturnWithTwoCallers.java:20: warning: [required.method.not.called] $$ 4 $$ method close $$ c $$ java.io.FileWriter $$ possible exceptional exit due to c.write("ss") with exception type java.io.IOException $$ ( 392, 441 ) $$ [required.method.not.called]
+		FileWriter c = new ReturnWithTwoCallers1().foo();
+		           ^
+/work/space/gradle-pipeline-coverage/src/main/java/return_fixes/ReturnWithTwoCallers.java:28: warning: [required.method.not.called] $$ 4 $$ method close $$ a $$ java.io.FileWriter $$ possible exceptional exit due to a.write("Files in Java might be tricky!") with exception type java.io.IOException $$ ( 574, 608 ) $$ [required.method.not.called]
+	    a = new FileWriter("filename.txt");
+	      ^
+/work/space/gradle-pipeline-coverage/src/main/java/throws_fixes/MultiReturnThrow.java:12: warning: [required.method.not.called] $$ 4 $$ method close $$ myWriter $$ java.io.FileWriter $$ possible exceptional exit due to myWriter.write("foo") with exception type java.io.IOException $$ ( 223, 276 ) $$ [required.method.not.called]
+		FileWriter myWriter = new FileWriter("filename.txt");
+		           ^
+/work/space/gradle-pipeline-coverage/src/main/java/throws_fixes/Throws.java:12: warning: [required.method.not.called] $$ 4 $$ method close $$ myWriter $$ java.io.FileWriter $$ possible exceptional exit due to myWriter.write("foo") with exception type java.io.IOException $$ ( 203, 256 ) $$ [required.method.not.called]
+		FileWriter myWriter = new FileWriter("filename.txt");
+		           ^
+/work/space/gradle-pipeline-coverage/src/main/java/throws_fixes/ThrowsWithConditional.java:12: warning: [required.method.not.called] $$ 4 $$ method close $$ myWriter $$ java.io.FileWriter $$ possible exceptional exit due to myWriter.write("foo") with exception type java.io.IOException $$ ( 233, 286 ) $$ [required.method.not.called]
+		FileWriter myWriter = new FileWriter("filename.txt");
+		           ^
+/work/space/gradle-pipeline-coverage/src/main/java/throws_fixes/ThrowsWithLoop.java:12: warning: [required.method.not.called] $$ 4 $$ method close $$ myWriter $$ java.io.FileWriter $$ regular method exit $$ ( 219, 272 ) $$ [required.method.not.called]
+		FileWriter myWriter = new FileWriter("filename.txt");
+		           ^
+/work/space/gradle-pipeline-coverage/src/main/java/trycatch_fixes/EscapesTryCatch.java:13: warning: [required.method.not.called] $$ 4 $$ method close $$ a $$ java.io.FileWriter $$ possible exceptional exit due to a.write("dd") with exception type java.io.IOException $$ ( 260, 294 ) $$ [required.method.not.called]
+	        a = new FileWriter("filename.txt");
+	          ^
+/work/space/gradle-pipeline-coverage/src/main/java/trycatch_fixes/InvokeEscapeFinally.java:12: warning: [required.method.not.called] $$ 4 $$ method close $$ a $$ java.io.FileWriter $$ possible exceptional exit due to a.write("Files in Java might be tricky!") with exception type java.io.IOException $$ ( 226, 272 ) $$ [required.method.not.called]
+	        FileWriter a = new FileWriter("filename.txt");
+	                   ^
+/work/space/gradle-pipeline-coverage/src/main/java/trycatch_fixes/MultilineCatch.java:12: warning: [required.method.not.called] $$ 4 $$ method close $$ a $$ java.io.FileWriter $$ possible exceptional exit due to a.write("Files in Java might be tricky!") with exception type java.io.IOException $$ ( 216, 262 ) $$ [required.method.not.called]
+	        FileWriter a = new FileWriter("filename.txt");
+	                   ^
+/work/space/gradle-pipeline-coverage/src/main/java/trycatch_fixes/MultipleCatch.java:12: warning: [required.method.not.called] $$ 4 $$ method close $$ a $$ java.io.FileWriter $$ possible exceptional exit due to a.write("Files in Java might be tricky!") with exception type java.io.IOException $$ ( 214, 260 ) $$ [required.method.not.called]
+	        FileWriter a = new FileWriter("filename.txt");
+	                   ^
+/work/space/gradle-pipeline-coverage/src/main/java/trycatch_fixes/MultipleReturnsFinally.java:14: warning: [required.method.not.called] $$ 4 $$ method close $$ myWriter $$ java.io.FileWriter $$ regular method exit $$ ( 263, 304 ) $$ [required.method.not.called]
+	        myWriter = new FileWriter("filename.txt");
+	                 ^
+/work/space/gradle-pipeline-coverage/src/main/java/trycatch_fixes/NullableResource.java:13: warning: [required.method.not.called] $$ 4 $$ method close $$ a $$ java.io.FileWriter $$ regular method exit $$ ( 261, 295 ) $$ [required.method.not.called]
+	        a = new FileWriter("filename.txt");
+	          ^
+/work/space/gradle-pipeline-coverage/src/main/java/trycatch_fixes/ShortenedTryCatch.java:13: warning: [required.method.not.called] $$ 4 $$ method close $$ a $$ java.io.FileWriter $$ regular method exit $$ ( 262, 296 ) $$ [required.method.not.called]
+	        a = new FileWriter("filename.txt");
+	          ^
+/work/space/gradle-pipeline-coverage/src/main/java/wrapper/WrapperClient.java:8: warning: [required.method.not.called] $$ 4 $$ method close $$ wrapper $$ wrapper.Wrapper $$ possible exceptional exit due to wrapper.read() with exception type java.io.IOException $$ ( 231, 267 ) $$ [required.method.not.called]
+        Wrapper wrapper = new Wrapper(path);
+                ^
+32 warnings
