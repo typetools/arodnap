@@ -108,7 +108,18 @@
       "name": "pdfbox",
       "repo": "https://github.com/apache/pdfbox.git",
       "ref": "3.0.8",
-      "build": "maven"
+      "build": "maven",
+      "expected": {
+        "initial": 363,
+        "found_during_repair": 84,
+        "fixed": 77,
+        "remaining": 370,
+        "patched_files": 45
+      },
+      "observed": {
+        "minutes": 138.2,
+        "peak_memory_mb": 4539
+      }
     },
     {
       "name": "apktool",
