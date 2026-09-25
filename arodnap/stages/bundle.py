@@ -10,6 +10,7 @@ import tempfile
 
 from arodnap.contracts import StageResult
 from arodnap.patch_tool import PatchToolError, append_patch_execution_log, run_patch
+from arodnap.unified_patch import split_lines
 
 from .base import StageExecutionError, write_stage_result
 
@@ -92,7 +93,7 @@ def run_bundle_stage(
         write_stage_result(paths.root, result)
         return result
 
-    paths.patch_path.write_text("".join(diffs), encoding="utf-8", errors="surrogateescape")
+    paths.patch_path.write_bytes("".join(diffs).encode("utf-8", errors="surrogateescape"))
     _verify_bundle(
         repo_root=repo_root,
         workspace_root=workspace_root,
@@ -139,8 +140,8 @@ def run_bundle_stage(
 def _unified_diff(relpath: str, old_text: str, new_text: str) -> str:
     lines = []
     for line in difflib.unified_diff(
-        old_text.splitlines(keepends=True),
-        new_text.splitlines(keepends=True),
+        split_lines(old_text),
+        split_lines(new_text),
         fromfile=relpath,
         tofile=relpath,
     ):
@@ -182,7 +183,8 @@ def _verify_bundle(
 
 
 def _read_text(path: Path) -> str:
-    return path.read_text(encoding="utf-8", errors="surrogateescape")
+    # Exact contents: read_text would turn "\r\n" into "\n", and the patch would lose them.
+    return path.read_bytes().decode("utf-8", errors="surrogateescape")
 
 
 def _write_manifest(path: Path, *, entries: list[dict[str, object]]) -> None:

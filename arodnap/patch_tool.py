@@ -62,7 +62,8 @@ def run_patch(
     patch whose changes are already present as a failure.
     """
     try:
-        patch_text = patch_path.read_text(encoding="utf-8", errors="surrogateescape")
+        # Exact contents: read_text would turn "\r\n" into "\n".
+        patch_text = patch_path.read_bytes().decode("utf-8", errors="surrogateescape")
     except OSError as exc:
         raise PatchToolError(f"Cannot read patch {patch_path}: {exc}") from exc
     outcome = apply_patch(

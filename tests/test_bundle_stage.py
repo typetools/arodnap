@@ -76,6 +76,24 @@ class BundleStageTest(unittest.TestCase):
         self.assertEqual(result.changed_files, ["src/A.java"])
         self.assertIn("Left out 1 generated file(s) that are not in the repository.", result.notes)
 
+    def test_bundle_keeps_windows_line_endings(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            original = "class A {\r\n    void a() {}\r\n}\r\n"
+            repo_root, workspace_root = self._make_trees(Path(temp_dir), {"src/A.java": original})
+            repaired = "class A {\r\n    void a() { close(); }\r\n}\r\n"
+            (workspace_root / "src/A.java").write_bytes(repaired.encode())
+            stage_dir = Path(temp_dir) / "out" / "stages" / "bundle"
+
+            result = run_bundle_stage(
+                repo_root=repo_root,
+                workspace_root=workspace_root,
+                candidate_files=["src/A.java"],
+                stage_output_dir=stage_dir,
+            )
+
+            self.assertEqual(result.changed_files, ["src/A.java"])
+            self.assertIn(b"+    void a() { close(); }\r\n", (stage_dir / "arodnap.patch").read_bytes())
+
     def _make_trees(self, root: Path, files: dict[str, str]) -> tuple[Path, Path]:
         repo_root = root / "repo"
         workspace_root = root / "workspace"

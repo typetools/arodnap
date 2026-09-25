@@ -5,6 +5,10 @@ Behaves like GNU patch for the diffs Arodnap produces: each hunk is placed where
 earlier edits that shift lines are fine. `fuzz` lets up to that many context lines at each end
 of a hunk go unmatched, like `patch -F`. `ignore_whitespace` compares lines with whitespace
 collapsed. Nothing is written unless every hunk of every file applies.
+
+Only "\n" ends a line, and a file keeps its own line endings: lines are matched ignoring a
+trailing "\r", context lines keep the file's bytes, and inserted lines get the file's ending
+("\r\n" in a Windows-style file) whatever the patch has.
 """
 
 from __future__ import annotations
@@ -63,9 +67,17 @@ class PatchOutcome:
     errors: list[str]
 
 
+def split_lines(text: str) -> list[str]:
+    """Lines with their endings, split at "\n" only (unlike str.splitlines, which also splits at
+    "\r", form feeds and other separators that can appear inside a line of source code)."""
+    lines = text.split("\n")
+    last = lines.pop()
+    return [line + "\n" for line in lines] + ([last] if last else [])
+
+
 def parse_unified_diff(text: str) -> list[FilePatch]:
     files: list[FilePatch] = []
-    lines = text.splitlines(keepends=True)
+    lines = split_lines(text)
     index = 0
     current: FilePatch | None = None
     hunk: Hunk | None = None  # the hunk still being read
@@ -84,7 +96,8 @@ def parse_unified_diff(text: str) -> list[FilePatch]:
         if bare == _NO_NEWLINE:
             if last is not None and last.lines:
                 tag, previous = last.lines[-1]
-                last.lines[-1] = (tag, previous.rstrip("\r\n"))
+                # Only the "\n" the diff added; a "\r" before it belongs to the line.
+                last.lines[-1] = (tag, previous[:-1] if previous.endswith("\n") else previous)
             continue
         header = _HUNK_HEADER.match(bare) if hunk is None else None
         if header:
@@ -142,7 +155,7 @@ def apply_patch(
                 continue
             original = []
         elif target.is_file():
-            original = target.read_bytes().decode("utf-8", errors="surrogateescape").splitlines(keepends=True)
+            original = split_lines(target.read_bytes().decode("utf-8", errors="surrogateescape"))
         else:
             errors.append(f"can't find file to patch: {relative}")
             continue
@@ -166,6 +179,7 @@ def apply_patch(
 
 def _apply_hunks(lines: list[str], hunks: list[Hunk], *, fuzz: int, ignore_whitespace: bool) -> tuple[list[str], list[str]]:
     result = list(lines)
+    ending = _file_line_ending(lines)
     delta = 0  # how far the file has moved relative to the diff's line numbers
     floor = 0  # hunks apply in order and never overlap
     failures: list[str] = []
@@ -177,9 +191,9 @@ def _apply_hunks(lines: list[str], hunks: list[Hunk], *, fuzz: int, ignore_white
             lead, trail = min(dropped, leading), min(dropped, trailing)
             end = len(hunk.lines) - trail
             old = [text for tag, text in hunk.lines[lead:end] if tag in " -"]
-            new = [text for tag, text in hunk.lines[lead:end] if tag in " +"]
             position = _find(result, old, expected + lead, floor, ignore_whitespace)
             if position is not None:
+                new = _replacement(hunk.lines[lead:end], result[position:position + len(old)], ending)
                 placed = (position, old, new, lead)
                 break
             if dropped >= max(leading, trailing):
@@ -197,6 +211,27 @@ def _apply_hunks(lines: list[str], hunks: list[Hunk], *, fuzz: int, ignore_white
         delta = position - (hunk.anchor() + lead) + (len(new) - len(old))
         floor = position + len(new)
     return result, failures
+
+
+def _replacement(hunk_lines: list[tuple[str, str]], matched: list[str], ending: str) -> list[str]:
+    """The hunk's new lines: context lines as they are in the file, inserted lines with the
+    file's line ending."""
+    new = []
+    old_index = 0
+    for tag, text in hunk_lines:
+        if tag == " ":
+            new.append(matched[old_index])
+            old_index += 1
+        elif tag == "-":
+            old_index += 1
+        else:
+            new.append(text.rstrip("\r\n") + ending if text.endswith("\n") else text)
+    return new
+
+
+def _file_line_ending(lines: list[str]) -> str:
+    crlf = sum(1 for line in lines if line.endswith("\r\n"))
+    return "\r\n" if crlf > len(lines) - crlf else "\n"
 
 
 def _find(lines: list[str], wanted: list[str], expected: int, floor: int, ignore_whitespace: bool) -> int | None:

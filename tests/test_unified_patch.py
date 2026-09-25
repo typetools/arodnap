@@ -4,12 +4,12 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from arodnap.unified_patch import PatchParseError, apply_patch, parse_unified_diff
+from arodnap.unified_patch import PatchParseError, apply_patch, parse_unified_diff, split_lines
 
 
 def _diff(path: str, old: str, new: str, *, context: int = 3) -> str:
     lines = []
-    for line in difflib.unified_diff(old.splitlines(keepends=True), new.splitlines(keepends=True),
+    for line in difflib.unified_diff(split_lines(old), split_lines(new),
                                      fromfile=path, tofile=path, n=context):
         lines.append(line if line.endswith("\n") else line + "\n\\ No newline at end of file\n")
     return "".join(lines)
@@ -26,8 +26,11 @@ class UnifiedPatchTest(unittest.TestCase):
     def write(self, name: str, text: str) -> Path:
         path = self.root / name
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(text)
+        path.write_bytes(text.encode())
         return path
+
+    def read(self, path: Path) -> str:
+        return path.read_bytes().decode()
 
     def test_applies_a_simple_change(self) -> None:
         path = self.write("src/A.java", "class A {\n  int x;\n}\n")
@@ -117,6 +120,27 @@ class UnifiedPatchTest(unittest.TestCase):
         self.assertFalse(outcome.ok)
         self.assertIn("malformed patch", outcome.errors[0])
 
+    def test_a_windows_style_file_keeps_its_line_endings(self) -> None:
+        # The repair tools write "\n"; the file's context bytes stay and inserted lines get "\r\n".
+        path = self.write("A.java", "a\r\nb\r\nc\r\n")
+        self.assertTrue(apply_patch(self.root, _diff("A.java", "a\nb\nc\n", "a\nB\nx\nc\n")).ok)
+        self.assertEqual(self.read(path), "a\r\nB\r\nx\r\nc\r\n")
+
+    def test_a_patch_with_windows_line_endings_is_reproduced_exactly(self) -> None:
+        old, new = "a\r\nb\r\nc\r\n", "a\r\nb\r\ninserted\r\nc\r\n"
+        path = self.write("A.java", old)
+        self.assertTrue(apply_patch(self.root, _diff("A.java", old, new)).ok)
+        self.assertEqual(self.read(path), new)
+
+    def test_only_newline_ends_a_line(self) -> None:
+        # Form feeds, lone "\r" and Unicode line separators occur inside source lines.
+        self.assertEqual(split_lines("a\x0cb\nc\u2028d\re\nlast"), ["a\x0cb\n", "c\u2028d\re\n", "last"])
+        old = "one\x0c\ntwo \u2028 three\nfour\n"
+        new = "one\x0c\ntwo \u2028 three\nFOUR\n"
+        path = self.write("F.java", old)
+        self.assertTrue(apply_patch(self.root, _diff("F.java", old, new)).ok)
+        self.assertEqual(self.read(path), new)
+
     def test_random_edits_round_trip(self) -> None:
         rng = random.Random(7)
         for case in range(300):
@@ -132,6 +156,8 @@ class UnifiedPatchTest(unittest.TestCase):
                 else:
                     edited[min(position, len(edited) - 1)] = f"changed {rng.randrange(1000)}\n"
             old_text, new_text = "".join(original), "".join(edited)
+            if rng.random() < 0.3:
+                old_text, new_text = old_text.replace("\n", "\r\n"), new_text.replace("\n", "\r\n")
             if rng.random() < 0.3 and new_text:
                 new_text = new_text.rstrip("\n")
             path = self.write("R.txt", old_text)
@@ -140,7 +166,7 @@ class UnifiedPatchTest(unittest.TestCase):
                 continue
             outcome = apply_patch(self.root, patch_text)
             self.assertTrue(outcome.ok, (case, outcome.errors))
-            self.assertEqual(path.read_text(), new_text, case)
+            self.assertEqual(self.read(path), new_text, case)
 
 
 if __name__ == "__main__":
