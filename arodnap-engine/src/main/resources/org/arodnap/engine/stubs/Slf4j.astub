@@ -1,0 +1,96 @@
+package org.slf4j;
+
+import org.checkerframework.dataflow.qual.SideEffectFree;
+
+public interface Logger {
+
+    @SideEffectFree
+    public void warn(String msg);
+
+    @SideEffectFree
+    public void warn(String format, Object arg);
+
+    @SideEffectFree
+    public void warn(String format, Object... arguments);
+
+    @SideEffectFree
+    public void warn(String format, Object arg1, Object arg2);
+
+    @SideEffectFree
+    public void warn(String msg, Throwable t);
+
+    @SideEffectFree
+    public void warn(Marker marker, String msg);
+
+    @SideEffectFree
+    public void warn(Marker marker, String format, Object arg);
+
+    @SideEffectFree
+    public void warn(Marker marker, String format, Object... arguments);
+
+    @SideEffectFree
+    public void warn(Marker marker, String format, Object arg1, Object arg2);
+
+    @SideEffectFree
+    public void warn(Marker marker, String msg, Throwable t);
+
+    @SideEffectFree
+    public void error(String msg);
+
+    @SideEffectFree
+    public void error(String format, Object arg);
+
+    @SideEffectFree
+    public void error(String format, Object... arguments);
+
+    @SideEffectFree
+    public void error(String format, Object arg1, Object arg2);
+
+    @SideEffectFree
+    public void error(String msg, Throwable t);
+
+    @SideEffectFree
+    public void error(Marker marker, String msg);
+
+    @SideEffectFree
+    public void error(Marker marker, String format, Object arg);
+
+    @SideEffectFree
+    public void error(Marker marker, String format, Object... arguments);
+
+    @SideEffectFree
+    public void error(Marker marker, String format, Object arg1, Object arg2);
+
+    @SideEffectFree
+    public void error(Marker marker, String msg, Throwable t);
+
+    @SideEffectFree
+    public void debug(String msg);
+
+    @SideEffectFree
+    public void debug(String format, Object arg);
+
+    @SideEffectFree
+    public void debug(String format, Object... arguments);
+
+    @SideEffectFree
+    public void debug(String format, Object arg1, Object arg2);
+
+    @SideEffectFree
+    public void debug(String msg, Throwable t);
+
+    @SideEffectFree
+    public void debug(Marker marker, String msg);
+
+    @SideEffectFree
+    public void debug(Marker marker, String format, Object arg);
+
+    @SideEffectFree
+    public void debug(Marker marker, String format, Object... arguments);
+
+    @SideEffectFree
+    public void debug(Marker marker, String format, Object arg1, Object arg2);
+
+    @SideEffectFree
+    public void debug(Marker marker, String msg, Throwable t);
+}

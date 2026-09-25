@@ -11,3 +11,6 @@ restructure_plugins/RLPatcher/rlfixer.patch
 # Maven builds of the Java modules
 /target/
 /arodnap-*/target/
+# The Gradle plugin's Gradle build
+/arodnap-gradle-plugin/build/
+/arodnap-gradle-plugin/.gradle/

@@ -1,0 +1,6 @@
+AutoClosable.astub
+Closable.astub
+Logger.astub
+Slf4j.astub
+Throwable.astub
+com.google.json.stream.astub

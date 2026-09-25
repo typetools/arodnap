@@ -1,0 +1,18 @@
+package com.google.gson.stream;
+
+import org.checkerframework.common.returnsreceiver.qual.This;
+
+class JsonWriter {
+  @This JsonWriter beginArray();
+  @This JsonWriter beginObject();
+  @This JsonWriter endArray();
+  @This JsonWriter endObject();
+  @This JsonWriter name(String name);
+  @This JsonWriter value(String value);
+  @This JsonWriter jsonValue(String value);
+  @This JsonWriter nullValue();
+  @This JsonWriter value(boolean value);
+  @This JsonWriter value(double value);
+  @This JsonWriter value(long value);
+  @This JsonWriter value(Number value);
+}

@@ -19,6 +19,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import shlex
 import shutil
 import subprocess
 import sys
@@ -48,9 +49,9 @@ def clone(project: dict, destination: Path) -> None:
         subprocess.run(command, cwd=destination, check=True)
 
 
-def repair(project: dict, clone_dir: Path, out_dir: Path, log_path: Path) -> tuple[int, float, int]:
+def repair(project: dict, clone_dir: Path, out_dir: Path, log_path: Path, arodnap: list[str]) -> tuple[int, float, int]:
     """Runs `arodnap repair`; returns (exit code, seconds, peak memory of its largest process in MB)."""
-    command = [sys.executable, "-m", "arodnap.main", "repair", str(clone_dir), "--out-dir", str(out_dir)]
+    command = [*arodnap, "repair", str(clone_dir), "--out-dir", str(out_dir)]
     command += project.get("args", [])
     if project.get("command"):
         command += ["--", *project["command"]]
@@ -76,7 +77,7 @@ def summarize(out_dir: Path) -> dict:
     return summary
 
 
-def run(names: list[str], work_dir: Path, record: bool) -> int:
+def run(names: list[str], work_dir: Path, record: bool, arodnap: list[str]) -> int:
     projects = {project["name"]: project for project in load_projects()}
     unknown = [name for name in names if name not in projects]
     if unknown:
@@ -89,7 +90,7 @@ def run(names: list[str], work_dir: Path, record: bool) -> int:
         shutil.rmtree(project_dir, ignore_errors=True)
         print(f"== {name} ({project['ref']})", flush=True)
         clone(project, project_dir / "src")
-        code, seconds, peak_mb = repair(project, project_dir / "src", project_dir / "out", project_dir / "repair.log")
+        code, seconds, peak_mb = repair(project, project_dir / "src", project_dir / "out", project_dir / "repair.log", arodnap)
         summary = summarize(project_dir / "out")
         expected = project.get("expected")
         problems = []
@@ -145,6 +146,7 @@ def main() -> int:
     run_parser.add_argument("--all", action="store_true", help="run every project")
     run_parser.add_argument("--work-dir", type=Path, default=REPO / "build" / "real-projects")
     run_parser.add_argument("--record", action="store_true", help="store the results as the expected ones")
+    run_parser.add_argument("--arodnap", help="the arodnap command to run (default: this checkout's Python version)")
     args = parser.parse_args()
     if args.command == "list":
         print("\n".join(project["name"] for project in load_projects() if not args.tier or project.get("tier") == args.tier))
@@ -153,7 +155,8 @@ def main() -> int:
     if not names:
         parser.error("name at least one project, or pass --all")
     args.work_dir.mkdir(parents=True, exist_ok=True)
-    return run(names, args.work_dir.resolve(), args.record)
+    arodnap = shlex.split(args.arodnap) if args.arodnap else [sys.executable, "-m", "arodnap.main"]
+    return run(names, args.work_dir.resolve(), args.record, arodnap)
 
 
 if __name__ == "__main__":
