@@ -104,3 +104,9 @@ jobs:
             echo "::error::an end-to-end test was skipped"
             exit 1
           fi
+
+  real-projects-quick:
+    name: Real projects (quick)
+    uses: ./.github/workflows/real-projects.yml
+    with:
+      tier: quick

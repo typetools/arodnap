@@ -5,6 +5,7 @@
       "repo": "https://github.com/apache/commons-csv.git",
       "ref": "rel/commons-csv-1.14.1",
       "build": "maven",
+      "tier": "quick",
       "expected": {
         "initial": 12,
         "found_during_repair": 2,
@@ -73,6 +74,7 @@
       "repo": "https://github.com/brettwooldridge/HikariCP.git",
       "ref": "HikariCP-7.1.0",
       "build": "maven",
+      "tier": "quick",
       "expected": {
         "initial": 5,
         "found_during_repair": 0,
@@ -113,6 +115,7 @@
       "repo": "https://github.com/iBotPeaches/Apktool.git",
       "ref": "v3.0.3",
       "build": "gradle",
+      "tier": "quick",
       "expected": {
         "initial": 12,
         "found_during_repair": 0,

@@ -49,9 +49,12 @@ request and every push to `master`:
   its source (`python scripts/java_tools.py build` then `check`)
 - `e2e`: the real end-to-end tests on JDK 17, 21 and 25 with Gradle, Maven and
   Ant installed; a skipped test fails the job
+- `real-projects-quick`: the real projects marked `"tier": "quick"` (minutes
+  each, see below)
 
 [`.github/workflows/real-projects.yml`](../.github/workflows/real-projects.yml)
-runs weekly, on demand, and on pull requests that change the project list. It
+runs every project weekly, on demand, and on pull requests that change the
+project list; the large ones take one to three hours. It
 repairs real open-source projects listed in
 [`scripts/real_projects.json`](../scripts/real_projects.json), each cloned
 fresh from its own repository at a pinned release, and checks that `repair`

@@ -1,6 +1,7 @@
 """Runs `arodnap repair` on real open-source projects and checks the results.
 
     python scripts/real_projects.py list                  # project names, one per line
+    python scripts/real_projects.py list --tier quick     # only the quick ones (run on every PR)
     python scripts/real_projects.py run commons-io jsoup  # clone, repair, compare
     python scripts/real_projects.py run --all
     python scripts/real_projects.py run jsoup --record    # store the results as expected
@@ -9,7 +10,8 @@ Each project in `real_projects.json` is cloned fresh from its own repository at 
 release, then repaired with this checkout's Arodnap. A run passes when `repair` succeeds
 (its patch was replayed onto a clean copy and compiled) and, once a project has expected
 results, when the leak counts match them exactly. Time and peak memory are reported, not
-compared.
+compared. Projects with `"tier": "quick"` take minutes and run in CI on every pull request;
+the rest run weekly.
 """
 
 from __future__ import annotations
@@ -136,7 +138,8 @@ def _write_step_summary(results: list[dict]) -> None:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     commands = parser.add_subparsers(dest="command", required=True)
-    commands.add_parser("list", help="print the project names")
+    list_parser = commands.add_parser("list", help="print the project names")
+    list_parser.add_argument("--tier", help="only projects of this tier, e.g. quick")
     run_parser = commands.add_parser("run", help="clone, repair and check projects")
     run_parser.add_argument("names", nargs="*")
     run_parser.add_argument("--all", action="store_true", help="run every project")
@@ -144,7 +147,7 @@ def main() -> int:
     run_parser.add_argument("--record", action="store_true", help="store the results as the expected ones")
     args = parser.parse_args()
     if args.command == "list":
-        print("\n".join(project["name"] for project in load_projects()))
+        print("\n".join(project["name"] for project in load_projects() if not args.tier or project.get("tier") == args.tier))
         return 0
     names = [project["name"] for project in load_projects()] if args.all else args.names
     if not names:
