@@ -205,7 +205,7 @@ class ToolContractTest {
         List<RlFixerFormats.FixSuggestion> suggestions = RlFixerFormats.parseFixes(fixes, context.inputs().sourceRoot());
         assertThat(suggestions).extracting(RlFixerFormats.FixSuggestion::relpath).contains("demo/Leaky.java");
         var table = RlFixerFormats.parseDebugTable(Files.readString(Path.of(result.artifacts().get("debug"))));
-        assertThat(table).containsEntry(new RlFixerFormats.Key("demo/Leaky.java", 8), RlFixerFormats.DebugStatus.FIXABLE);
+        assertThat(table.fixable()).contains(new RlFixerFormats.Key("demo/Leaky.java", 8));
         assertThat(CheckerWarning.parseAll(Files.readString(analysis.diagnostics()))).isNotEmpty();
     }
 

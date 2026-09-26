@@ -223,7 +223,7 @@ public final class LeakReport {
     }
 
     /** What RLFixer and RLPatcher did with each warning of the analysis RLFixer ran on. */
-    private record RlFixerView(Optional<String> label, Path sourceRoot, Path workspaceRoot, Map<RlFixerFormats.Key, RlFixerFormats.DebugStatus> debug,
+    private record RlFixerView(Optional<String> label, Path sourceRoot, Path workspaceRoot, RlFixerFormats.DebugTable debug,
             Map<RlFixerFormats.Key, PatcherOutcome> outcomes) {
 
         record PatcherOutcome(String outcome, boolean applied, String patchFile) {}
@@ -233,12 +233,12 @@ public final class LeakReport {
                     .map(LabeledAnalysis::analysis);
             StageResult rlfixer = stageResults.get(RlFixerStage.NAME);
             if (analysis.isEmpty() || rlfixer == null) {
-                return new RlFixerView(Optional.empty(), null, null, Map.of(), Map.of());
+                return new RlFixerView(Optional.empty(), null, null, new RlFixerFormats.DebugTable(Map.of()), Map.of());
             }
             JsonNode metadata = Json.read(analysis.get().adapterMetadata());
             Path sourceRoot = FilePaths.real(Path.of(metadata.get("source_root").asText()));
-            Map<RlFixerFormats.Key, RlFixerFormats.DebugStatus> debug = rlfixer.artifacts().containsKey("debug")
-                    ? RlFixerFormats.parseDebugTable(readReplacing(Path.of(rlfixer.artifacts().get("debug")))) : Map.of();
+            RlFixerFormats.DebugTable debug = RlFixerFormats.parseDebugTable(
+                    rlfixer.artifacts().containsKey("debug") ? readReplacing(Path.of(rlfixer.artifacts().get("debug"))) : "");
             return new RlFixerView(label, sourceRoot, FilePaths.real(analysis.get().workspaceRoot()), debug,
                     patcherOutcomes(stageResults.get(RlPatcherStage.NAME)));
         }
@@ -267,9 +267,9 @@ public final class LeakReport {
                 }
                 return REASONS.containsKey(outcome.outcome()) ? outcome.outcome() : "unsupported";
             }
-            RlFixerFormats.DebugStatus status = debug.get(key.get());
-            if (status != null && status != RlFixerFormats.DebugStatus.FIXABLE) {
-                return "rlfixer_" + status.name().toLowerCase(java.util.Locale.ROOT);
+            Optional<RlFixerFormats.DebugStatus> status = debug.lastStatus(key.get());
+            if (status.isPresent() && status.get() != RlFixerFormats.DebugStatus.FIXABLE) {
+                return "rlfixer_" + status.get().name().toLowerCase(java.util.Locale.ROOT);
             }
             return "no_suggestion";
         }

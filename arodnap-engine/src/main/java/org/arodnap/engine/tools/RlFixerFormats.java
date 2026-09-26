@@ -3,9 +3,11 @@ package org.arodnap.engine.tools;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -109,14 +111,41 @@ public final class RlFixerFormats {
     public enum DebugStatus { UNMATCHED, DUPLICATE, UNFIXABLE, FIXABLE }
 
     /**
-     * RLFixer's debug table ({@code ^}-separated, with a header row), by warning. Empty when the
-     * table is missing or unreadable.
+     * RLFixer's debug table: the status of each of a warning's rows, in table order. RLFixer can list
+     * a warning more than once, for example first as fixable and then as a duplicate of itself.
      */
-    public static Map<Key, DebugStatus> parseDebugTable(String debugTable) {
+    public record DebugTable(Map<Key, List<DebugStatus>> rows) {
+        public DebugTable {
+            rows = Map.copyOf(rows);
+        }
+
+        /** Warnings with at least one fixable row: RLFixer materializes a fix for them. */
+        public Set<Key> fixable() {
+            Set<Key> fixable = new HashSet<>();
+            rows.forEach((key, statuses) -> {
+                if (statuses.contains(DebugStatus.FIXABLE)) {
+                    fixable.add(key);
+                }
+            });
+            return fixable;
+        }
+
+        /** What the warning's last row says; the report's reason when RLFixer's fix is not used. */
+        public Optional<DebugStatus> lastStatus(Key key) {
+            List<DebugStatus> statuses = rows.getOrDefault(key, List.of());
+            return statuses.isEmpty() ? Optional.empty() : Optional.of(statuses.get(statuses.size() - 1));
+        }
+    }
+
+    /**
+     * RLFixer's debug table ({@code ^}-separated, with a header row). Empty when the table is
+     * missing or unreadable.
+     */
+    public static DebugTable parseDebugTable(String debugTable) {
         List<String> lines = debugTable.lines().map(String::strip).filter(line -> !line.isEmpty()).toList();
-        Map<Key, DebugStatus> rows = new LinkedHashMap<>();
+        Map<Key, List<DebugStatus>> rows = new LinkedHashMap<>();
         if (lines.isEmpty() || !lines.get(0).contains("^")) {
-            return rows;
+            return new DebugTable(rows);
         }
         Map<String, Integer> columns = new HashMap<>();
         String[] header = lines.get(0).split("\\^", -1);
@@ -125,7 +154,7 @@ public final class RlFixerFormats {
         }
         for (String name : List.of("Source File", "Line Number", "Matched Method", "Duplicate", "Unfixable")) {
             if (!columns.containsKey(name)) {
-                return rows;
+                return new DebugTable(rows);
             }
         }
         for (String row : lines.subList(1, lines.size())) {
@@ -150,22 +179,17 @@ public final class RlFixerFormats {
             } else {
                 status = DebugStatus.FIXABLE;
             }
-            rows.put(key, status);
+            rows.computeIfAbsent(key, ignored -> new ArrayList<>()).add(status);
         }
-        return rows;
+        return new DebugTable(rows);
     }
 
     /**
      * The suggestions to materialize: those RLFixer's debug table marks fixable, or all of them when
      * the table is missing.
      */
-    public static List<FixSuggestion> selectFixable(List<FixSuggestion> suggestions, Map<Key, DebugStatus> debugTable) {
-        Set<Key> fixable = new java.util.HashSet<>();
-        debugTable.forEach((key, status) -> {
-            if (status == DebugStatus.FIXABLE) {
-                fixable.add(key);
-            }
-        });
+    public static List<FixSuggestion> selectFixable(List<FixSuggestion> suggestions, DebugTable debugTable) {
+        Set<Key> fixable = debugTable.fixable();
         if (fixable.isEmpty()) {
             return List.copyOf(suggestions);
         }

@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import org.arodnap.engine.Recorded;
 import org.arodnap.engine.diagnostics.CheckerWarning;
 import org.arodnap.engine.json.Json;
@@ -42,19 +41,30 @@ class RlFixerFormatsTest {
 
     @Test
     void readsTheDebugTable() throws IOException {
-        Map<RlFixerFormats.Key, RlFixerFormats.DebugStatus> table = RlFixerFormats.parseDebugTable(Recorded.text("rlfixer/debug.txt"));
+        RlFixerFormats.DebugTable table = RlFixerFormats.parseDebugTable(Recorded.text("rlfixer/debug.txt"));
 
-        List<String> fixable = new ArrayList<>();
-        table.forEach((key, status) -> {
-            if (status == RlFixerFormats.DebugStatus.FIXABLE) {
-                fixable.add(key.relpath() + ":" + key.line());
-            }
-        });
+        List<String> fixable = new ArrayList<>(table.fixable().stream().map(key -> key.relpath() + ":" + key.line()).toList());
         fixable.sort(null);
         List<String> expected = new ArrayList<>();
         python().get("fixable").forEach(node -> expected.add(node.asText()));
         assertThat(fixable).isEqualTo(expected);
-        assertThat(table).containsEntry(new RlFixerFormats.Key("loop_fixes/EscapedTryCatchInLoop.java", 20), RlFixerFormats.DebugStatus.UNFIXABLE);
+        assertThat(table.lastStatus(new RlFixerFormats.Key("loop_fixes/EscapedTryCatchInLoop.java", 20))).contains(RlFixerFormats.DebugStatus.UNFIXABLE);
+    }
+
+    @Test
+    void aWarningListedAgainAsADuplicateIsStillFixed() {
+        // From pdfbox: RLFixer lists these warnings twice, first fixable, then as a duplicate.
+        RlFixerFormats.DebugTable table = RlFixerFormats.parseDebugTable(Recorded.realProject("pdfbox", "debug-repeated-warnings.txt"));
+        RlFixerFormats.Key document = new RlFixerFormats.Key("pdfbox/src/main/java/org/apache/pdfbox/pdmodel/PDDocument.java", 700);
+        RlFixerFormats.Key embedder = new RlFixerFormats.Key("pdfbox/src/main/java/org/apache/pdfbox/pdmodel/font/PDType1FontEmbedder.java", 79);
+
+        assertThat(table.fixable()).containsExactlyInAnyOrder(document, embedder);
+        assertThat(table.lastStatus(document)).contains(RlFixerFormats.DebugStatus.DUPLICATE);
+        List<RlFixerFormats.FixSuggestion> suggestions = List.of(
+                new RlFixerFormats.FixSuggestion("/src/" + document.relpath(), document.relpath(), 700, "+++ Add following code at line 701"),
+                new RlFixerFormats.FixSuggestion("/src/" + embedder.relpath(), embedder.relpath(), 79, "+++ Add following code at line 80"),
+                new RlFixerFormats.FixSuggestion("/src/Other.java", "Other.java", 3, "+++ Add following code at line 4"));
+        assertThat(RlFixerFormats.selectFixable(suggestions, table)).extracting(RlFixerFormats.FixSuggestion::key).containsExactly(document, embedder);
     }
 
     @Test

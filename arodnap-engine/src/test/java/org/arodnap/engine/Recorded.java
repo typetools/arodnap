@@ -9,7 +9,8 @@ import java.nio.file.Path;
 
 /**
  * Tool outputs recorded from a real run of the coverage fixture (tests/fixtures/gradle-pipeline-coverage),
- * with the run's directories replaced by {@link #WORKSPACE} and {@link #OUT}.
+ * with the run's directories replaced by {@link #WORKSPACE} and {@link #OUT}, and excerpts from real
+ * projects' runs.
  */
 public final class Recorded {
     /** Where the recorded run's copy of the project was. */
@@ -21,9 +22,18 @@ public final class Recorded {
     private Recorded() {}
 
     public static String text(String name) {
-        try (InputStream in = Recorded.class.getResourceAsStream("/recorded/coverage/" + name)) {
+        return resource("/recorded/coverage/" + name);
+    }
+
+    /** An excerpt of a tool output from a real project's run. */
+    public static String realProject(String project, String name) {
+        return resource("/recorded/" + project + "/" + name);
+    }
+
+    private static String resource(String path) {
+        try (InputStream in = Recorded.class.getResourceAsStream(path)) {
             if (in == null) {
-                throw new IllegalArgumentException("No recorded file " + name);
+                throw new IllegalArgumentException("No recorded file " + path);
             }
             return new String(in.readAllBytes(), StandardCharsets.UTF_8);
         } catch (IOException e) {
