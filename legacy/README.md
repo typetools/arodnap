@@ -12,7 +12,6 @@ repairing your own project, use the `arodnap` tool described in the top-level
 | `run_arodnap.py` and the other `*.py` files | the original pipeline scripts (`Constants.py` holds their configuration) |
 | `helpers/wpi.sh`, `helpers/ep.sh` | whole-program inference and field enhancement for the normalized layout |
 | `rlfixer/lib`, `rlfixer/classes` | RLFixer as used in the paper: WALA 1.5.7, JavaParser 3.24.7, and its compiled classes (`rlfixer/out` and the IntelliJ files are that build's IDE output) |
-| `rlpatcher-paper-patches/` | patches RLPatcher produced during the paper's evaluation |
 | `fixtures/legacy-pipeline-baseline/` | a small project in the normalized layout, with the script that generated it from `test-projects/gradle-pipeline-baseline` |
 
 The scripts also need tools that are not in this directory:
