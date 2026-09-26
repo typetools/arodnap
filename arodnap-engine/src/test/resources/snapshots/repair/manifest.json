@@ -80,6 +80,7 @@
     "inference_notes": [],
     "label": "final",
     "release": 17,
+    "repairable_diagnostics_path": "{TEMP}/out/logs/final/repairable-diagnostics.txt",
     "source_files_file": "{TEMP}/out/logs/final/source-files.txt",
     "warning_count": 0,
     "workspace_root": "{WORK}/demo-project",

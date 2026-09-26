@@ -65,7 +65,8 @@ public record OutputLayout(Path root) {
     public AnalysisFiles analysis(String label) {
         Path logs = logsDirectory().resolve(label);
         return new AnalysisFiles(label, logs, logs.resolve("wpi.log"), inferenceDirectory().resolve(label),
-                diagnosticsDirectory().resolve(label + ".txt"), logs.resolve("source-files.txt"), logs.resolve("app-classes.txt"),
+                diagnosticsDirectory().resolve(label + ".txt"), logs.resolve("repairable-diagnostics.txt"), logs.resolve("source-files.txt"),
+                logs.resolve("app-classes.txt"),
                 logs.resolve("classpath-entries.txt"), logs.resolve("adapter-metadata.json"));
     }
 
@@ -76,6 +77,7 @@ public record OutputLayout(Path root) {
             Path wpiLog,
             Path inferenceDirectory,
             Path diagnostics,
+            Path repairableDiagnostics,
             Path sourceFiles,
             Path appClasses,
             Path classpathEntries,

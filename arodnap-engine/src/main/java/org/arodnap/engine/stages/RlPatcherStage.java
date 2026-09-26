@@ -93,7 +93,7 @@ public final class RlPatcherStage implements Stage {
         Path debug = Path.of(rlfixer.artifacts().get("debug"));
         try {
             requireDirectory(context.workspaceRoot(), "workspace root");
-            requireFile(context.analysis().diagnostics(), "diagnostics file");
+            requireFile(context.analysis().repairableDiagnostics(), "diagnostics file");
             requireDirectory(context.analysis().inferenceDirectory(), "inference directory");
             requireFile(fixes, "RLFixer fixes file");
             requireFile(debug, "RLFixer debug file");
@@ -103,7 +103,7 @@ public final class RlPatcherStage implements Stage {
             StageLog.reset(log);
 
             Path sourceRoot = FilePaths.real(context.run().inputs().sourceRoot());
-            List<CheckerWarning> warnings = CheckerWarning.parseAll(RlFixerStage.read(context.analysis().diagnostics()));
+            List<CheckerWarning> warnings = CheckerWarning.parseAll(RlFixerStage.read(context.analysis().repairableDiagnostics()));
             List<RlFixerFormats.FixSuggestion> suggestions = RlFixerFormats.parseFixes(RlFixerStage.read(fixes), sourceRoot);
             List<RlFixerFormats.FixSuggestion> fixable = RlFixerFormats.selectFixable(suggestions,
                     RlFixerFormats.parseDebugTable(RlFixerStage.read(debug)));

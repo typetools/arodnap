@@ -15,24 +15,42 @@ import java.util.regex.Pattern;
  */
 public record CheckerWarning(String file, int line, String message) {
     private static final Pattern HEADER = Pattern.compile("^(/.+?):(\\d+):\\s+warning:", Pattern.MULTILINE);
+    private static final Pattern COUNT = Pattern.compile("^\\d+ (?:warnings?|errors?)$", Pattern.MULTILINE);
     // Checker Framework 3.x prints "(key)"; 4.x prints "[key]" or "[checker:key]".
     private static final Pattern REQUIRED_METHOD_NOT_CALLED = Pattern.compile("[(\\[](?:[\\w.]+:)?required\\.method\\.not\\.called[)\\]]");
     private static final String OWNING_FIELD_OVERWRITE = "Non-final owning field might be overwritten";
 
     public static List<CheckerWarning> parseAll(String diagnostics) {
+        return blocks(diagnostics).stream().map(Block::warning).toList();
+    }
+
+    /**
+     * A warning and where its block is in the output: from its header to the next one, or, for the
+     * last, to javac's closing count ({@code 3 warnings}) or the end. (The last warning's message
+     * runs to the end, as it always has; it is part of RLPatcher's prompt.)
+     */
+    public record Block(CheckerWarning warning, int start, int end) {}
+
+    public static List<Block> blocks(String diagnostics) {
         record Header(int start, String file, int line) {}
         List<Header> headers = new ArrayList<>();
         Matcher matcher = HEADER.matcher(diagnostics);
         while (matcher.find()) {
             headers.add(new Header(matcher.start(), matcher.group(1), Integer.parseInt(matcher.group(2))));
         }
-        List<CheckerWarning> warnings = new ArrayList<>();
+        List<Block> blocks = new ArrayList<>();
         for (int i = 0; i < headers.size(); i++) {
             Header header = headers.get(i);
-            int end = i + 1 < headers.size() ? headers.get(i + 1).start() : diagnostics.length();
-            warnings.add(new CheckerWarning(header.file(), header.line(), diagnostics.substring(header.start(), end).strip()));
+            int next = i + 1 < headers.size() ? headers.get(i + 1).start() : diagnostics.length();
+            int end = next;
+            Matcher count = COUNT.matcher(diagnostics);
+            if (i + 1 == headers.size() && count.find(header.start())) {
+                end = count.start();
+            }
+            String text = diagnostics.substring(header.start(), next).strip();
+            blocks.add(new Block(new CheckerWarning(header.file(), header.line(), text), header.start(), end));
         }
-        return warnings;
+        return blocks;
     }
 
     /** The first line of the block, where the key and the structured fields are. */

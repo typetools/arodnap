@@ -8,10 +8,12 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -55,6 +57,7 @@ public final class LeakReport {
         reasons.put("fix_applied_warning_remains", "a fix was applied, but the checker still reports the leak");
         reasons.put("appeared_after_fixes", "it appeared after RLPatcher's fixes (a fix exposed or moved it)");
         reasons.put("not_analyzed_by_rlfixer", "it was not part of RLFixer's input");
+        reasons.put("suppressed", "the code is marked @SuppressWarnings(\"resource\"), so Arodnap leaves it as it is");
         REASONS = java.util.Collections.unmodifiableMap(reasons);
     }
 
@@ -133,12 +136,15 @@ public final class LeakReport {
 
         String finalLabel = analyses.get(analyses.size() - 1).label();
         RlFixerView view = RlFixerView.load(analyses, rlfixerLabel, stageResults);
+        Set<Location> suppressed = suppressedLocations(analyses.get(analyses.size() - 1).analysis(), workspaceRoot);
         for (Tracked warning : tracked) {
             if (!warning.diagnostic.isLeak()) {
                 continue;
             }
             if (warning.fixedBy == null) {
-                warning.reason = view.reason(warning, finalLabel);
+                Diagnostic last = warning.runs.get(finalLabel);
+                warning.reason = last != null && suppressed.contains(new Location(last.path(), last.line())) ? "suppressed"
+                        : view.reason(warning, finalLabel);
             } else if (warning.fixedBy.equals(RlPatcherStage.NAME)) {
                 warning.fixPatch = view.patchFor(warning);
             } else if (stageResults.containsKey(warning.fixedBy)) {
@@ -193,6 +199,21 @@ public final class LeakReport {
         report.put("warnings", warnings);
         report.put("other_warnings", otherWarnings);
         return report;
+    }
+
+    private record Location(String path, int line) {}
+
+    /** Where the analysis has warnings the repair stages did not get, because the code is marked as intended. */
+    private static Set<Location> suppressedLocations(Analysis analysis, Path workspaceRoot) throws IOException {
+        if (!Files.isRegularFile(analysis.repairableDiagnostics())) {
+            return Set.of();
+        }
+        Set<Location> locations = new HashSet<>();
+        Diagnostic.parseAll(readReplacing(analysis.diagnostics()), workspaceRoot)
+                .forEach(diagnostic -> locations.add(new Location(diagnostic.path(), diagnostic.line())));
+        Diagnostic.parseAll(readReplacing(analysis.repairableDiagnostics()), workspaceRoot)
+                .forEach(diagnostic -> locations.remove(new Location(diagnostic.path(), diagnostic.line())));
+        return locations;
     }
 
     private static Map<String, Object> leakJson(int number, Tracked warning) {

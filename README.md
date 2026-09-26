@@ -195,7 +195,18 @@ The intended flow is:
    the project's build.
 2. Run `repair` to analyze a workspace copy and emit a normalized patch bundle.
 3. Inspect `report.json`, `manifest.json`, stage outputs, and the patch bundle.
-4. Run `apply` only when you are ready to update the original repository.
+4. Run `apply` only when you are ready to update the original repository, then
+   run your tests: the patch is verified to apply and compile, not to keep the
+   program's behavior.
+
+## Leaks Arodnap Leaves Alone
+
+Code annotated `@SuppressWarnings("resource")` (the key javac, Eclipse and
+IntelliJ use) or `@SuppressWarnings("all")`, on a class, method, field or
+variable, is code whose developers decided the warning is intended: typically a
+resource handed to a caller or kept by the object that is returned. The Resource
+Leak Checker does not honor that key, so it still reports those leaks; Arodnap
+lists them in the report as `suppressed` and does not repair them.
 
 ## How Arodnap Sees Your Build
 

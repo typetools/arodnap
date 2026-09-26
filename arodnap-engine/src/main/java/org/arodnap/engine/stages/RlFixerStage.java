@@ -46,7 +46,7 @@ public final class RlFixerStage implements Stage {
             requireDirectory(context.workspaceRoot(), "workspace root");
             requireDirectory(sourceRoot, "source root");
             requireDirectory(context.analysis().inferenceDirectory(), "inference directory");
-            requireFile(context.analysis().diagnostics(), "diagnostics file");
+            requireFile(context.analysis().repairableDiagnostics(), "diagnostics file");
             requireFile(context.analysis().sourceFiles(), "source files file");
             requireFile(context.analysis().appClasses(), "app classes file");
             requireFile(context.analysis().classpathEntries(), "classpath entries file");
@@ -54,7 +54,7 @@ public final class RlFixerStage implements Stage {
             Files.createDirectories(inputs);
             StageLog.reset(log);
 
-            List<CheckerWarning> warnings = CheckerWarning.parseAll(read(context.analysis().diagnostics()));
+            List<CheckerWarning> warnings = CheckerWarning.parseAll(read(context.analysis().repairableDiagnostics()));
             RlFixerFormats.WarningsInput warningsInput = RlFixerFormats.warningsInput(warnings, sourceRoot);
             Path warningsFile = inputs.resolve("warnings.txt");
             Files.writeString(warningsFile, warningsInput.fileContents(), StandardCharsets.UTF_8);

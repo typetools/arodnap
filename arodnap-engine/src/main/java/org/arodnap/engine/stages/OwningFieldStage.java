@@ -27,7 +27,7 @@ public final class OwningFieldStage extends PatchingToolStage {
         command.add(context.run().jdk().java().toString());
         command.addAll(javaProperties);
         command.addAll(List.of("-jar", context.run().toolchain().owningFieldFixerJar().toString(),
-                "--log", context.analysis().diagnostics().toString(), "--project-root", context.workspaceRoot().toString()));
+                "--log", context.analysis().repairableDiagnostics().toString(), "--project-root", context.workspaceRoot().toString()));
         return command;
     }
 

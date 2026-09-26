@@ -2,6 +2,7 @@ package org.arodnap.engine.analysis;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -14,6 +15,7 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
+import org.arodnap.engine.diagnostics.Suppressions;
 import org.arodnap.engine.jdk.Jdk;
 import org.arodnap.engine.json.Json;
 import org.arodnap.engine.pipeline.OutputLayout;
@@ -87,7 +89,7 @@ public final class Analyzer {
                 }
             }
             return new Analysis(label, context.workspace().root(), files.wpiLog(), files.inferenceDirectory(), files.diagnostics(),
-                    warnings, files.sourceFiles(), files.appClasses(), files.classpathEntries(), files.adapterMetadata(),
+                    files.repairableDiagnostics(), warnings, files.sourceFiles(), files.appClasses(), files.classpathEntries(), files.adapterMetadata(),
                     inputs.release(), inputs.encoding(), notes);
         } catch (IOException e) {
             throw new AnalysisException("Could not write the analysis files for " + label + ": " + e.getMessage(), e);
@@ -164,6 +166,9 @@ public final class Analyzer {
             if (!result.succeeded()) {
                 throw new AnalysisException("RLC failed for " + context.workspace().root() + ". See diagnostics: " + files.diagnostics());
             }
+            Charset encoding = context.inputs().encoding().map(Charset::forName).orElse(StandardCharsets.UTF_8);
+            Suppressions suppressions = Suppressions.find(Suppressions.filesWithWarnings(diagnostics), encoding);
+            Files.writeString(files.repairableDiagnostics(), suppressions.repairable(diagnostics), StandardCharsets.UTF_8);
             return countWarnings(diagnostics);
         } finally {
             Workspace.deleteTree(classes);

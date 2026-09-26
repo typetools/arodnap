@@ -15,6 +15,8 @@ import java.util.Optional;
  * @param wpiLog the inference log ({@code SKIPPED} for {@code analyze})
  * @param inferenceDirectory the inferred annotations (.ajava files)
  * @param diagnostics the checker's output
+ * @param repairableDiagnostics the same without the warnings in code marked
+ *     {@code @SuppressWarnings("resource")}: what the repair stages work on
  * @param warningCount how many warnings it reported
  * @param sourceFiles the analyzed sources, one per line
  * @param appClasses the program's classes, one per line
@@ -30,6 +32,7 @@ public record Analysis(
         Path wpiLog,
         Path inferenceDirectory,
         Path diagnostics,
+        Path repairableDiagnostics,
         int warningCount,
         Path sourceFiles,
         Path appClasses,
@@ -51,6 +54,7 @@ public record Analysis(
         json.put("wpi_log_path", wpiLog.toString());
         json.put("inference_dir", inferenceDirectory.toString());
         json.put("diagnostics_path", diagnostics.toString());
+        json.put("repairable_diagnostics_path", repairableDiagnostics.toString());
         json.put("warning_count", warningCount);
         json.put("source_files_file", sourceFiles.toString());
         json.put("app_classes_file", appClasses.toString());

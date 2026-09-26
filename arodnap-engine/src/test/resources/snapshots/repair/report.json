@@ -126,6 +126,7 @@
     "inference_notes": [],
     "label": "final",
     "release": 17,
+    "repairable_diagnostics_path": "{TEMP}/out/logs/final/repairable-diagnostics.txt",
     "source_files_file": "{TEMP}/out/logs/final/source-files.txt",
     "warning_count": 0,
     "workspace_root": "{WORK}/demo-project",
@@ -151,6 +152,7 @@
       "rlfixer_duplicate": "RLFixer treats it as a duplicate of another warning",
       "rlfixer_unfixable": "RLFixer found no fix (for example, the resource is stored in a field or collection)",
       "rlfixer_unmatched": "RLFixer could not find the leaking allocation in the compiled code",
+      "suppressed": "the code is marked @SuppressWarnings(\"resource\"), so Arodnap leaves it as it is",
       "timed_out": "RLPatcher exceeded --stage-timeout",
       "unsafe": "a fix would have to reorder code, which could change behavior",
       "unsupported": "RLPatcher does not support this kind of fix"

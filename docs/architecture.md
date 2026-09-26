@@ -110,6 +110,13 @@ whole-program inference, then the Resource Leak Checker with the paper's flags, 
 The Checker Framework runs as `<JDK>/bin/java -jar checker.jar` on a JDK at least as new as
 its own minimum (read from `checker.jar`) and RLFixer's 17 (`tools.CheckerFramework`).
 
+The analyzer then writes the checker's output a second time, without the warnings inside
+declarations marked `@SuppressWarnings("resource")` or `@SuppressWarnings("all")`, which the
+checker does not honor (`diagnostics.Suppressions` finds them with the JDK's own parser). That
+file, `repairable-diagnostics.txt`, is what the repair stages work on, so code its developers
+marked as intended is reported but never changed; the report reads the full output and gives
+those leaks the reason `suppressed`.
+
 Inference does not use `wpi.sh`. `analysis.WholeProgramInference` runs the loop of
 do-like-javac's WPI tool (`-Ainfer=ajava -Awarns`, each round reading the previous one's
 output through `-Aajava`) on the captured sources and classpath, until two rounds write the
@@ -122,6 +129,7 @@ Each stage (`stages.Stage`) takes a `StageContext` (the run, the current analysi
 stage results) and returns a `StageResult`; it writes `stage_result.json`, `stage.log` and
 its artifacts under `stages/<name>/`. The rules:
 
+- a stage works on the analysis's repairable diagnostics, not the checker's full output
 - a stage runs its tool through the `CommandRunner` and reads the tool's output formats
   itself; RLFixer's and RLPatcher's are read and written only in `tools.RlFixerFormats`
 - raw tool patches are normalized to repo-root-relative paths (`stages.ToolPatches`) before
@@ -190,7 +198,8 @@ Everything goes under the output directory (`arodnap-out/` for the command line,
 - `diagnostics/<label>.txt`: each analysis's checker output
 - `inference/<label>/`: inferred `.ajava` files
 - `logs/<label>/`: the analysis's inputs and logs (`wpi.log`, `source-files.txt`,
-  `app-classes.txt`, `classpath-entries.txt`, `adapter-metadata.json`)
+  `app-classes.txt`, `classpath-entries.txt`, `adapter-metadata.json`,
+  `repairable-diagnostics.txt`)
 - `stages/<stage>/`: `stage_result.json`, `stage.log` and the stage's artifacts
 - `patches/`: `arodnap.patch` and its `manifest.json`, which `apply` reads
 
@@ -226,7 +235,7 @@ or update this section and the approved snapshots
 | `legacy_regression_enabled` | bool | always `false` |
 | `config` | object | includes `command`, `workspace_mode`, `keep_workspace`, `build_args`, `compile_target`, `checker_jar` |
 | `workspace_root` | string | absolute path to the temporary workspace used |
-| `current_analysis` | object \| null | the last analysis; `null` if analysis never completed |
+| `current_analysis` | object \| null | the last analysis (including `diagnostics_path` and `repairable_diagnostics_path`); `null` if analysis never completed |
 | `stage_history` | array | one `StageResult` object per executed stage |
 | `artifacts` | object | paths to `diagnostics_dir`, `inference_dir`, `logs_dir`, `stages_dir`, `patch_bundle_dir`, `report`, `manifest`, `patches_manifest` |
 | `run_metadata` | object | includes `tool_version`, `command`, `repo_root`, `workspace_root`, `adapter_name`, `java_version`, `started_at`, `completed_at`, `elapsed_seconds` |

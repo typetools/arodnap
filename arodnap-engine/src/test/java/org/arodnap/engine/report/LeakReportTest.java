@@ -36,8 +36,8 @@ class LeakReportTest {
         List<LeakReport.LabeledAnalysis> analyses = new ArrayList<>();
         for (String label : LABELS) {
             Path diagnostics = Recorded.copy("diagnostics/" + label + ".txt", temp);
-            analyses.add(new LeakReport.LabeledAnalysis(label, new Analysis(label, Recorded.WORKSPACE, temp, temp, diagnostics, 0, temp, temp, temp,
-                    metadata, Optional.empty(), Optional.empty(), List.of())));
+            analyses.add(new LeakReport.LabeledAnalysis(label, new Analysis(label, Recorded.WORKSPACE, temp, temp, diagnostics, diagnostics, 0,
+                    temp, temp, temp, metadata, Optional.empty(), Optional.empty(), List.of())));
         }
         Path out = Recorded.OUT.resolve("stages");
         Map<String, StageResult> stages = Map.of(
@@ -52,6 +52,8 @@ class LeakReportTest {
 
         ObjectNode expected = (ObjectNode) Json.parse(Recorded.text("expected-leaks.json"));
         expected.remove(List.of("field_changes", "html_report"));
+        // Added since that release: leaks in code marked @SuppressWarnings("resource") are left alone.
+        ((ObjectNode) expected.get("reasons")).put("suppressed", LeakReport.REASONS.get("suppressed"));
         JsonNode actual = Json.parse(Json.write(leaks, true));
         assertThat(actual).isEqualTo(expected);
     }

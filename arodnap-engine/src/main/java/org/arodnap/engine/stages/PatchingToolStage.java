@@ -41,7 +41,7 @@ abstract class PatchingToolStage implements Stage {
 
     @Override
     public StageResult run(StageContext context) throws StageException {
-        Path diagnostics = context.analysis().diagnostics();
+        Path diagnostics = context.analysis().repairableDiagnostics();
         Path directory = context.stageDirectory(name());
         Path log = directory.resolve("stage.log");
         // The tool writes its raw diff outside the workspace so it can never leak into sources.

@@ -170,6 +170,27 @@ class RepairPipelineTest {
     }
 
     @Test
+    void aLeakInCodeMarkedSuppressWarningsResourceIsReportedButNotRepaired() throws Exception {
+        Files.writeString(project.resolve("src/demo/Demo.java"),
+                SOURCE.replace("    public int read(", "    @SuppressWarnings(\"resource\") // The caller closes it.\n    public int read("));
+        tools.diagnostics.add(LEAK.replace("Demo.java:8:", "Demo.java:9:"));
+        tools.rlfixer = command -> {
+            throw new AssertionError("RLFixer must not get a leak the developers marked as intended");
+        };
+
+        engine().repair(settings(), capture());
+
+        assertThat(tools.ran()).doesNotContain("rlfixer", "rlpatcher");
+        JsonNode report = Json.read(temp.resolve("out/report.json"));
+        assertThat(report.get("success").asBoolean()).isTrue();
+        assertThat(report.at("/leaks/summary/remaining").asInt()).isEqualTo(1);
+        assertThat(report.at("/leaks/warnings/0/reason").asText()).isEqualTo("suppressed");
+        // The checker's output keeps the warning; the repair stages get it without.
+        assertThat(Files.readString(temp.resolve("out/diagnostics/initial.txt"))).contains("Demo.java:9: warning");
+        assertThat(Files.readString(temp.resolve("out/logs/initial/repairable-diagnostics.txt"))).doesNotContain("Demo.java:9: warning");
+    }
+
+    @Test
     void aStageThatChangesTheSourcesIsFollowedByAnAnalysis() throws Exception {
         tools.diagnostics.add(LEAK);
         tools.diagnostics.add("");

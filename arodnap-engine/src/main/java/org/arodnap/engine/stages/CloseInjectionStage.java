@@ -27,7 +27,7 @@ public final class CloseInjectionStage extends PatchingToolStage {
         command.add(context.run().jdk().java().toString());
         command.addAll(javaProperties);
         command.addAll(List.of("-jar", context.run().toolchain().closeInjectorJar().toString(),
-                context.analysis().diagnostics().toString(), context.workspaceRoot().toString()));
+                context.analysis().repairableDiagnostics().toString(), context.workspaceRoot().toString()));
         return command;
     }
 
