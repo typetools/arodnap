@@ -1,10 +1,10 @@
 package org.arodnap.gradle;
 
-import java.util.List;
 import org.arodnap.engine.tools.ToolCoordinates;
 import org.gradle.api.Plugin;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.Project;
+import org.gradle.api.tasks.TaskCollection;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.compile.JavaCompile;
 
@@ -20,8 +20,6 @@ import org.gradle.api.tasks.compile.JavaCompile;
  */
 public class ArodnapPlugin implements Plugin<Project> {
     public static final String GROUP = "arodnap";
-    private static final List<String> TOOLS = List.of("checker", "checker-qual", "checker-util", "close-injector", "owning-field-fixer", "rlfixer",
-            "rlpatcher", "field-transformations", "error-prone", "error-prone-jdk17", "dataflow");
 
     @Override
     public void apply(Project project) {
@@ -58,7 +56,14 @@ public class ArodnapPlugin implements Plugin<Project> {
             run.getOutputs().upToDateWhen(ignored -> false);
         });
         task.configure(run -> {
-            for (String tool : TOOLS) {
+            // The analysis needs every project compiled; it reads each project's main compile task.
+            // The collections are live, so projects configured later are included too.
+            for (Project each : project.getAllprojects()) {
+                TaskCollection<JavaCompile> compile = each.getTasks().withType(JavaCompile.class).matching(it -> it.getName().equals("compileJava"));
+                run.dependsOn(compile);
+                run.getCompileTasks().add(new RunTask.CompileSource(compile, each.getProjectDir()));
+            }
+            for (String tool : ToolCoordinates.TOOLCHAIN) {
                 Configuration configuration = project.getConfigurations().maybeCreate("arodnap_" + tool.replace('-', '_'));
                 configuration.setCanBeConsumed(false);
                 configuration.setCanBeResolved(true);
@@ -69,12 +74,6 @@ public class ArodnapPlugin implements Plugin<Project> {
                 run.getTools().put(tool, configuration);
             }
         });
-        // The analysis needs every project compiled; it reads each project's main compile task.
-        project.allprojects(each -> each.getTasks().withType(JavaCompile.class).matching(compile -> compile.getName().equals("compileJava"))
-                .configureEach(compile -> task.configure(run -> {
-                    run.dependsOn(compile);
-                    run.getCompileTasks().add(new RunTask.CompileSource(compile, each.getProjectDir()));
-                })));
     }
 
     /** Gradle's dependency notation (group:name:version:classifier) for group:artifact[:classifier]:version. */

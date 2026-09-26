@@ -42,4 +42,5 @@ tasks.test {
     useJUnitPlatform()
     // The TestKit tests run real repairs; they are opt-in like the other end-to-end tests.
     environment("ARODNAP_E2E", System.getenv("ARODNAP_E2E") ?: "")
+    systemProperty("arodnap.testProjects", layout.projectDirectory.dir("../test-projects").asFile.absolutePath)
 }

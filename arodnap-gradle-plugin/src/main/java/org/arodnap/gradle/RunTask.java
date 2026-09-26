@@ -6,7 +6,6 @@ import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -24,7 +23,6 @@ import org.arodnap.engine.pipeline.RunSettings;
 import org.arodnap.engine.pipeline.RunSettings.FieldTransformationMode;
 import org.arodnap.engine.pipeline.Timeouts;
 import org.arodnap.engine.process.CommandRunner;
-import org.arodnap.engine.tools.Stubs;
 import org.arodnap.engine.tools.ToolCoordinates;
 import org.arodnap.engine.tools.Toolchain;
 import org.arodnap.model.BuildDescription;
@@ -38,6 +36,7 @@ import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.TaskAction;
+import org.gradle.api.tasks.TaskCollection;
 import org.gradle.api.tasks.compile.JavaCompile;
 
 /** Runs one Arodnap command on the whole build: every project's main Java compilation. */
@@ -68,8 +67,8 @@ public abstract class RunTask extends DefaultTask {
     @Optional
     public abstract Property<Integer> getStageTimeout();
 
-    /** A project's main compile task and the project's directory, collected when the build is configured. */
-    public record CompileSource(JavaCompile task, File projectDirectory) {}
+    /** A project's main compile task (none if the project has no Java) and the project's directory. */
+    public record CompileSource(TaskCollection<JavaCompile> tasks, File projectDirectory) {}
 
     /** The build's main compile tasks. */
     @Internal
@@ -121,13 +120,7 @@ public abstract class RunTask extends DefaultTask {
 
     private Toolchain toolchain(Path directory) {
         try {
-            Path checker = Files.createDirectories(directory.resolve("checker-framework"));
-            for (String name : List.of("checker", "checker-qual", "checker-util")) {
-                Files.copy(tool(name), checker.resolve(name + ".jar"), StandardCopyOption.REPLACE_EXISTING);
-            }
-            return new Toolchain(checker.resolve("checker.jar"), Stubs.extract(directory.resolve("stubs")), tool("close-injector"),
-                    tool("owning-field-fixer"), tool("rlfixer"), tool("rlpatcher"), tool("field-transformations"), tool("error-prone"),
-                    tool("error-prone-jdk17"), tool("dataflow"), ToolCoordinates.checkerFrameworkVersion(), ToolCoordinates.CHECKER_FRAMEWORK_TESTED_JDKS);
+            return Toolchain.fromArtifacts(this::tool, directory);
         } catch (IOException e) {
             throw new GradleException("Cannot set up Arodnap's tools in " + directory + ": " + e.getMessage(), e);
         }
@@ -176,25 +169,31 @@ public abstract class RunTask extends DefaultTask {
         public CapturedProject capture(Path workspaceRoot, Path stateDirectory) throws UnsupportedProjectException {
             List<CompileUnit> units = new ArrayList<>();
             for (CompileSource source : compileTasks) {
-                JavaCompile compile = source.task();
-                List<Path> sources = compile.getSource().getFiles().stream().map(File::toPath).filter(path -> path.toString().endsWith(".java"))
-                        .sorted().toList();
-                if (sources.isEmpty()) {
-                    continue;
+                for (JavaCompile compile : source.tasks()) {
+                    unit(compile, source.projectDirectory()).ifPresent(units::add);
                 }
-                java.util.Optional<Integer> release = java.util.Optional.ofNullable(compile.getOptions().getRelease().getOrNull())
-                        .or(() -> level(compile.getSourceCompatibility()));
-                java.util.Optional<Path> generated = java.util.Optional.ofNullable(compile.getOptions().getGeneratedSourceOutputDirectory().getOrNull())
-                        .map(directory -> directory.getAsFile().toPath());
-                FileCollection processorPath = compile.getOptions().getAnnotationProcessorPath();
-                units.add(new CompileUnit(source.projectDirectory().toPath(), sources,
-                        compile.getClasspath().getFiles().stream().map(File::toPath).toList(),
-                        java.util.Optional.of(compile.getDestinationDirectory().get().getAsFile().toPath()), generated, release,
-                        java.util.Optional.ofNullable(compile.getOptions().getEncoding()),
-                        processorPath == null ? List.of() : processorPath.getFiles().stream().map(File::toPath).toList(), List.of(),
-                        java.util.Optional.of(compile.getPath())));
             }
             return new CapturedProject(CompileUnits.merge(new Relocation(root, workspaceRoot).relocateUnits(units)), detect(workspaceRoot), List.of());
+        }
+
+        /** The unit a compile task compiles; none when it has no Java sources. */
+        private static java.util.Optional<CompileUnit> unit(JavaCompile compile, File projectDirectory) {
+            List<Path> sources = compile.getSource().getFiles().stream().map(File::toPath).filter(path -> path.toString().endsWith(".java"))
+                    .sorted().toList();
+            if (sources.isEmpty()) {
+                return java.util.Optional.empty();
+            }
+            java.util.Optional<Integer> release = java.util.Optional.ofNullable(compile.getOptions().getRelease().getOrNull())
+                    .or(() -> level(compile.getSourceCompatibility()));
+            java.util.Optional<Path> generated = java.util.Optional.ofNullable(compile.getOptions().getGeneratedSourceOutputDirectory().getOrNull())
+                    .map(directory -> directory.getAsFile().toPath());
+            FileCollection processorPath = compile.getOptions().getAnnotationProcessorPath();
+            return java.util.Optional.of(new CompileUnit(projectDirectory.toPath(), sources,
+                    compile.getClasspath().getFiles().stream().map(File::toPath).toList(),
+                    java.util.Optional.of(compile.getDestinationDirectory().get().getAsFile().toPath()), generated, release,
+                    java.util.Optional.ofNullable(compile.getOptions().getEncoding()),
+                    processorPath == null ? List.of() : processorPath.getFiles().stream().map(File::toPath).toList(), List.of(),
+                    java.util.Optional.of(compile.getPath())));
         }
 
         private static java.util.Optional<Integer> level(String value) {
