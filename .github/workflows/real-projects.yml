@@ -1,0 +1,100 @@
+name: Real projects
+
+# Repairs real open-source projects (scripts/real_projects.json), each cloned fresh at a pinned
+# release, and checks the results against the recorded ones. All of them take hours, so they run
+# weekly; CI calls this workflow with tier "quick" on every pull request.
+on:
+  schedule:
+    - cron: "0 6 * * 1"  # Mondays 06:00 UTC
+  pull_request:
+    paths:
+      - scripts/real_projects.*
+      - .github/workflows/real-projects.yml
+  workflow_dispatch:
+    inputs:
+      projects:
+        description: "Projects to run, separated by spaces (empty: all)"
+        type: string
+        required: false
+        default: ""
+      tier:
+        description: "Only projects of this tier, e.g. quick (empty: all)"
+        type: string
+        required: false
+        default: ""
+  workflow_call:
+    inputs:
+      projects:
+        description: "Projects to run, separated by spaces (empty: all)"
+        type: string
+        required: false
+        default: ""
+      tier:
+        description: "Only projects of this tier, e.g. quick (empty: all)"
+        type: string
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  list:
+    runs-on: ubuntu-latest
+    outputs:
+      projects: ${{ steps.list.outputs.projects }}
+    steps:
+      - uses: actions/checkout@v7
+      - id: list
+        env:
+          SELECTED: ${{ inputs.projects }}
+          TIER: ${{ inputs.tier }}
+        run: |
+          names="${SELECTED:-$(python3 scripts/real_projects.py list ${TIER:+--tier "$TIER"})}"
+          echo "projects=$(python3 -c 'import json, sys; print(json.dumps(sys.argv[1].split()))' "$names")" >> "$GITHUB_OUTPUT"
+
+  repair:
+    name: Real project ${{ matrix.project }}
+    needs: list
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      matrix:
+        project: ${{ fromJSON(needs.list.outputs.projects) }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+      - uses: gradle/actions/setup-gradle@v6
+        with:
+          gradle-version: "9.1.0"
+      - name: Install Maven and Ant if missing
+        run: |
+          missing=()
+          command -v mvn >/dev/null || missing+=(maven)
+          command -v ant >/dev/null || missing+=(ant)
+          if [ ${#missing[@]} -gt 0 ]; then
+            sudo apt-get update -q
+            sudo apt-get install -y -q --no-install-recommends "${missing[@]}"
+          fi
+      - name: Build the arodnap distribution
+        run: mvn -B -ntp package -DskipTests
+      - name: Repair ${{ matrix.project }}
+        env:
+          PROJECT: ${{ matrix.project }}
+        run: python3 scripts/real_projects.py run "$PROJECT" --work-dir build/real-projects
+      - name: Keep the report, patch and log
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ matrix.project }}
+          path: |
+            build/real-projects/${{ matrix.project }}/repair.log
+            build/real-projects/${{ matrix.project }}/out/report.json
+            build/real-projects/${{ matrix.project }}/out/report.html
+            build/real-projects/${{ matrix.project }}/out/patches/
+          if-no-files-found: ignore

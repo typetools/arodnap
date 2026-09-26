@@ -1,0 +1,319 @@
+{
+  "adapter": {
+    "adapter_metadata_path": "{TEMP}/out/logs/final/adapter-metadata.json",
+    "adapter_name": "command",
+    "build_system": "command",
+    "build_tool_source": "command",
+    "classpath_entries_file": "{TEMP}/out/logs/final/classpath-entries.txt",
+    "compile_target": "",
+    "compiled_classes_root": "{WORK}/arodnap-state/analysis-classes",
+    "selected_build_tool": [],
+    "source_root": "{WORK}/demo-project/src"
+  },
+  "analysis_runs": [
+    {
+      "adapter_metadata_path": "{TEMP}/out/logs/initial/adapter-metadata.json",
+      "completed_at": "{TIME}",
+      "diagnostics_path": "{TEMP}/out/diagnostics/initial.txt",
+      "elapsed_seconds": 0,
+      "inference_dir": "{TEMP}/out/inference/initial",
+      "label": "initial",
+      "started_at": "{TIME}",
+      "success": true,
+      "warning_count": 1,
+      "wpi_log_path": "{TEMP}/out/logs/initial/wpi.log"
+    },
+    {
+      "adapter_metadata_path": "{TEMP}/out/logs/final/adapter-metadata.json",
+      "completed_at": "{TIME}",
+      "diagnostics_path": "{TEMP}/out/diagnostics/final.txt",
+      "elapsed_seconds": 0,
+      "inference_dir": "{TEMP}/out/inference/final",
+      "label": "final",
+      "started_at": "{TIME}",
+      "success": true,
+      "warning_count": 0,
+      "wpi_log_path": "{TEMP}/out/logs/final/wpi.log"
+    }
+  ],
+  "artifacts": {
+    "diagnostics_dir": "{TEMP}/out/diagnostics",
+    "inference_dir": "{TEMP}/out/inference",
+    "logs_dir": "{TEMP}/out/logs",
+    "manifest": "{TEMP}/out/manifest.json",
+    "patch_bundle_dir": "{TEMP}/out/patches",
+    "patches_manifest": "{TEMP}/out/patches/manifest.json",
+    "report": "{TEMP}/out/report.json",
+    "stages_dir": "{TEMP}/out/stages"
+  },
+  "diagnostics": {
+    "final_diagnostics_path": "{TEMP}/out/diagnostics/final.txt",
+    "final_warning_count": 0
+  },
+  "error": null,
+  "error_type": null,
+  "executed_stages": [
+    {
+      "artifacts": {
+        "field_changes": "{TEMP}/out/stages/field_transformations/field_changes.json",
+        "log": "{TEMP}/out/stages/field_transformations/stage.log"
+      },
+      "changed": false,
+      "rerun_required": false,
+      "stage": "field_transformations",
+      "success": true
+    },
+    {
+      "artifacts": {
+        "log": "{TEMP}/out/stages/close_injector/stage.log"
+      },
+      "changed": false,
+      "rerun_required": false,
+      "stage": "close_injector",
+      "success": true
+    },
+    {
+      "artifacts": {
+        "log": "{TEMP}/out/stages/owning_field/stage.log"
+      },
+      "changed": false,
+      "rerun_required": false,
+      "stage": "owning_field",
+      "success": true
+    },
+    {
+      "artifacts": {
+        "debug": "{TEMP}/out/stages/rlfixer/debug.txt",
+        "fixes": "{TEMP}/out/stages/rlfixer/fixes.txt",
+        "inputs": "{TEMP}/out/stages/rlfixer/inputs",
+        "log": "{TEMP}/out/stages/rlfixer/stage.log"
+      },
+      "changed": false,
+      "rerun_required": false,
+      "stage": "rlfixer",
+      "success": true
+    },
+    {
+      "artifacts": {
+        "log": "{TEMP}/out/stages/rlpatcher/stage.log",
+        "patch_dir": "{TEMP}/out/stages/rlpatcher/patches",
+        "patch_manifest": "{TEMP}/out/stages/rlpatcher/patch_manifest.json"
+      },
+      "changed": true,
+      "rerun_required": true,
+      "stage": "rlpatcher",
+      "success": true
+    },
+    {
+      "artifacts": {
+        "log": "{TEMP}/out/stages/bundle/stage.log",
+        "patch": "{TEMP}/out/stages/bundle/arodnap.patch",
+        "patch_manifest": "{TEMP}/out/stages/bundle/patch_manifest.json"
+      },
+      "changed": false,
+      "rerun_required": false,
+      "stage": "bundle",
+      "success": true
+    }
+  ],
+  "final_analysis": {
+    "adapter_metadata_path": "{TEMP}/out/logs/final/adapter-metadata.json",
+    "app_classes_file": "{TEMP}/out/logs/final/app-classes.txt",
+    "classpath_entries_file": "{TEMP}/out/logs/final/classpath-entries.txt",
+    "diagnostics_path": "{TEMP}/out/diagnostics/final.txt",
+    "encoding": "UTF-8",
+    "inference_dir": "{TEMP}/out/inference/final",
+    "inference_notes": [],
+    "label": "final",
+    "release": 17,
+    "source_files_file": "{TEMP}/out/logs/final/source-files.txt",
+    "warning_count": 0,
+    "workspace_root": "{WORK}/demo-project",
+    "wpi_log_path": "{TEMP}/out/logs/final/wpi.log"
+  },
+  "leaks": {
+    "field_changes": {
+      "changes": [],
+      "mode": "resources",
+      "patch": null
+    },
+    "html_report": "{TEMP}/out/report.html",
+    "other_warnings": [],
+    "reasons": {
+      "appeared_after_fixes": "it appeared after RLPatcher's fixes (a fix exposed or moved it)",
+      "conflict": "its fix overlapped a fix applied earlier and was skipped",
+      "crashed": "RLPatcher crashed on this fix",
+      "fix_applied_warning_remains": "a fix was applied, but the checker still reports the leak",
+      "no_change": "nothing to change (for example, a returned resource whose callers are not in the project)",
+      "no_suggestion": "RLFixer suggested no fix",
+      "not_analyzed_by_rlfixer": "it was not part of RLFixer's input",
+      "rejected": "the fix did not compile",
+      "rlfixer_duplicate": "RLFixer treats it as a duplicate of another warning",
+      "rlfixer_unfixable": "RLFixer found no fix (for example, the resource is stored in a field or collection)",
+      "rlfixer_unmatched": "RLFixer could not find the leaking allocation in the compiled code",
+      "timed_out": "RLPatcher exceeded --stage-timeout",
+      "unsafe": "a fix would have to reorder code, which could change behavior",
+      "unsupported": "RLPatcher does not support this kind of fix"
+    },
+    "summary": {
+      "fixed": 1,
+      "fixed_by_stage": {
+        "rlpatcher": 1
+      },
+      "found_during_repair": 0,
+      "initial": 1,
+      "javac_warnings": 0,
+      "other_checker_warnings": 0,
+      "remaining": 0,
+      "remaining_by_reason": {}
+    },
+    "warnings": [
+      {
+        "file": "src/demo/Demo.java",
+        "finalizer": "close",
+        "first_seen": "initial",
+        "fix_patch": "{TEMP}/out/stages/rlpatcher/patches/patch-0001-src_demo_Demo.java-L8.patch",
+        "fixed_by": "rlpatcher",
+        "id": 1,
+        "leak": "possible exceptional exit due to in.read() with exception type java.io.IOException",
+        "line": 8,
+        "reason": null,
+        "resource": "in",
+        "status": "fixed",
+        "type": "java.io.FileInputStream"
+      }
+    ]
+  },
+  "repo_root": "{TEMP}/demo-project",
+  "run_metadata": {
+    "adapter_name": "command",
+    "artifacts_root": "{TEMP}/out",
+    "build_args": [],
+    "build_tool_source": "command",
+    "checker_framework_version": "4.2.3",
+    "command": "repair",
+    "compile_target": null,
+    "completed_at": "{TIME}",
+    "elapsed_seconds": 0,
+    "generated_at": "{TIME}",
+    "java_version": "openjdk version \"21\" 2023-09-19",
+    "keep_workspace": false,
+    "output_dir": "{TEMP}/out",
+    "patch_tool": {
+      "binary": "arodnap built-in",
+      "flavor": "builtin",
+      "version": "arodnap {VERSION}"
+    },
+    "repo_root": "{TEMP}/demo-project",
+    "selected_build_tool": [],
+    "started_at": "{TIME}",
+    "timeouts": {
+      "analysis_seconds": null,
+      "build_seconds": null,
+      "stage_seconds": null
+    },
+    "tool_version": "{VERSION}",
+    "workspace_root": "{WORK}/demo-project"
+  },
+  "stage_execution_summary": {
+    "changed": 1,
+    "executed": 6,
+    "failed_attempts": 0,
+    "reruns_requested": 1,
+    "successful": 6
+  },
+  "stage_timings": [
+    {
+      "artifacts": {
+        "field_changes": "{TEMP}/out/stages/field_transformations/field_changes.json",
+        "log": "{TEMP}/out/stages/field_transformations/stage.log"
+      },
+      "changed": false,
+      "changed_files": [],
+      "completed_at": "{TIME}",
+      "elapsed_seconds": 0,
+      "rerun_required": false,
+      "stage": "field_transformations",
+      "started_at": "{TIME}",
+      "success": true
+    },
+    {
+      "artifacts": {
+        "log": "{TEMP}/out/stages/close_injector/stage.log"
+      },
+      "changed": false,
+      "changed_files": [],
+      "completed_at": "{TIME}",
+      "elapsed_seconds": 0,
+      "rerun_required": false,
+      "stage": "close_injector",
+      "started_at": "{TIME}",
+      "success": true
+    },
+    {
+      "artifacts": {
+        "log": "{TEMP}/out/stages/owning_field/stage.log"
+      },
+      "changed": false,
+      "changed_files": [],
+      "completed_at": "{TIME}",
+      "elapsed_seconds": 0,
+      "rerun_required": false,
+      "stage": "owning_field",
+      "started_at": "{TIME}",
+      "success": true
+    },
+    {
+      "artifacts": {
+        "debug": "{TEMP}/out/stages/rlfixer/debug.txt",
+        "fixes": "{TEMP}/out/stages/rlfixer/fixes.txt",
+        "inputs": "{TEMP}/out/stages/rlfixer/inputs",
+        "log": "{TEMP}/out/stages/rlfixer/stage.log"
+      },
+      "changed": false,
+      "changed_files": [],
+      "completed_at": "{TIME}",
+      "elapsed_seconds": 0,
+      "rerun_required": false,
+      "stage": "rlfixer",
+      "started_at": "{TIME}",
+      "success": true
+    },
+    {
+      "artifacts": {
+        "log": "{TEMP}/out/stages/rlpatcher/stage.log",
+        "patch_dir": "{TEMP}/out/stages/rlpatcher/patches",
+        "patch_manifest": "{TEMP}/out/stages/rlpatcher/patch_manifest.json"
+      },
+      "changed": true,
+      "changed_files": [
+        "src/demo/Demo.java"
+      ],
+      "completed_at": "{TIME}",
+      "elapsed_seconds": 0,
+      "rerun_required": true,
+      "stage": "rlpatcher",
+      "started_at": "{TIME}",
+      "success": true
+    },
+    {
+      "artifacts": {
+        "log": "{TEMP}/out/stages/bundle/stage.log",
+        "patch": "{TEMP}/out/stages/bundle/arodnap.patch",
+        "patch_manifest": "{TEMP}/out/stages/bundle/patch_manifest.json"
+      },
+      "changed": false,
+      "changed_files": [
+        "src/demo/Demo.java"
+      ],
+      "completed_at": "{TIME}",
+      "elapsed_seconds": 0,
+      "rerun_required": false,
+      "stage": "bundle",
+      "started_at": "{TIME}",
+      "success": true
+    }
+  ],
+  "success": true,
+  "workspace_root": "{WORK}/demo-project"
+}

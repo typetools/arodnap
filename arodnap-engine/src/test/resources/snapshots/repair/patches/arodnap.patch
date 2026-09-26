@@ -1,0 +1,13 @@
+--- src/demo/Demo.java
++++ src/demo/Demo.java
+@@ -5,7 +5,8 @@
+ 
+ public class Demo {
+     public int read(String path) throws IOException {
+-        FileInputStream in = new FileInputStream(path);
+-        return in.read();
++        try (FileInputStream in = new FileInputStream(path)) {
++            return in.read();
++        }
+     }
+ }

@@ -1,0 +1,5 @@
+com.arodnap.fixture.BaselineSmoke
+com.arodnap.fixture.DirectLeakExample
+com.arodnap.fixture.OwningFieldReassignment
+com.arodnap.fixture.TryCatchLeakExample
+com.arodnap.fixture.WrapperMissingClose

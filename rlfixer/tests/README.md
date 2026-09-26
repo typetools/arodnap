@@ -1,4 +1,0 @@
-
-
-### Compiling and Running Tests.
-

@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.arodnap</groupId>
+    <artifactId>arodnap-parent</artifactId>
+    <version>2.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <name>Arodnap</name>
+    <description>Finds and repairs resource leaks in Java projects.</description>
+    <url>https://github.com/typetools/arodnap</url>
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>https://opensource.org/license/mit</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>The Arodnap contributors</name>
+            <url>https://github.com/typetools/arodnap</url>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:https://github.com/typetools/arodnap.git</connection>
+        <developerConnection>scm:git:git@github.com:typetools/arodnap.git</developerConnection>
+        <url>https://github.com/typetools/arodnap</url>
+    </scm>
+
+    <modules>
+        <module>arodnap-model</module>
+        <module>arodnap-engine</module>
+        <module>tools/close-injector</module>
+        <module>tools/owning-field-fixer</module>
+        <module>tools/rlfixer</module>
+        <module>tools/rlpatcher</module>
+        <module>tools/field-transformations</module>
+        <module>tools/ant-capture</module>
+        <module>tools/maven-capture</module>
+        <module>arodnap-cli</module>
+        <module>arodnap-maven-plugin</module>
+        <module>arodnap-distribution</module>
+    </modules>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!-- Each module sets maven.compiler.release: the engine and front ends 17 (they run on the
+             JDK the user analyzes with, 17 or newer), the tools what they were built for. -->
+        <jackson.version>2.22.3</jackson.version>
+        <junit.version>6.1.3</junit.version>
+        <assertj.version>3.27.7</assertj.version>
+        <!-- The tools the engine runs; the CLI distribution bundles them and the plugins download them. -->
+        <checkerframework.version>4.2.3</checkerframework.version>
+        <errorprone.version>2.50.0</errorprone.version>
+        <!-- The last Error Prone that runs on JDK 17; used on JDK 17 to 20. -->
+        <errorprone.jdk17.version>2.42.0</errorprone.jdk17.version>
+        <dataflow.version>3.41.0-eisop1</dataflow.version>
+        <maven.version>3.9.11</maven.version>
+    </properties>
+
+    <!-- JUnit is managed artifact by artifact, not with its BOM: the BOM would also pin the JUnit
+         platform version for the tools, whose tests use JUnit 4 and 5. -->
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.arodnap</groupId>
+                <artifactId>arodnap-model</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.arodnap</groupId>
+                <artifactId>arodnap-engine</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter</artifactId>
+                <version>${junit.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-params</artifactId>
+                <version>${junit.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.assertj</groupId>
+                <artifactId>assertj-core</artifactId>
+                <version>${assertj.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.16.0</version>
+                    <configuration>
+                        <compilerArgs>
+                            <arg>-Xlint:all</arg>
+                        </compilerArgs>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>3.6.0</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-failsafe-plugin</artifactId>
+                    <version>3.6.0</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>3.5.1</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-shade-plugin</artifactId>
+                    <version>3.6.2</version>
+                    <configuration>
+                        <!-- A tool's published POM lists no dependencies: they are inside its jar. -->
+                        <dependencyReducedPomLocation>${project.build.directory}/dependency-reduced-pom.xml</dependencyReducedPomLocation>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <version>3.11.0</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-assembly-plugin</artifactId>
+                    <version>3.8.0</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-invoker-plugin</artifactId>
+                    <version>3.10.1</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>3.4.0</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>3.12.0</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-gpg-plugin</artifactId>
+                    <version>3.2.8</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.sonatype.central</groupId>
+                    <artifactId>central-publishing-maven-plugin</artifactId>
+                    <version>0.11.0</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+    <profiles>
+        <!-- mvn -P release deploy: what Maven Central requires (sources, javadoc, signatures) and the
+             upload. The release workflow runs it with the signing key and the Central token; see
+             docs/releasing.md. -->
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <goals>
+                                    <goal>jar-no-fork</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <configuration>
+                            <doclint>none</doclint>
+                            <quiet>true</quiet>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <configuration>
+                            <signer>bc</signer>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <publishingServerId>central</publishingServerId>
+                            <!-- The Gradle plugin is published next, and needs the engine on Central. -->
+                            <autoPublish>true</autoPublish>
+                            <waitUntil>published</waitUntil>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>

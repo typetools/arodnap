@@ -1,0 +1,17 @@
+{
+  "artifacts": {
+    "log": "{TEMP}/out/stages/rlpatcher/stage.log",
+    "patch_dir": "{TEMP}/out/stages/rlpatcher/patches",
+    "patch_manifest": "{TEMP}/out/stages/rlpatcher/patch_manifest.json"
+  },
+  "changed": true,
+  "changed_files": [
+    "src/demo/Demo.java"
+  ],
+  "notes": [
+    "RLPatcher materialized 1 of 1 RLFixer suggestion(s); applied 1, skipped 0 that conflicted with earlier patches."
+  ],
+  "rerun_required": true,
+  "stage": "rlpatcher",
+  "success": true
+}

@@ -1,0 +1,9 @@
+.DS_Store
+# Maven and Gradle build output
+target/
+build/
+.gradle/
+# What running Arodnap on this checkout leaves behind
+arodnap-out/
+# RLPatcher's tests write their patch to the working directory
+tools/rlpatcher/rlfixer.patch

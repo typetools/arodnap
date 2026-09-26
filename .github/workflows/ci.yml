@@ -1,0 +1,103 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build and test (JDK ${{ matrix.java }}, ${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        # The LTS releases developers run.
+        java: ["17", "21", "25"]
+        include:
+          - os: macos-latest
+            java: "21"
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.java }}
+          cache: maven
+      # Unit, pipeline and snapshot tests of every module, the tools' own tests, and the distribution.
+      - run: mvn -B -ntp verify
+
+  e2e:
+    name: End-to-end (JDK ${{ matrix.java }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        java: ["17", "21", "25"]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.java }}
+          cache: maven
+      - uses: gradle/actions/setup-gradle@v6
+        with:
+          gradle-version: "9.1.0"
+      - name: Install Maven and Ant if missing
+        run: |
+          missing=()
+          command -v mvn >/dev/null || missing+=(maven)
+          command -v ant >/dev/null || missing+=(ant)
+          if [ ${#missing[@]} -gt 0 ]; then
+            sudo apt-get update -q
+            sudo apt-get install -y -q --no-install-recommends "${missing[@]}"
+          fi
+      - name: Tool versions
+        run: |
+          java -version
+          gradle --version
+          mvn --version
+          ant -version
+      # The distribution's real repairs and tool contracts, and the Maven plugin on a real build.
+      - name: Real end-to-end repairs
+        env:
+          ARODNAP_E2E: "1"
+        run: mvn -B -ntp install
+      - name: Every end-to-end test ran
+        run: |
+          # A missing tool skips its test. Every tool is installed here, so a skip is a setup bug.
+          summary=arodnap-distribution/target/failsafe-reports/failsafe-summary.xml
+          grep -q "<skipped>0</skipped>" "$summary" || { echo "::error::an end-to-end test was skipped"; cat "$summary"; exit 1; }
+      # The Gradle plugin on a real multi-project build, with the tools just installed.
+      - name: Gradle plugin
+        env:
+          ARODNAP_E2E: "1"
+        run: gradle -p arodnap-gradle-plugin --console=plain build
+      - name: Keep the reports of failed tests
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: e2e-reports-jdk${{ matrix.java }}
+          path: |
+            arodnap-distribution/target/failsafe-reports/
+            arodnap-maven-plugin/target/it/*/build.log
+            arodnap-gradle-plugin/build/reports/tests/
+          if-no-files-found: ignore
+
+  real-projects-quick:
+    name: Real projects (quick)
+    uses: ./.github/workflows/real-projects.yml
+    with:
+      tier: quick

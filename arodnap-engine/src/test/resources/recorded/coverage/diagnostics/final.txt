@@ -1,0 +1,32 @@
+TOOL: rlc
+CWD: /work/space/gradle-pipeline-coverage
+COMMAND: /opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home/bin/java -jar /work/checker-framework/checker-framework-4.2.3/checker/dist/checker.jar -processor org.checkerframework.checker.resourceleak.ResourceLeakChecker -Adetailedmsgtext -Awarns -Xmaxwarns 10000 -ApermitStaticOwning -AshowPrefixInWarningMessages -AenableReturnsReceiverForRlc -Astubs=/work/checker-framework/stubs -Aajava=/work/out/inference/final --release 11 -classpath /private/var/folders/t3/wtnh1tm94ys_t6r6pmqngtmr0000gn/T/arodnap-workspace-9607097486719402743/arodnap-state/analysis-classes -d /var/folders/t3/wtnh1tm94ys_t6r6pmqngtmr0000gn/T/arodnap-rlc-classes-14146851931124548066 @/work/out/logs/final/source-files.txt
+EXIT_CODE: 0
+STDOUT:
+
+STDERR:
+warning: /work/checker-framework/stubs/Logger.astub:(line 1,col 1): Package not found: org.apache.log4j
+warning: /work/checker-framework/stubs/Logger.astub:(line 5,col 1): Type not found: org.apache.log4j.Category
+warning: /work/checker-framework/stubs/Slf4j.astub:(line 1,col 1): Package not found: org.slf4j
+warning: /work/checker-framework/stubs/Slf4j.astub:(line 5,col 1): Type not found: org.slf4j.Logger
+warning: /work/checker-framework/stubs/com.google.json.stream.astub:(line 1,col 1): Package not found: com.google.gson.stream
+warning: /work/checker-framework/stubs/com.google.json.stream.astub:(line 5,col 1): Type not found: com.google.gson.stream.JsonWriter
+/work/space/gradle-pipeline-coverage/src/main/java/loop_fixes/EscapedTryCatchInLoop.java:20: warning: [required.method.not.called] $$ 4 $$ method close $$ myWriter $$ java.io.FileWriter $$ possible exceptional exit due to myWriter.write("ss") with exception type java.io.IOException $$ ( 383, 411 ) $$ [required.method.not.called]
+				myWriter = new FileWriter(i);
+				         ^
+/work/space/gradle-pipeline-coverage/src/main/java/loop_fixes/ResourceEscapeDoubleLoop.java:21: warning: [required.method.not.called] $$ 4 $$ method close $$ myWriter $$ java.io.FileWriter $$ variable overwritten by assignment myWriter = new FileWriter(i) $$ ( 424, 452 ) $$ [required.method.not.called]
+					myWriter = new FileWriter(i);
+					         ^
+/work/space/gradle-pipeline-coverage/src/main/java/loop_fixes/ResourceEscapeLoop.java:20: warning: [required.method.not.called] $$ 4 $$ method close $$ myWriter $$ java.io.FileWriter $$ variable overwritten by assignment myWriter = new FileWriter(i) $$ ( 376, 404 ) $$ [required.method.not.called]
+				myWriter = new FileWriter(i);
+				         ^
+/work/space/gradle-pipeline-coverage/src/main/java/return_fixes/ReturnWithThrows.java:20: warning: [required.method.not.called] $$ 4 $$ method close $$ a $$ java.io.FileWriter $$ possible exceptional exit due to a.write("Files in Java might be tricky!") with exception type java.io.IOException $$ ( 381, 415 ) $$ [required.method.not.called]
+	    a = new FileWriter("filename.txt");
+	      ^
+/work/space/gradle-pipeline-coverage/src/main/java/return_fixes/ReturnWithTryCatch.java:11: warning: [required.method.not.called] $$ 4 $$ method close $$ b $$ java.io.FileWriter $$ regular method exit $$ ( 226, 247 ) $$ [required.method.not.called]
+		FileWriter b = foo();
+		           ^
+/work/space/gradle-pipeline-coverage/src/main/java/return_fixes/ReturnWithTwoCallers.java:29: warning: [required.method.not.called] $$ 4 $$ method close $$ a $$ java.io.FileWriter $$ possible exceptional exit due to a.write("Files in Java might be tricky!") with exception type java.io.IOException $$ ( 586, 620 ) $$ [required.method.not.called]
+	    a = new FileWriter("filename.txt");
+	      ^
+12 warnings
