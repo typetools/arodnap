@@ -1,39 +1,26 @@
 # RLPatcher
 
-Status: shipping stage in the current Arodnap repair workflow.
-
-`RLPatcher` turns RLFixer suggestions into concrete source patches. The public
-Python pipeline invokes this jar during the `rlpatcher` stage, normalizes the
-result into repo-root-relative patches, and emits `patches/manifest.json` for the
-later `apply` command.
+`RLPatcher` turns RLFixer suggestions into concrete source patches. The engine
+runs it once per suggestion in the `rlpatcher` stage, normalizes each patch, and
+applies the ones that do not conflict to the workspace copy.
 
 ## Inputs And Outputs
 
-Direct invocation expects:
-
 ```bash
-java -jar target/RLPatcher-1.0-SNAPSHOT.jar --prompt /path/to/prompt.json --project-root /path/to/project
+java -jar target/arodnap-rlpatcher-<version>.jar --prompt /path/to/prompt.json --project-root /path/to/project
 ```
 
-Current tool behavior:
-
-- reads prompt data produced from matched RLFixer suggestions and CF warnings
+- reads a prompt the engine writes from a matched RLFixer suggestion and leak
+  warning (`RlFixerFormats.rlpatcherPrompt`)
 - analyzes source files under `--project-root`
 - writes a unified diff named `rlfixer.patch` in the current working directory
 
-The public Arodnap CLI does not expose that raw patch file directly. The Python
-stage wrapper copies it into `arodnap-out/stages/rlpatcher/patches/`, rewrites
-paths relative to the repo root, computes preimage hashes, and writes the
-normalized patch manifest consumed by `arodnap apply`.
+The engine copies the patch into `stages/rlpatcher/` of the output directory,
+rewrites its paths relative to the project root, and records a structured
+`stage_result.json`. It also records
+the files' SHA-256 so `apply` can check they did not change.
 
-## Rebuild
+## Build
 
-```bash
-mvn clean package
-```
-
-Refresh the shipping jar after rebuilding:
-
-```bash
-cp target/RLPatcher-1.0-SNAPSHOT.jar ../prebuilt_plugin_jars/
-```
+It is a module of the repository's Maven build; `mvn package` at the root builds
+it into one self-contained jar, which the distribution bundles.

@@ -1,38 +1,29 @@
 # OwningFieldFixer
 
-Status: shipping stage in the current Arodnap repair workflow.
-
-`OwningFieldFixer` handles owning-field reassignment warnings. The public Python
-pipeline invokes this jar during the `owning_field` stage, normalizes the emitted
-patch, and applies it to the temporary workspace copy only.
+`OwningFieldFixer` handles owning-field reassignment warnings. The engine runs it
+in the `owning_field` stage, normalizes the patch it writes, and applies it to the
+workspace copy only.
 
 ## Inputs And Outputs
 
-Direct invocation expects:
-
 ```bash
-java -jar target/OwningFieldFixer-1.0-SNAPSHOT.jar --log /path/to/diagnostics.txt --project-root /path/to/project
+java -jar target/arodnap-owning-field-fixer-<version>.jar --log /path/to/diagnostics.txt --project-root /path/to/project
 ```
 
-Current tool behavior:
+- reads Resource Leak Checker diagnostics from `--log`
+- analyzes source files under `--project-root`, or the files listed in
+  `-Darodnap.sourcesFile` (with `-Darodnap.classpathFile`, `-Darodnap.release`
+  and `-Darodnap.encoding`), which the engine always passes
+- for each field, tries making it `private` and `final` together, then each alone,
+  and keeps the first change that removes the warning
+- writes a patch to `-Darodnap.patchFile`, or else to
+  `<project-root>/src/owning-field.patch`
 
-- reads RLC diagnostics from `--log`
-- analyzes source files under `--project-root`
-- emits a patch at `<project-root>/src/owning-field.patch`
+The engine copies the patch into `stages/owning_field/` of the output directory,
+rewrites its paths relative to the project root, and records a structured
+`stage_result.json`.
 
-The public Arodnap CLI does not expose that raw patch file. The Python stage
-wrapper copies it into `arodnap-out/stages/owning_field/`, rewrites the paths
-relative to the repo root, applies it to the workspace copy, and records a
-structured `stage_result.json`.
+## Build
 
-## Rebuild
-
-```bash
-mvn clean package
-```
-
-Refresh the shipping jar after rebuilding:
-
-```bash
-cp target/OwningFieldFixer-1.0-SNAPSHOT.jar ../prebuilt_plugin_jars/
-```
+It is a module of the repository's Maven build; `mvn package` at the root builds
+it into one self-contained jar, which the distribution bundles.

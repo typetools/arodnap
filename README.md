@@ -11,42 +11,65 @@ analyzes a temporary copy of the project, never edits the original repository
 unless you run `apply`, and produces one reviewable patch that has been
 verified to apply.
 
+There are three ways to run it, all with the same analysis and the same outputs:
+
+| | Run | Reads the build by |
+|---|---|---|
+| Command line | `arodnap repair /path/to/repo` | running the build and recording each `javac` call |
+| Maven plugin | `mvn compile arodnap:repair` | the reactor's modules |
+| Gradle plugin | `./gradlew arodnapRepair` | every project's `compileJava` task |
+
 ## Install
 
-There is no release yet. Install Arodnap from a checkout of this repository; it
-carries everything else it runs (the Checker Framework and its Java tools).
-With [pipx](https://pipx.pypa.io/) or [uv](https://docs.astral.sh/uv/) it
-becomes an `arodnap` command:
+There is no release yet. Build Arodnap from this repository with JDK 17 or newer
+and Maven:
 
 ```bash
-pipx install /path/to/arodnap
+mvn install -DskipTests
 ```
 
-```bash
-uv tool install /path/to/arodnap
-```
+- **Command line**: the build leaves the distribution in
+  `arodnap-distribution/target/arodnap-<version>-bin/arodnap-<version>/` (and as
+  `.zip` and `.tar.gz` next to it). It holds everything Arodnap runs: its jars,
+  the repair tools, the Checker Framework and the stubs. Put its `bin/arodnap` on
+  your `PATH`, or link to it.
+- **Maven plugin**: `mvn install` put it in your local Maven repository. Run it by
+  its full name, `mvn compile org.arodnap:arodnap-maven-plugin:<version>:repair`,
+  or declare it in your POM's `<build><plugins>` and use `mvn compile arodnap:repair`.
+- **Gradle plugin**: publish it to your local Maven repository too, then let your
+  build find it there:
 
-For working on Arodnap itself, install the checkout in editable mode:
+  ```bash
+  gradle -p arodnap-gradle-plugin publishToMavenLocal
+  ```
 
-```bash
-python -m pip install -e .
-```
+  ```kotlin
+  // settings.gradle.kts
+  pluginManagement {
+      repositories {
+          mavenLocal()
+          gradlePluginPortal()
+      }
+  }
+  ```
 
 ## Prerequisites
 
-- Python 3.10 or newer
-- JDK 17 or newer, as `JAVA_HOME` or as the first `java` on `PATH`. The whole
-  analysis (whole-program inference, the Resource Leak Checker, RLFixer and the
-  repair tools) runs on this one JDK; it has been tested on 17, 21, 23, 24 and 25.
-  The bundled Checker Framework 4.2.3 is tested upstream up to JDK 26, and
-  `doctor` warns (but does not stop you) on newer JDKs. Your project itself may
-  target any release this JDK can compile.
+- JDK 17 or newer, as `JAVA_HOME` or as the first `java` on `PATH` (for the
+  plugins, the JDK that runs Maven or Gradle). The whole analysis (whole-program
+  inference, the Resource Leak Checker, RLFixer and the repair tools) runs on this
+  one JDK; CI tests 17, 21 and 25. The Checker Framework 4.2.3 that Arodnap uses is
+  tested upstream up to JDK 26, and `doctor` warns (but does not stop you) on newer
+  JDKs. Your project itself may target any release this JDK can compile.
+- Linux or macOS. The command line records builds through shell scripts; the
+  plugins have not been tried on Windows.
 - whatever the project's build needs: `./gradlew` or `gradle`, `./mvnw` or
   `mvn`, `ant`, or the tools your own build command uses
 
-`arodnap doctor` checks all of these.
+`doctor` (`arodnap doctor`, `mvn arodnap:doctor`, `./gradlew arodnapDoctor`)
+checks all of these.
 
-## Commands
+## Command line
 
 ```bash
 arodnap analyze /path/to/repo
@@ -90,6 +113,8 @@ Common options:
 - `--checker-framework`: use another Checker Framework distribution (the
   directory containing `checker/dist/checker.jar`). Defaults to
   `$ARODNAP_CHECKER_FRAMEWORK`, then the bundled 4.2.3.
+- `ARODNAP_OPTS`: options for the JVM that runs `arodnap` itself (the tools run in
+  their own JVMs).
 - `--field-transformations resources|all|off` (`repair` only): before analysis,
   private fields that can hold a resource are made `final`, or turned into local
   variables when every method assigns them before use. This makes ownership
@@ -103,6 +128,58 @@ Common options:
   child processes and the run fails with a message naming the limit, except
   for RLPatcher, where that suggestion is recorded as `timed_out`.
 - `apply` also requires `--patch-dir`, usually `./arodnap-out/patches`.
+
+## Maven plugin
+
+The goals run once, from the top-level project, and cover every module of the
+reactor. Compile first, so generated sources exist:
+
+```bash
+mvn compile arodnap:doctor
+mvn compile arodnap:repair
+mvn arodnap:apply
+```
+
+`analyze` and `infer` are the other two goals. The tools the plugin runs are
+Maven artifacts, downloaded like any other (mirrors and proxies apply).
+
+| Parameter | Property | Default |
+|---|---|---|
+| `outputDirectory` | `arodnap.outputDirectory` | `target/arodnap` of the top-level project |
+| `fieldTransformations` (`repair`) | `arodnap.fieldTransformations` | `resources` |
+| `keepWorkspace` | `arodnap.keepWorkspace` | `false` |
+| `analysisTimeout`, `stageTimeout` (seconds) | `arodnap.analysisTimeout`, `arodnap.stageTimeout` | none |
+| `patchDirectory` (`apply`) | `arodnap.patchDirectory` | `patches` in the output directory |
+| `skip` | `arodnap.skip` | `false` |
+
+## Gradle plugin
+
+Apply it to the root project; its tasks cover every project of the build:
+
+```kotlin
+plugins {
+    id("org.arodnap") version "<version>"
+}
+
+repositories {
+    mavenCentral()  // where the tools come from
+}
+
+arodnap {
+    fieldTransformations = "resources"  // or "all", "off"
+    analysisTimeout = 3600              // seconds; none by default
+}
+```
+
+```bash
+./gradlew arodnapDoctor
+./gradlew arodnapRepair
+./gradlew arodnapApply
+```
+
+`arodnapAnalyze` and `arodnapInfer` are the other two tasks. Outputs go to
+`build/arodnap` (`arodnap.outputDirectory`). The tasks read every project's
+`compileJava` task, so they do not work with the configuration cache.
 
 ## Typical Workflow
 
@@ -122,7 +199,9 @@ The intended flow is:
 
 ## How Arodnap Sees Your Build
 
-Arodnap runs the project's build once per analysis point and records every
+The plugins read the build's model directly: each Maven module's compile source
+roots, classpath and compiler settings, or each Gradle project's `compileJava`
+task. The command line instead runs the project's build and records every
 `javac` call through the build tool's own extension point:
 
 | Build | Detected by | Default command | How javac calls are recorded |
@@ -231,41 +310,41 @@ Important outputs:
   `arodnap-out/stages/<stage>/stage_result.json` and `stage.log` before
   rerunning the command.
 
-## Running Tests
-
-Run the full test suite:
+## Building And Testing
 
 ```bash
-python -m unittest discover -s tests -p "test_*.py"
+mvn verify
 ```
 
-Those tests mock the external tools. The real end-to-end tests run the real
-builds (Gradle, Maven, Ant and a plain javac script),
-whole-program inference, the Resource Leak Checker and every repair tool with
-nothing mocked, then apply the patch and compile the result. They take about a
-half a minute per fixture and are opt-in:
+builds everything, runs the unit, pipeline and snapshot tests and the tools' own
+tests, and assembles the distribution. The end-to-end tests run real builds
+(Gradle, Maven, Ant and a plain javac script), whole-program inference, the
+Resource Leak Checker and every repair tool with nothing mocked, then apply the
+patch and compile the result. They need `gradle`, `mvn` and `ant` on `PATH`, take
+about half a minute per project, and are opt-in:
 
 ```bash
-ARODNAP_E2E=1 python -m unittest tests.test_e2e_real
+ARODNAP_E2E=1 mvn install
+ARODNAP_E2E=1 gradle -p arodnap-gradle-plugin build
 ```
 
-Run focused suites:
+Real open-source projects, cloned at pinned releases, check that nothing
+regressed on real code (the distribution must be built first):
 
 ```bash
-python -m unittest tests.test_doctor
-python -m unittest tests.test_cli_integration
-python -m unittest tests.test_structured_output_regressions
+python3 scripts/real_projects.py run commons-csv
 ```
 
-See [`docs/testing.md`](docs/testing.md) for conventions, fixture guidance, and the full representative suite list.
+See [`docs/testing.md`](docs/testing.md) for the test layers and conventions.
 
 ## Contributor Notes
 
-Contributor-facing architecture and test guidance lives in:
+Contributor-facing architecture, test and release guidance lives in:
 
 - [`docs/architecture.md`](docs/architecture.md)
 - [`docs/testing.md`](docs/testing.md)
+- [`docs/releasing.md`](docs/releasing.md)
 
 The paper's original evaluation scripts (normalized `src/`, `lib/`, `info/`
 layout, Java 11) are kept for reference in [`legacy/`](legacy/README.md). They
-are not maintained and are not used by `arodnap`.
+are not maintained and are not used by Arodnap.

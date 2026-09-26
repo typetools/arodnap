@@ -1,137 +1,104 @@
-# Testing Conventions
+# Testing
 
-This note documents the test conventions.
+## Layers
 
-## Fixture Foundation
+Each layer proves something the one below cannot. A bug fix gets a test at the lowest layer
+that reproduces it, and test names say what behavior they check.
 
-Fixture repositories live under
-[`tests/fixtures/`](../tests/fixtures).
+| Layer | Proves | Where | Runs |
+|---|---|---|---|
+| Unit | parsers, patches, leak tracking, compile-unit merging, report building | `*/src/test`, on real tool outputs recorded as test resources | `mvn verify` |
+| Pipeline | step order, when analysis reruns, a crashing tool fails the run, report assembly | `RepairPipelineTest`, with every tool faked (`FakeTools`) | `mvn verify` |
+| Snapshots | the shape of `report.json`, `manifest.json`, `stage_result.json` and the patch bundle | `RepairPipelineTest.theOutputFilesKeepTheirShape` | `mvn verify` |
+| Tool contract | each real tool still produces what the engine reads | `ToolContractIT` (distribution) | `ARODNAP_E2E=1` |
+| End-to-end | real repairs work on each supported kind of build | `RealRepairIT` (distribution) | `ARODNAP_E2E=1` |
+| Plugins | the plugins read the right inputs from a real build | Maven: `arodnap-maven-plugin/src/it`; Gradle: `ArodnapPluginTest` (always), `ArodnapPluginFunctionalTest` | `ARODNAP_E2E=1` for the real runs |
+| Real projects | nothing regressed on real code | `scripts/real_projects.py` | quick tier on every pull request, all weekly |
 
-Current fixture usage:
+```bash
+mvn verify                                           # everything that needs no real tools
+ARODNAP_E2E=1 mvn install                            # plus the end-to-end, contract and Maven plugin tests
+ARODNAP_E2E=1 gradle -p arodnap-gradle-plugin build  # the Gradle plugin (after mvn install)
+```
 
-- `gradle-pipeline-baseline/`: the main fixture (wrappers, owning fields, direct and try/catch leaks)
+The end-to-end layers need JDK 17 or newer and `gradle`, `mvn` and `ant` on `PATH` (a test
+whose tool is missing is skipped; CI treats a skip as a failure), and network access or warm
+caches for the projects' dependencies. `RealRepairIT` runs the distribution's `bin/arodnap`
+exactly as users do; set `ARODNAP_CHECKER_FRAMEWORK` to run it against another Checker
+Framework distribution.
+
+## Recorded Tool Outputs
+
+Unit tests read what the real tools produced instead of hand-written imitations:
+`arodnap-engine/src/test/resources/recorded/coverage/` holds the diagnostics, RLFixer report
+and debug table, and RLPatcher manifest of a real run on `gradle-pipeline-coverage`, with the
+run's directories replaced by placeholders (see `Recorded`), and what an earlier release
+made of them (`expected-*.json`). `recorded/<project>/` holds excerpts from real projects'
+runs that exposed a bug. `patch/difflib-cases.json` holds diffs made by Python's difflib,
+whose output Arodnap's patches keep.
+
+## Snapshots
+
+Approved copies of output files are in `arodnap-engine/src/test/resources/snapshots`. The
+test replaces what differs between runs (directories, times, durations, Arodnap's version)
+and compares the rest exactly. When an output changes on purpose, rewrite the copies and
+review the diff with the change:
+
+```bash
+mvn test -pl arodnap-model,arodnap-engine -Darodnap.updateSnapshots=true
+```
+
+A change to a contract listed in [`architecture.md`](architecture.md) also updates that
+document.
+
+## Test Projects
+
+Small projects in [`test-projects/`](../test-projects), shared by the end-to-end and plugin
+tests:
+
+- `gradle-pipeline-baseline/`: wrappers, owning fields, direct and try/catch leaks
+- `gradle-pipeline-coverage/`: every stage fixes something; exact counts per stage
 - `gradle-dependency-leak/`: a leak through a Maven Central dependency
-- `gradle-multimodule/`: two Gradle modules with a leak in each
+- `gradle-multimodule/`: two Gradle projects with a leak in each
 - `maven-dependency-leak/`: Maven with a Maven Central dependency
 - `ant-vendored-jar/`: Ant compiling against a jar checked into `lib/`
 - `javac-script/`: no build tool; captured with `-- ./build.sh`
-- `javac-latin1/`: ISO-8859-1 sources compiled for Java 8; `infer` must use the
-  build's encoding and release, and `repair` must stop with a clear message
+- `javac-return-cycle/`: a leak returned through a cycle of callers, which RLFixer leaves
+- `javac-field-transformations/`: fields made final or local before analysis
+- `javac-latin1/`: ISO-8859-1 sources compiled for Java 8; `infer` must use the build's
+  encoding and release, and `repair` must stop with a clear message
 
-Keep fixtures intentionally small. A single high-signal fixture is preferred to
-many partially maintained ones.
-
-## Real End-To-End Tests
-
-[`tests/test_e2e_real.py`](../tests/test_e2e_real.py) runs `repair`, `apply`
-and a compile of the result with the real toolchain and nothing mocked. Mocked
-tests check wiring; this checks that the tools actually work together.
-
-```bash
-ARODNAP_E2E=1 python -m unittest tests.test_e2e_real
-```
-
-It needs JDK 17 or newer (it has passed on 17, 21, 23, 24 and 25) and `gradle`, `mvn` and
-`ant` on `PATH` (tests for a missing tool are skipped), and network access or a warm
-Gradle cache for `gradle-dependency-leak`. Set `ARODNAP_CHECKER_FRAMEWORK` to
-run it against another Checker Framework distribution; both the bundled 4.2.3
-and 3.49.0 pass. Add a
-fixture and a test here for every newly supported project shape.
+Keep them small: one project per behavior. Add a project and a test for every newly
+supported project shape.
 
 ## Continuous Integration
 
-[`.github/workflows/ci.yml`](../.github/workflows/ci.yml) runs on every pull
-request and every push to `master`:
+[`.github/workflows/ci.yml`](../.github/workflows/ci.yml) runs on every pull request and every
+push to `master`:
 
-- `unit`: the unit tests on Python 3.10 to 3.14 (Ubuntu) and on macOS
-- `java-tools`: builds and tests every Java tool with JDK 21 and fails if a
-  committed jar in `restructure_plugins/prebuilt_plugin_jars/` does not match
-  its source (`python scripts/java_tools.py build` then `check`)
-- `e2e`: the real end-to-end tests on JDK 17, 21 and 25 with Gradle, Maven and
-  Ant installed; a skipped test fails the job
-- `real-projects-quick`: the real projects marked `"tier": "quick"` (minutes
-  each, see below)
+- `build`: `mvn verify` on JDK 17, 21 and 25 (Ubuntu) and JDK 21 (macOS)
+- `e2e`: the end-to-end, tool contract, Maven plugin and Gradle plugin tests on JDK 17, 21
+  and 25 with Gradle, Maven and Ant installed; a skipped test fails the job
+- `real-projects-quick`: the real projects marked `"tier": "quick"` (minutes each)
 
-[`.github/workflows/real-projects.yml`](../.github/workflows/real-projects.yml)
-runs every project weekly, on demand, and on pull requests that change the
-project list; the large ones take one to three hours. It
-repairs real open-source projects listed in
-[`scripts/real_projects.json`](../scripts/real_projects.json), each cloned
-fresh from its own repository at a pinned release, and checks that `repair`
-succeeds and that the leak counts match the recorded ones. Run the same
-locally:
+[`.github/workflows/real-projects.yml`](../.github/workflows/real-projects.yml) runs every
+project weekly, on demand, and on pull requests that change the project list; the large
+ones take one to three hours. It repairs real open-source projects listed in
+[`scripts/real_projects.json`](../scripts/real_projects.json), each cloned fresh from its own
+repository at a pinned release, and checks that `repair` succeeds and that the leak counts
+match the recorded ones. Run the same locally, after `mvn package`:
 
 ```bash
-python scripts/real_projects.py run commons-csv   # or --all
+python3 scripts/real_projects.py run commons-csv   # or --all
 ```
 
-When a change to Arodnap is meant to change the results, rerun with `--record`
-and commit the new counts. To test a newer release of a project, change its
-`ref` and record again.
+When a change is meant to change the results, rerun with `--record` and commit the new
+counts. To test a newer release of a project, change its `ref` and record again.
 
-## Fixture-Based Integration Tests
+## What To Check
 
-Current integration-style tests build on
-[`tests/fixture_helpers.py`](../tests/fixture_helpers.py).
-
-Preferred assertions for fixture-backed flows:
-
-- the original fixture repo is not mutated by `analyze`, `infer`, `repair`, or
-  `doctor`
-- the workspace-copy behavior is preserved
-- expected top-level artifacts are emitted under `arodnap-out/`
-- stage-local artifacts exist where the output contract expects them
-- patch bundles remain normalized and consumable by `apply`
-
-Representative suites:
-
-- [`tests/test_analysis_commands.py`](../tests/test_analysis_commands.py)
-- [`tests/test_cli_integration.py`](../tests/test_cli_integration.py)
-
-## Structured Output Regression Tests
-
-A small structured-output regression layer lives in
-[`tests/test_structured_output_regressions.py`](../tests/test_structured_output_regressions.py).
-
-These tests intentionally avoid brittle full-file snapshotting. Instead they:
-
-- run a fixture-backed command flow
-- normalize temp paths, timestamps, and elapsed-time values
-- compare only deterministic fields from:
-  - `manifest.json`
-  - `report.json`
-  - representative `stage_result.json` files
-
-When adding new machine-readable fields:
-
-- keep the schema additive where practical
-- normalize unstable values in test helpers
-- assert only the parts of the contract that are meant to be stable
-
-## Stage-Level Tests
-
-Stage tests should verify the wrapper boundary, not just subprocess calls.
-
-Preferred assertions:
-
-- raw tool outputs are normalized inside the wrapper
-- `stage_result.json` matches the returned `StageResult`
-- stage-local logs and artifacts are written where expected
-- invalid outputs fail closed with clear errors
-
-Representative suites:
-
-- [`tests/test_close_injector_stage.py`](../tests/test_close_injector_stage.py)
-- [`tests/test_owning_field_stage.py`](../tests/test_owning_field_stage.py)
-- [`tests/test_rlfixer_stage.py`](../tests/test_rlfixer_stage.py)
-- [`tests/test_rlpatcher_stage.py`](../tests/test_rlpatcher_stage.py)
-
-## Contributor Guidance
-
-When adding tests:
-
-- start from the smallest fixture or helper that exercises the real contract
-- prefer adapter-driven and stage-driven assertions over path-assumption tests
-- keep the original-repo non-mutation property explicit
-- do not build on the paper's scripts in `legacy/`
-- only add golden-style coverage after unstable fields are normalized first
+- the original project is not changed by `analyze`, `infer`, `repair` or `doctor`
+- outputs are where the output contract says, and patch bundles are consumable by `apply`
+- a stage normalizes its tool's output before it leaves the stage, and a crash fails it
+- unstable values are replaced before anything is compared exactly
+- nothing builds on the paper's scripts in `legacy/`
