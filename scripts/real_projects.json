@@ -42,8 +42,8 @@
       "build": "maven",
       "expected": {
         "initial": 201,
-        "found_during_repair": 9,
-        "fixed": 20,
+        "found_during_repair": 3,
+        "fixed": 14,
         "remaining": 190,
         "patched_files": 14
       },

@@ -2,12 +2,13 @@ package org.arodnap.engine.diagnostics;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.nio.file.Path;
 import java.util.List;
 import org.arodnap.engine.Recorded;
 import org.arodnap.engine.analysis.Analyzer;
 import org.junit.jupiter.api.Test;
 
-/** Checker Framework 4.2.3 output recorded from a real run of the coverage fixture. */
+/** Checker Framework 4.2.3 output recorded from real runs: the coverage fixture, and excerpts from real projects. */
 class DiagnosticTest {
     private static final String INITIAL = Recorded.text("diagnostics/initial.txt");
 
@@ -33,6 +34,18 @@ class DiagnosticTest {
         // Line numbers are not part of a warning's identity: repairs move lines.
         assertThat(leak.identity()).containsExactly(leak.path(), Diagnostic.LEAK_KEY, leak.fields().get(0), leak.fields().get(1),
                 leak.fields().get(2));
+    }
+
+    @Test
+    void aLeakWhoseTypeHasACapturedWildcardIsTheSameLeakInEveryRun() {
+        // From commons-compress: javac numbered the same wildcard capture#68, then capture#631.
+        Path root = Path.of("/work/space/commons-compress");
+        Diagnostic initial = Diagnostic.parseAll(Recorded.realProject("commons-compress", "lister-initial.txt"), root).get(0);
+        Diagnostic last = Diagnostic.parseAll(Recorded.realProject("commons-compress", "lister-final.txt"), root).get(0);
+
+        assertThat(initial.fields().get(2)).contains("capture#68 ");
+        assertThat(last.fields().get(2)).contains("capture#631 ");
+        assertThat(last.identity()).isEqualTo(initial.identity());
     }
 
     @Test

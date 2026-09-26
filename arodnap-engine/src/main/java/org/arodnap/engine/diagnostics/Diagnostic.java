@@ -19,6 +19,7 @@ import java.util.regex.Pattern;
 public record Diagnostic(String path, int line, String key, List<String> fields, String text) {
     public static final String LEAK_KEY = "required.method.not.called";
     private static final Pattern KEY = Pattern.compile("warning: [(\\[](?:[\\w.]+:)?([\\w.]+)[)\\]]");
+    private static final Pattern CAPTURE_NUMBER = Pattern.compile("capture#\\d+");
 
     public Diagnostic {
         fields = List.copyOf(fields);
@@ -61,21 +62,26 @@ public record Diagnostic(String path, int line, String key, List<String> fields,
     /**
      * What makes two warnings in different analysis runs the same warning. Line numbers are left
      * out, because repairs shift lines; for a leak, the method, expression and type identify it (the
-     * reason text changes when code around it changes).
+     * reason text changes when code around it changes). javac numbers captured wildcards
+     * ({@code capture#68 of ? extends T}) anew in every compilation, so the numbers are left out too.
      */
     public List<String> identity() {
         List<String> identity = new ArrayList<>(List.of(path, key));
         if (isLeak() && fields.size() >= 3) {
-            identity.addAll(fields.subList(0, 3));
+            fields.subList(0, 3).forEach(field -> identity.add(withoutCaptureNumbers(field)));
         } else if (!fields.isEmpty()) {
-            identity.addAll(fields);
+            fields.forEach(field -> identity.add(withoutCaptureNumbers(field)));
         } else {
             String first = text.lines().findFirst().orElse("");
             String marker = "[" + key + "]";
             int at = first.indexOf(marker);
-            identity.add((at < 0 ? first : first.substring(at + marker.length())).strip());
+            identity.add(withoutCaptureNumbers((at < 0 ? first : first.substring(at + marker.length())).strip()));
         }
         return identity;
+    }
+
+    private static String withoutCaptureNumbers(String text) {
+        return CAPTURE_NUMBER.matcher(text).replaceAll("capture#");
     }
 
     private static boolean isDigits(String text) {
