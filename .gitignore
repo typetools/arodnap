@@ -7,3 +7,5 @@ build/
 arodnap-out/
 # RLPatcher's tests write their patch to the working directory
 tools/rlpatcher/rlfixer.patch
+# Python caches (scripts/ and legacy/)
+__pycache__/
