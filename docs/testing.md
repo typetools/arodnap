@@ -34,8 +34,9 @@ Unit tests read what the real tools produced instead of hand-written imitations:
 and debug table, and RLPatcher manifest of a real run on `gradle-pipeline-coverage`, with the
 run's directories replaced by placeholders (see `Recorded`), and what an earlier release
 made of them (`expected-*.json`). `recorded/<project>/` holds excerpts from real projects'
-runs that exposed a bug. `patch/difflib-cases.json` holds diffs made by Python's difflib,
-whose output Arodnap's patches keep.
+runs that exposed a bug. `patch/diff-cases.json` holds named diff cases (edits, hunks, final
+newlines, line endings, encodings, long files), with the diffs Python's difflib made for earlier
+releases, which Arodnap's patches keep.
 
 ## Snapshots
 
