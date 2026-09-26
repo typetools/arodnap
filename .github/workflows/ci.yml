@@ -101,3 +101,5 @@ jobs:
     uses: ./.github/workflows/real-projects.yml
     with:
       tier: quick
+      via: cli
+      tests: false

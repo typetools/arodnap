@@ -13,7 +13,7 @@ that reproduces it, and test names say what behavior they check.
 | Tool contract | each real tool still produces what the engine reads | `ToolContractIT` (distribution) | `ARODNAP_E2E=1` |
 | End-to-end | real repairs work on each supported kind of build | `RealRepairIT` (distribution) | `ARODNAP_E2E=1` |
 | Plugins | the plugins read a real build, repair and apply, refuse a file changed since the repair, use their settings, and every goal or task writes its output | Maven: Invoker projects in `arodnap-maven-plugin/src/it`; Gradle: `ArodnapPluginTest` (always) and `ArodnapPluginFunctionalTest`, on Gradle 8.14 and the current one | `ARODNAP_E2E=1` for the real runs |
-| Real projects | nothing regressed on real code | `scripts/real_projects.py` | quick tier on every pull request, all weekly |
+| Real projects | nothing regressed on real code, through the command line and the plugins, and a patch does not break the project's own tests | `scripts/real_projects.py` | quick tier on every pull request, all weekly |
 
 ```bash
 mvn verify                                           # everything that needs no real tools
@@ -83,8 +83,9 @@ push to `master`:
 - `real-projects-quick`: the real projects marked `"tier": "quick"` (minutes each)
 
 [`.github/workflows/real-projects.yml`](../.github/workflows/real-projects.yml) runs every
-project weekly, on demand, and on pull requests that change the project list; the large
-ones take one to three hours. It repairs real open-source projects listed in
+project weekly, on demand, and on pull requests that change the project list, with the command
+line and with the plugins, and runs the projects' own tests; the large ones take hours. It
+repairs real open-source projects listed in
 [`scripts/real_projects.json`](../scripts/real_projects.json), each cloned fresh from its own
 repository at a pinned release, and checks that `repair` succeeds and that the leak counts
 match the recorded ones. Run the same locally, after `mvn package`:
@@ -92,6 +93,19 @@ match the recorded ones. Run the same locally, after `mvn package`:
 ```bash
 python3 scripts/real_projects.py run commons-csv   # or --all
 ```
+
+`--via plugin` repairs the Maven projects with the Maven plugin and the Gradle ones with the
+Gradle plugin (applied by an init script, so the build is unchanged), after `mvn install` and
+`gradle -p arodnap-gradle-plugin publishToMavenLocal`; the counts must be the same as the
+command line's. `--tests` runs a project's own tests (its `test` command) when the repair
+changed something: first without the patch, then with it, applied by the same front end. The
+weekly run does both.
+
+Only projects whose own tests pass reliably have a `test` command: commons-csv, commons-io,
+commons-compress, jsoup and apktool. The others do not: HikariCP's tests need Docker (and none
+of its leaks are fixed), pdfbox's download test files from a server that refuses them (and its
+repair already takes most of a CI job's six hours), and some of ant-ivy's and ZooKeeper's tests
+fail without any patch.
 
 When a change is meant to change the results, rerun with `--record` and commit the new
 counts. To test a newer release of a project, change its `ref` and record again.

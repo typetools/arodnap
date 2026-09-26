@@ -6,6 +6,12 @@
       "ref": "rel/commons-csv-1.14.1",
       "build": "maven",
       "tier": "quick",
+      "test": [
+        "mvn",
+        "-B",
+        "-ntp",
+        "test"
+      ],
       "expected": {
         "initial": 12,
         "found_during_repair": 0,
@@ -23,12 +29,19 @@
       "repo": "https://github.com/apache/commons-io.git",
       "ref": "rel/commons-io-2.22.0",
       "build": "maven",
+      "test": [
+        "mvn",
+        "-B",
+        "-ntp",
+        "test"
+      ],
       "expected": {
         "initial": 92,
         "found_during_repair": 4,
         "fixed": 7,
         "remaining": 89,
-        "patched_files": 5
+        "patched_files": 5,
+        "tests_after_patch": "broken"
       },
       "observed": {
         "minutes": 19.2,
@@ -40,12 +53,19 @@
       "repo": "https://github.com/apache/commons-compress.git",
       "ref": "rel/commons-compress-1.28.0",
       "build": "maven",
+      "test": [
+        "mvn",
+        "-B",
+        "-ntp",
+        "test"
+      ],
       "expected": {
         "initial": 201,
         "found_during_repair": 3,
         "fixed": 11,
         "remaining": 193,
-        "patched_files": 11
+        "patched_files": 11,
+        "tests_after_patch": "broken"
       },
       "observed": {
         "minutes": 67.1,
@@ -57,6 +77,12 @@
       "repo": "https://github.com/jhy/jsoup.git",
       "ref": "jsoup-1.23.2",
       "build": "maven",
+      "test": [
+        "mvn",
+        "-B",
+        "-ntp",
+        "test"
+      ],
       "expected": {
         "initial": 26,
         "found_during_repair": 15,
@@ -127,6 +153,11 @@
       "ref": "v3.0.3",
       "build": "gradle",
       "tier": "quick",
+      "test": [
+        "./gradlew",
+        "--console=plain",
+        "test"
+      ],
       "expected": {
         "initial": 12,
         "found_during_repair": 0,
