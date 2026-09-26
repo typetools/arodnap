@@ -183,7 +183,8 @@ public final class BundleApplier {
                 String observed = RlPatcherStage.sha256(Files.readAllBytes(path));
                 String expected = entry.preimageHashes().get(file);
                 if (!observed.equals(expected)) {
-                    throw new ApplyException("Preimage hash mismatch for " + file + ": expected " + expected + ", got " + observed);
+                    throw new ApplyException(file + " has changed since the patch was made, so nothing was applied; run repair again. "
+                            + "(SHA-256 when repaired " + expected + ", now " + observed + ")");
                 }
             }
         }

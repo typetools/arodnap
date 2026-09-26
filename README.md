@@ -178,8 +178,9 @@ arodnap {
 ```
 
 `arodnapAnalyze` and `arodnapInfer` are the other two tasks. Outputs go to
-`build/arodnap` (`arodnap.outputDirectory`). The tasks read every project's
-`compileJava` task, so they do not work with the configuration cache.
+`build/arodnap` (`arodnap.outputDirectory`). It needs Gradle 8.14 or newer. The
+tasks read every project's `compileJava` task, so they do not work with the
+configuration cache.
 
 ## Typical Workflow
 

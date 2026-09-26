@@ -87,7 +87,7 @@ public final class FieldTransformationsStage {
         try {
             StageLog.reset(log);
             if (mode == FieldTransformationMode.OFF) {
-                return finish(directory, List.of(), List.of("Field transformations are off (--field-transformations=off)."),
+                return finish(directory, List.of(), List.of("Field transformations are off."),
                         Map.of("log", log.toString()));
             }
             Jdk jdk = context.jdk();

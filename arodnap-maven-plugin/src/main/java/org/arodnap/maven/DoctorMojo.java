@@ -19,6 +19,10 @@ public class DoctorMojo extends ArodnapMojo {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
+        if (skip) {
+            getLog().info("Skipping Arodnap (arodnap.skip).");
+            return;
+        }
         try {
             boolean ok = new Doctor(toolchain(), JdkLocator.fromEnvironment(CommandRunner.processes())).run(settings(), capture(), log());
             if (!ok) {

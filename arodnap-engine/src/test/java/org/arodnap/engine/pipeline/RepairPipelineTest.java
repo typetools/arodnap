@@ -149,6 +149,21 @@ class RepairPipelineTest {
     }
 
     @Test
+    void applyRefusesAFileThatChangedAfterTheRepair() throws Exception {
+        tools.diagnostics.add(LEAK);
+        tools.diagnostics.add("");
+        rlfixerAndRlPatcherFixTheLeak();
+        engine().repair(settings(), capture());
+        String edited = SOURCE + "// edited after the repair\n";
+        Files.writeString(project.resolve("src/demo/Demo.java"), edited);
+
+        assertThatThrownBy(() -> BundleApplier.apply(project, temp.resolve("out/patches"), temp.resolve("out/logs/apply.log"), false))
+                .isInstanceOf(BundleApplier.ApplyException.class)
+                .hasMessageStartingWith("src/demo/Demo.java has changed since the patch was made, so nothing was applied");
+        assertThat(project.resolve("src/demo/Demo.java")).hasContent(edited.strip());
+    }
+
+    @Test
     void theOutputFilesKeepTheirShape() throws Exception {
         tools.diagnostics.add(LEAK);
         tools.diagnostics.add("");

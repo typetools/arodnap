@@ -12,7 +12,7 @@ that reproduces it, and test names say what behavior they check.
 | Snapshots | the shape of `report.json`, `manifest.json`, `stage_result.json` and the patch bundle | `RepairPipelineTest.theOutputFilesKeepTheirShape` | `mvn verify` |
 | Tool contract | each real tool still produces what the engine reads | `ToolContractIT` (distribution) | `ARODNAP_E2E=1` |
 | End-to-end | real repairs work on each supported kind of build | `RealRepairIT` (distribution) | `ARODNAP_E2E=1` |
-| Plugins | the plugins read the right inputs from a real build | Maven: `arodnap-maven-plugin/src/it`; Gradle: `ArodnapPluginTest` (always), `ArodnapPluginFunctionalTest` | `ARODNAP_E2E=1` for the real runs |
+| Plugins | the plugins read a real build, repair and apply, refuse a file changed since the repair, use their settings, and every goal or task writes its output | Maven: Invoker projects in `arodnap-maven-plugin/src/it`; Gradle: `ArodnapPluginTest` (always) and `ArodnapPluginFunctionalTest`, on Gradle 8.14 and the current one | `ARODNAP_E2E=1` for the real runs |
 | Real projects | nothing regressed on real code | `scripts/real_projects.py` | quick tier on every pull request, all weekly |
 
 ```bash
