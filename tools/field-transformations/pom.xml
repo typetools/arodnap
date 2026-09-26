@@ -53,6 +53,22 @@
     </dependencies>
 
     <build>
+        <pluginManagement>
+            <plugins>
+                <!-- For the release: javadoc needs the same exports. -->
+                <plugin>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <configuration>
+                        <additionalOptions>
+                            <additionalOption>--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED</additionalOption>
+                            <additionalOption>--add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED</additionalOption>
+                            <additionalOption>--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED</additionalOption>
+                            <additionalOption>--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED</additionalOption>
+                        </additionalOptions>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
         <plugins>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
