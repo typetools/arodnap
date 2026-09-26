@@ -1,0 +1,16 @@
+{
+  "artifacts": {
+    "debug": "{TEMP}/out/stages/rlfixer/debug.txt",
+    "fixes": "{TEMP}/out/stages/rlfixer/fixes.txt",
+    "inputs": "{TEMP}/out/stages/rlfixer/inputs",
+    "log": "{TEMP}/out/stages/rlfixer/stage.log"
+  },
+  "changed": false,
+  "changed_files": [],
+  "notes": [
+    "RLFixer proposed 1 fix(es) for 1 leak warning(s)."
+  ],
+  "rerun_required": false,
+  "stage": "rlfixer",
+  "success": true
+}

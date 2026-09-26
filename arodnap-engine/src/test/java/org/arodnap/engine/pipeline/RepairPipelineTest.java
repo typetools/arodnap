@@ -13,6 +13,8 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import org.arodnap.engine.Snapshots;
+import org.arodnap.engine.Version;
 import org.arodnap.engine.apply.BundleApplier;
 import org.arodnap.engine.files.FilePaths;
 import org.arodnap.engine.inputs.ProjectCapture;
@@ -144,6 +146,27 @@ class RepairPipelineTest {
         assertThat(project.resolve("src/demo/Demo.java")).hasContent(SOURCE.strip());
         BundleApplier.apply(project, temp.resolve("out/patches"), temp.resolve("out/logs/apply.log"), false);
         assertThat(Files.readString(project.resolve("src/demo/Demo.java"))).isEqualTo(FIXED);
+    }
+
+    @Test
+    void theOutputFilesKeepTheirShape() throws Exception {
+        tools.diagnostics.add(LEAK);
+        tools.diagnostics.add("");
+        rlfixerAndRlPatcherFixTheLeak();
+
+        engine().repair(settings(), capture());
+
+        Path out = temp.resolve("out");
+        JsonNode report = Json.read(out.resolve("report.json"));
+        Path work = FilePaths.real(Path.of(report.get("workspace_root").asText())).getParent();
+        Snapshots snapshots = new Snapshots().replacing(work.toString(), "{WORK}").replacing(FilePaths.real(temp).toString(), "{TEMP}")
+                .replacing(temp.toString(), "{TEMP}").replacing(Version.VERSION, "{VERSION}");
+        for (String file : List.of("report.json", "manifest.json", "patches/manifest.json", "patches/arodnap.patch")) {
+            snapshots.checkFile("repair/" + file, out.resolve(file));
+        }
+        for (String stage : List.of("field_transformations", "close_injector", "owning_field", "rlfixer", "rlpatcher", "bundle")) {
+            snapshots.checkFile("repair/stages/" + stage + ".json", out.resolve("stages").resolve(stage).resolve("stage_result.json"));
+        }
     }
 
     @Test
