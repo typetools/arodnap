@@ -13,12 +13,19 @@ repairing your own project, use the `arodnap` tool described in the top-level
 | `helpers/wpi.sh`, `helpers/ep.sh` | whole-program inference and field enhancement for the normalized layout |
 | `rlfixer/lib`, `rlfixer/classes` | RLFixer as used in the paper: WALA 1.5.7, JavaParser 3.24.7, and its compiled classes (`rlfixer/out` and the IntelliJ files are that build's IDE output) |
 | `rlpatcher-paper-patches/` | patches RLPatcher produced during the paper's evaluation |
-| `fixtures/legacy-pipeline-baseline/` | a small project in the normalized layout, with the script that generated it from `tests/fixtures/gradle-pipeline-baseline` |
+| `fixtures/legacy-pipeline-baseline/` | a small project in the normalized layout, with the script that generated it from `test-projects/gradle-pipeline-baseline` |
 
-The scripts still use tools outside this directory: the Java stage tools in
-`restructure_plugins/prebuilt_plugin_jars/`, Checker Framework 3.49.0 in
-`checker_framework/checker-framework-3.49.0` and the stubs in `checker_framework/stubs`.
-Those have changed since the paper, so results can differ from the published ones.
+The scripts also need tools that are not in this directory:
+
+- the Java stage tools (AutoCloseInjector, OwningFieldFixer, RLPatcher) of an Arodnap
+  distribution: set `ARODNAP_HOME` to it (`mvn package` builds one under
+  `arodnap-distribution/target/`);
+- Checker Framework 3.49.0, from its
+  [release](https://github.com/typetools/checker-framework/releases/tag/checker-framework-3.49.0),
+  unpacked into `legacy/checker-framework-3.49.0`;
+- the stubs in `arodnap-engine/src/main/resources/org/arodnap/engine/stubs`.
+
+The tools and stubs have changed since the paper, so results can differ from the published ones.
 
 ## Requirements
 

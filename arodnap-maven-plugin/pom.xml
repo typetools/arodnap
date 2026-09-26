@@ -14,6 +14,10 @@
     <name>Arodnap Maven plugin</name>
     <description>Repairs resource leaks in a Maven project: mvn compile arodnap:repair.</description>
 
+    <properties>
+        <maven.compiler.release>17</maven.compiler.release>
+    </properties>
+
     <prerequisites>
         <maven>3.9.0</maven>
     </prerequisites>
@@ -22,7 +26,6 @@
         <dependency>
             <groupId>org.arodnap</groupId>
             <artifactId>arodnap-engine</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.maven</groupId>
@@ -41,6 +44,16 @@
             <artifactId>maven-plugin-annotations</artifactId>
             <version>3.15.2</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 

@@ -14,17 +14,10 @@ from pathlib import Path
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-FIXTURES_ROOT = REPO_ROOT / "tests" / "fixtures"
+FIXTURES_ROOT = REPO_ROOT / "test-projects"
 DEFAULT_SOURCE = FIXTURES_ROOT / "gradle-pipeline-baseline"
 DEFAULT_TARGET = REPO_ROOT / "legacy" / "fixtures" / "legacy-pipeline-baseline"
-CHECKER_QUAL = (
-    REPO_ROOT
-    / "checker_framework"
-    / "checker-framework-3.49.0"
-    / "checker"
-    / "dist"
-    / "checker-qual.jar"
-)
+CHECKER_QUAL = REPO_ROOT / "legacy" / "checker-framework-3.49.0" / "checker" / "dist" / "checker-qual.jar"
 
 
 def remove_path(path: Path) -> None:

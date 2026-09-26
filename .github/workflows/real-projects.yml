@@ -68,9 +68,7 @@ jobs:
         with:
           distribution: temurin
           java-version: "21"
-      - uses: actions/setup-python@v7
-        with:
-          python-version: "3.13"
+          cache: maven
       - uses: gradle/actions/setup-gradle@v6
         with:
           gradle-version: "9.1.0"
@@ -83,10 +81,12 @@ jobs:
             sudo apt-get update -q
             sudo apt-get install -y -q --no-install-recommends "${missing[@]}"
           fi
+      - name: Build the arodnap distribution
+        run: mvn -B -ntp package -DskipTests
       - name: Repair ${{ matrix.project }}
         env:
           PROJECT: ${{ matrix.project }}
-        run: python scripts/real_projects.py run "$PROJECT" --work-dir build/real-projects
+        run: python3 scripts/real_projects.py run "$PROJECT" --work-dir build/real-projects
       - name: Keep the report, patch and log
         if: always()
         uses: actions/upload-artifact@v7

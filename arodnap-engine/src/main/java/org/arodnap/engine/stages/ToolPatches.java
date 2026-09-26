@@ -20,8 +20,8 @@ public final class ToolPatches {
     public record Normalized(String text, List<String> changedFiles) {}
 
     public static Normalized normalize(String rawPatch, Path workspaceRoot) throws StageException {
-        // The tools write "\n"; a "\r" left from a Windows-style file ends the line, as the Python
-        // version read the patch with newline translation. Lines split only at "\n".
+        // The tools write "\n"; a "\r" left from a Windows-style file also ends a line, as it always
+        // has in Arodnap. Lines split only at "\n".
         String text = rawPatch.replace("\r\n", "\n").replace('\r', '\n');
         List<String> lines = new ArrayList<>(List.of(text.split("\n", -1)));
         if (!lines.isEmpty() && lines.get(lines.size() - 1).isEmpty()) {

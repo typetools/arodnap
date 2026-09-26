@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.arodnap</groupId>
+        <artifactId>arodnap-parent</artifactId>
+        <version>2.0.0-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
+    </parent>
+
+    <!-- Error Prone checks for Arodnap's field transformations: resource fields that can be
+         final (ResourceFieldCanBeFinal) or local variables (ResourceFieldCanBeLocal). -->
+    <artifactId>arodnap-field-transformations</artifactId>
+    <name>Arodnap field transformations</name>
+    <description>Error Prone checks that make resource fields final or local where they can be.</description>
+
+    <properties>
+        <!-- Compiled against 2.42.0, the last release that runs on JDK 17; the same jar also runs
+             with the latest Error Prone, which Arodnap uses on JDK 21+. -->
+        <errorprone.compile.version>${errorprone.jdk17.version}</errorprone.compile.version>
+        <!-- -source/-target, not release: the checks use javac internals exported below. -->
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.google.errorprone</groupId>
+            <artifactId>error_prone_core</artifactId>
+            <version>${errorprone.compile.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google.auto.service</groupId>
+            <artifactId>auto-service-annotations</artifactId>
+            <version>1.1.1</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google.errorprone</groupId>
+            <artifactId>error_prone_test_helpers</artifactId>
+            <version>${errorprone.compile.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13.2</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>com.google.auto.service</groupId>
+                            <artifactId>auto-service</artifactId>
+                            <version>1.1.1</version>
+                        </path>
+                    </annotationProcessorPaths>
+                    <compilerArgs combine.self="override">
+                        <arg>--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED</arg>
+                        <arg>--add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED</arg>
+                        <arg>--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED</arg>
+                        <arg>--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED</arg>
+                    </compilerArgs>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <argLine>
+                        --add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED
+                        --add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED
+                        --add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED
+                        --add-exports=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED
+                        --add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED
+                        --add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED
+                        --add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED
+                        --add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED
+                        --add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED
+                        --add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED
+                    </argLine>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

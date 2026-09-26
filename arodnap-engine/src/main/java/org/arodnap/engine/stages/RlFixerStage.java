@@ -133,7 +133,7 @@ public final class RlFixerStage implements Stage {
     }
 
     static String read(Path file) throws IOException {
-        // Tool output is UTF-8; like the Python version, undecodable bytes become replacement characters.
+        // Tool output is UTF-8; undecodable bytes become replacement characters.
         return new String(Files.readAllBytes(file), StandardCharsets.UTF_8);
     }
 

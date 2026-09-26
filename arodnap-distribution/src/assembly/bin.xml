@@ -1,0 +1,60 @@
+<assembly xmlns="http://maven.apache.org/ASSEMBLY/2.2.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.2.0 https://maven.apache.org/xsd/assembly-2.2.0.xsd">
+    <!-- The layout org.arodnap.cli.Installation reads. -->
+    <id>bin</id>
+    <formats>
+        <format>zip</format>
+        <format>tar.gz</format>
+        <format>dir</format>
+    </formats>
+    <baseDirectory>arodnap-${project.version}</baseDirectory>
+
+    <fileSets>
+        <fileSet>
+            <directory>src/bin</directory>
+            <outputDirectory>bin</outputDirectory>
+            <fileMode>0755</fileMode>
+            <lineEnding>unix</lineEnding>
+        </fileSet>
+        <fileSet>
+            <directory>${project.build.directory}/engine/org/arodnap/engine/stubs</directory>
+            <outputDirectory>stubs</outputDirectory>
+            <includes>
+                <include>*.astub</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>${project.build.directory}/third-party</directory>
+            <outputDirectory/>
+        </fileSet>
+        <fileSet>
+            <directory>${project.basedir}/..</directory>
+            <outputDirectory/>
+            <includes>
+                <include>LICENSE</include>
+                <include>THIRD_PARTY_NOTICES.md</include>
+            </includes>
+        </fileSet>
+    </fileSets>
+
+    <dependencySets>
+        <dependencySet>
+            <outputDirectory>lib</outputDirectory>
+            <useProjectArtifact>false</useProjectArtifact>
+            <scope>runtime</scope>
+        </dependencySet>
+        <dependencySet>
+            <outputDirectory>tools</outputDirectory>
+            <useProjectArtifact>false</useProjectArtifact>
+            <scope>provided</scope>
+            <useTransitiveDependencies>false</useTransitiveDependencies>
+            <includes>
+                <include>org.arodnap:*</include>
+            </includes>
+            <excludes>
+                <exclude>org.arodnap:arodnap-cli</exclude>
+            </excludes>
+        </dependencySet>
+    </dependencySets>
+</assembly>

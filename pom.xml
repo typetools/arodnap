@@ -10,18 +10,47 @@
     <packaging>pom</packaging>
     <name>Arodnap</name>
     <description>Finds and repairs resource leaks in Java projects.</description>
+    <url>https://github.com/typetools/arodnap</url>
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>https://opensource.org/license/mit</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>The Arodnap contributors</name>
+            <url>https://github.com/typetools/arodnap</url>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:https://github.com/typetools/arodnap.git</connection>
+        <developerConnection>scm:git:git@github.com:typetools/arodnap.git</developerConnection>
+        <url>https://github.com/typetools/arodnap</url>
+    </scm>
 
     <modules>
         <module>arodnap-model</module>
         <module>arodnap-engine</module>
+        <module>tools/close-injector</module>
+        <module>tools/owning-field-fixer</module>
+        <module>tools/rlfixer</module>
+        <module>tools/rlpatcher</module>
+        <module>tools/field-transformations</module>
+        <module>tools/ant-capture</module>
+        <module>tools/maven-capture</module>
         <module>arodnap-cli</module>
         <module>arodnap-maven-plugin</module>
+        <module>arodnap-distribution</module>
     </modules>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <!-- The engine runs on the JDK the user analyzes with, which is 17 or newer. -->
-        <maven.compiler.release>17</maven.compiler.release>
+        <!-- Each module sets maven.compiler.release: the engine and front ends 17 (they run on the
+             JDK the user analyzes with, 17 or newer), the tools what they were built for. -->
         <jackson.version>2.22.3</jackson.version>
         <junit.version>6.1.3</junit.version>
         <assertj.version>3.27.7</assertj.version>
@@ -34,6 +63,8 @@
         <maven.version>3.9.11</maven.version>
     </properties>
 
+    <!-- JUnit is managed artifact by artifact, not with its BOM: the BOM would also pin the JUnit
+         platform version for the tools, whose tests use JUnit 4 and 5. -->
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -42,16 +73,24 @@
                 <version>${project.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.arodnap</groupId>
+                <artifactId>arodnap-engine</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-databind</artifactId>
                 <version>${jackson.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.junit</groupId>
-                <artifactId>junit-bom</artifactId>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter</artifactId>
                 <version>${junit.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-params</artifactId>
+                <version>${junit.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.assertj</groupId>
@@ -60,19 +99,6 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-
-    <dependencies>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.assertj</groupId>
-            <artifactId>assertj-core</artifactId>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
 
     <build>
         <pluginManagement>
@@ -89,6 +115,30 @@
                 <plugin>
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>3.6.0</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-failsafe-plugin</artifactId>
+                    <version>3.6.0</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>3.5.1</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-shade-plugin</artifactId>
+                    <version>3.6.2</version>
+                    <configuration>
+                        <!-- A tool's published POM lists no dependencies: they are inside its jar. -->
+                        <dependencyReducedPomLocation>${project.build.directory}/dependency-reduced-pom.xml</dependencyReducedPomLocation>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <version>3.11.0</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-assembly-plugin</artifactId>
+                    <version>3.8.0</version>
                 </plugin>
             </plugins>
         </pluginManagement>

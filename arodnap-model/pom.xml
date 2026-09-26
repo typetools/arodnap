@@ -12,4 +12,8 @@
     <artifactId>arodnap-model</artifactId>
     <name>Arodnap model</name>
     <description>Records shared by the engine and every front end.</description>
+
+    <properties>
+        <maven.compiler.release>17</maven.compiler.release>
+    </properties>
 </project>

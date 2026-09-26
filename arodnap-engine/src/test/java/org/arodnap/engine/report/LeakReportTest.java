@@ -21,7 +21,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 /**
  * The per-leak report of a real run of the coverage fixture, where every stage fixes something,
- * against the Python version's report of the same run.
+ * against the report an earlier Arodnap release wrote for the same run (expected-leaks.json).
  */
 class LeakReportTest {
     private static final List<String> LABELS = List.of("initial", "post_close_injector", "post_owning_field", "final");
@@ -30,7 +30,7 @@ class LeakReportTest {
     Path temp;
 
     @Test
-    void followsEachLeakThroughTheRunLikeThePythonVersion() throws IOException {
+    void followsEachLeakThroughTheRun() throws IOException {
         Path metadata = temp.resolve("adapter-metadata.json");
         Files.writeString(metadata, "{\"source_root\": \"" + Recorded.SOURCE_ROOT + "\"}\n");
         List<LeakReport.LabeledAnalysis> analyses = new ArrayList<>();
@@ -50,7 +50,7 @@ class LeakReportTest {
                 Map.of("post_close_injector", "close_injector", "post_owning_field", "owning_field", "final", "rlpatcher"),
                 Optional.of("post_owning_field"), stages);
 
-        ObjectNode expected = (ObjectNode) Json.parse(Recorded.text("python-leaks.json"));
+        ObjectNode expected = (ObjectNode) Json.parse(Recorded.text("expected-leaks.json"));
         expected.remove(List.of("field_changes", "html_report"));
         JsonNode actual = Json.parse(Json.write(leaks, true));
         assertThat(actual).isEqualTo(expected);

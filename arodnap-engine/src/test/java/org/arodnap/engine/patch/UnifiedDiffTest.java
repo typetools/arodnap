@@ -17,7 +17,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 /**
- * Diffs made by the Python version for random edits, Windows line endings, missing final newlines,
+ * Diffs made by Python's difflib, as earlier Arodnap releases made them, for random edits, Windows line endings, missing final newlines,
  * form feeds, non-ASCII text and files over 200 lines (where difflib skips "popular" lines when
  * starting a match). See difflib-cases.json for how they were generated.
  */
@@ -41,7 +41,7 @@ class UnifiedDiffTest {
 
     @ParameterizedTest(name = "case {0}")
     @MethodSource("recordedCases")
-    void createsTheSameDiffAsPythonDifflib(int number, String oldText, String newText, String expectedDiff) {
+    void createsTheSameDiffAsDifflib(int number, String oldText, String newText, String expectedDiff) {
         assertThat(UnifiedDiff.create("src/F.java", oldText, newText)).isEqualTo(expectedDiff);
     }
 

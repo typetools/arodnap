@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.arodnap</groupId>
+        <artifactId>arodnap-parent</artifactId>
+        <version>2.0.0-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>arodnap-maven-capture</artifactId>
+    <name>Arodnap Maven capture</name>
+    <description>A Maven core extension that records each javac call of a Maven build.</description>
+
+    <properties>
+        <!-- Loaded into whatever JVM runs Maven, so keep it old enough for any of them. -->
+        <maven.compiler.release>8</maven.compiler.release>
+        <!-- The oldest Maven API this extension supports; newer Maven versions keep it. -->
+        <maven.capture.version>3.6.3</maven.capture.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-core</artifactId>
+            <version>${maven.capture.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>javax.inject</groupId>
+            <artifactId>javax.inject</artifactId>
+            <version>1</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <!-- -Xlint:-options: release 8 is deprecated, and intended. -->
+                    <compilerArgs combine.self="override">
+                        <arg>-Xlint:all,-options</arg>
+                    </compilerArgs>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

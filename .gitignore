@@ -1,16 +1,9 @@
-arodnap.egg-info/
-__pycache__/
-rlfixer/wala/target/
-restructure_plugins/*/target/
 .DS_Store
-arodnap-out/
+# Maven and Gradle build output
+target/
 build/
-dist/
-# RLPatcher tests write their patch to the working directory
-restructure_plugins/RLPatcher/rlfixer.patch
-# Maven builds of the Java modules
-/target/
-/arodnap-*/target/
-# The Gradle plugin's Gradle build
-/arodnap-gradle-plugin/build/
-/arodnap-gradle-plugin/.gradle/
+.gradle/
+# What running Arodnap on this checkout leaves behind
+arodnap-out/
+# RLPatcher's tests write their patch to the working directory
+tools/rlpatcher/rlfixer.patch

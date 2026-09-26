@@ -8,7 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
- * Tool outputs recorded from a real run of the coverage fixture (tests/fixtures/gradle-pipeline-coverage),
+ * Tool outputs recorded from a real run of the coverage fixture (test-projects/gradle-pipeline-coverage),
  * with the run's directories replaced by {@link #WORKSPACE} and {@link #OUT}, and excerpts from real
  * projects' runs.
  */

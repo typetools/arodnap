@@ -7,7 +7,8 @@
     python scripts/real_projects.py run jsoup --record    # store the results as expected
 
 Each project in `real_projects.json` is cloned fresh from its own repository at a pinned
-release, then repaired with this checkout's Arodnap. A run passes when `repair` succeeds
+release, then repaired with the Arodnap distribution this checkout builds (`mvn package`
+first). A run passes when `repair` succeeds
 (its patch was replayed onto a clean copy and compiled) and, once a project has expected
 results, when the leak counts match them exactly. Time and peak memory are reported, not
 compared. Projects with `"tier": "quick"` take minutes and run in CI on every pull request;
@@ -27,9 +28,6 @@ import time
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(REPO))
-
-from arodnap.unified_patch import parse_unified_diff  # noqa: E402
 PROJECTS_FILE = Path(__file__).with_name("real_projects.json")
 # Counts from report.json that must match the recorded expectation.
 COMPARED = ("initial", "found_during_repair", "fixed", "remaining", "patched_files")
@@ -71,8 +69,9 @@ def summarize(out_dir: Path) -> dict:
         return {}
     report = json.loads(report_path.read_text())
     summary = dict((report.get("leaks") or {}).get("summary") or {})
-    patch = out_dir / "patches" / "arodnap.patch"
-    summary["patched_files"] = len(parse_unified_diff(patch.read_text())) if patch.is_file() and patch.stat().st_size else 0
+    manifest = out_dir / "patches" / "manifest.json"
+    patches = json.loads(manifest.read_text()).get("patches", []) if manifest.is_file() else []
+    summary["patched_files"] = sum(len(patch.get("changed_files", [])) for patch in patches)
     summary["warnings_by_run"] = {run["label"]: run.get("warning_count") for run in report.get("analysis_runs", [])}
     return summary
 
@@ -136,6 +135,14 @@ def _write_step_summary(results: list[dict]) -> None:
         handle.write("\n".join(lines) + "\n")
 
 
+def built_distribution() -> Path:
+    """The bin/arodnap of the distribution `mvn package` built in this checkout."""
+    launchers = sorted((REPO / "arodnap-distribution" / "target").glob("arodnap-*-bin/arodnap-*/bin/arodnap"))
+    if not launchers:
+        sys.exit("No Arodnap distribution in arodnap-distribution/target: run `mvn package` first, or pass --arodnap.")
+    return launchers[-1]
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     commands = parser.add_subparsers(dest="command", required=True)
@@ -146,7 +153,7 @@ def main() -> int:
     run_parser.add_argument("--all", action="store_true", help="run every project")
     run_parser.add_argument("--work-dir", type=Path, default=REPO / "build" / "real-projects")
     run_parser.add_argument("--record", action="store_true", help="store the results as the expected ones")
-    run_parser.add_argument("--arodnap", help="the arodnap command to run (default: this checkout's Python version)")
+    run_parser.add_argument("--arodnap", help="the arodnap command to run (default: the distribution built in this checkout)")
     args = parser.parse_args()
     if args.command == "list":
         print("\n".join(project["name"] for project in load_projects() if not args.tier or project.get("tier") == args.tier))
@@ -155,7 +162,7 @@ def main() -> int:
     if not names:
         parser.error("name at least one project, or pass --all")
     args.work_dir.mkdir(parents=True, exist_ok=True)
-    arodnap = shlex.split(args.arodnap) if args.arodnap else [sys.executable, "-m", "arodnap.main"]
+    arodnap = shlex.split(args.arodnap) if args.arodnap else [str(built_distribution())]
     return run(names, args.work_dir.resolve(), args.record, arodnap)
 
 

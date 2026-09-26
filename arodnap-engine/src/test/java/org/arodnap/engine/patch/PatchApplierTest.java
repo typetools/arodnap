@@ -143,7 +143,7 @@ class PatchApplierTest {
     }
 
     @Test
-    void ignoringWhitespaceTreatsANoBreakSpaceAsWhitespaceLikeThePythonVersion() {
+    void ignoringWhitespaceTreatsANoBreakSpaceAsWhitespace() {
         // "a b" in UTF-8, one character per byte.
         String withNoBreakSpace = "aÂ b\n";
         assertThat(PatchApplier.collapseWhitespace(withNoBreakSpace)).isEqualTo("a b");

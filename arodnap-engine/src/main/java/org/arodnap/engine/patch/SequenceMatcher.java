@@ -10,7 +10,7 @@ import java.util.Map;
 
 /**
  * A port of Python's {@code difflib.SequenceMatcher} (no junk function, autojunk on), so that
- * patches match the ones Arodnap's Python version made, hunk for hunk.
+ * patches stay the same as earlier Arodnap releases made them, hunk for hunk.
  */
 final class SequenceMatcher {
     /** One opcode: how to turn {@code a[i1:i2]} into {@code b[j1:j2]}. */

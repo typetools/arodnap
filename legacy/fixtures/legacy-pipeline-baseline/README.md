@@ -1,6 +1,6 @@
 # Legacy Pipeline Baseline
 
-This fixture is a normalized copy of `tests/fixtures/gradle-pipeline-baseline`
+This fixture is a normalized copy of `test-projects/gradle-pipeline-baseline`
 for use with the current legacy Arodnap pipeline.
 
 It follows the old layout expected by the existing scripts:
@@ -18,5 +18,5 @@ Do not hand-edit the Java sources here unless the Gradle fixture is updated to
 match. Regenerate this fixture with:
 
 ```bash
-python3 tests/fixtures/sync_legacy_fixture.py
+python3 legacy/fixtures/sync_legacy_fixture.py
 ```

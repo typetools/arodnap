@@ -1,4 +1,5 @@
 # Config.py
+import glob
 import os
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -12,13 +13,21 @@ RLFIXER_RESULTS_FOLDER = os.path.abspath(os.path.join("tool_results", "rlfixer_r
 PATCH_AND_LOGS_FOLDER = os.path.abspath(os.path.join("tool_results", "inference_and_patches"))
 COMPILED_CLASSES_FOLDER = "cf_classes"
 SRC_FILES = "cf_srcs.txt"
-JARS_ROOT = os.path.abspath(os.path.join(REPO_ROOT, "restructure_plugins", "prebuilt_plugin_jars"))
+# The Java stage tools come from an Arodnap distribution (ARODNAP_HOME, see the README).
+JARS_ROOT = os.path.join(os.environ.get("ARODNAP_HOME", ""), "tools")
 # The paper's Error Prone field plugins and Error Prone 2.28 (used by helpers/ep.sh).
 LEGACY_JARS_ROOT = os.path.abspath(os.path.join(HERE, "prebuilt_plugin_jars"))
-OWNING_FIELD_JAR = os.path.join(JARS_ROOT, "OwningFieldFixer-1.0-SNAPSHOT.jar")
-CLOSE_INJECTOR_JAR = os.path.join(JARS_ROOT, "AutoCloseInjector-1.0-SNAPSHOT.jar")
-RLPATCHER_JAR = os.path.join(JARS_ROOT, "RLPatcher-1.0-SNAPSHOT.jar")
-STUBS_FOLDER = os.path.abspath(os.path.join(REPO_ROOT, "checker_framework", "stubs"))
+
+
+def _tool_jar(name):
+    jars = sorted(glob.glob(os.path.join(JARS_ROOT, f"arodnap-{name}-*.jar")))
+    return jars[-1] if jars else os.path.join(JARS_ROOT, f"arodnap-{name}.jar")
+
+
+OWNING_FIELD_JAR = _tool_jar("owning-field-fixer")
+CLOSE_INJECTOR_JAR = _tool_jar("close-injector")
+RLPATCHER_JAR = _tool_jar("rlpatcher")
+STUBS_FOLDER = os.path.abspath(os.path.join(REPO_ROOT, "arodnap-engine", "src", "main", "resources", "org", "arodnap", "engine", "stubs"))
 
 # `javac` flags
 JAVAC_WITH_FLAGS = (
@@ -34,7 +43,8 @@ JAVAC_WITH_FLAGS = (
     "-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED"
 )
 # Checker Framework command
-CF_ROOT = os.path.abspath(os.path.join(REPO_ROOT, "checker_framework", "checker-framework-3.49.0"))
+# Checker Framework 3.49.0, unpacked into legacy/checker-framework-3.49.0 (see the README).
+CF_ROOT = os.path.abspath(os.path.join(HERE, "checker-framework-3.49.0"))
 CF_COMMAND = "-processor org.checkerframework.checker.resourceleak.ResourceLeakChecker -Adetailedmsgtext"
 CF_DIST_JAR_ARG = f"-processorpath {CF_ROOT}/checker/dist/checker.jar"
 CHECKER_QUAL_JAR = f"{CF_ROOT}/checker/dist/checker-qual.jar"

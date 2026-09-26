@@ -13,19 +13,23 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.arodnap.cli.capture.BuildRecording;
 import org.arodnap.cli.capture.JavacRecorder;
+import org.arodnap.engine.tools.ToolCoordinates;
 import org.arodnap.engine.tools.Toolchain;
 
 /**
- * Where an installed {@code arodnap} finds the tools it runs.
+ * Where an installed {@code arodnap} finds the tools it runs: its distribution directory, which
+ * the launcher passes as {@code ARODNAP_HOME}. A distribution holds
  *
- * <p>A distribution has them under its home directory ({@code ARODNAP_HOME}, set by the launcher):
- * {@code tools/}, {@code checker-framework/} and {@code stubs/}. Run from a checkout of the
- * repository, they come from the repository's layout instead.
+ * <pre>
+ * bin/arodnap          the launcher
+ * lib/                 the command line and its libraries
+ * tools/               each tool's jar, under its Maven file name
+ * checker-framework/   checker.jar, checker-qual.jar and checker-util.jar, side by side
+ * stubs/               Arodnap's stub files for the Resource Leak Checker
+ * </pre>
  */
 public record Installation(Toolchain toolchain, BuildRecording.Hooks hooks) {
     private static final Pattern TESTED_JDK = Pattern.compile("\"\\$\\{java_version}\" = (\\d+) \\]");
-    /** JDKs the bundled Checker Framework release is tested on (its wpi.sh lists them). */
-    private static final List<Integer> BUNDLED_TESTED_JDKS = List.of(8, 11, 17, 21, 24, 25, 26);
 
     /** Thrown when the tools cannot be found. */
     public static final class NotFoundException extends Exception {
@@ -42,47 +46,31 @@ public record Installation(Toolchain toolchain, BuildRecording.Hooks hooks) {
      *     the jar itself
      */
     public static Installation locate(Optional<Path> checkerFramework) throws NotFoundException {
-        Path recorder = codeSource();
         Optional<Path> home = Optional.ofNullable(System.getenv("ARODNAP_HOME")).filter(value -> !value.isEmpty()).map(Path::of)
                 .or(() -> Optional.ofNullable(System.getProperty("arodnap.home")).map(Path::of));
-        Path java = Path.of(System.getProperty("java.home"), "bin", "java");
-        if (home.isPresent()) {
-            return distribution(home.get(), checkerFramework, recorder, java);
+        if (home.isEmpty()) {
+            throw new NotFoundException("Cannot find Arodnap's tools: run Arodnap with the bin/arodnap of its distribution, "
+                    + "or set ARODNAP_HOME to the distribution's directory.");
         }
-        for (Path directory = recorder; directory != null; directory = directory.getParent()) {
-            if (Files.isDirectory(directory.resolve("restructure_plugins").resolve("prebuilt_plugin_jars"))) {
-                return checkout(directory, checkerFramework, recorder, java);
-            }
-        }
-        throw new NotFoundException("Cannot find Arodnap's tools: set ARODNAP_HOME to the Arodnap installation directory.");
+        return at(home.get().toAbsolutePath().normalize(), checkerFramework);
     }
 
-    private static Installation distribution(Path home, Optional<Path> checkerFramework, Path recorder, Path java) throws NotFoundException {
+    static Installation at(Path home, Optional<Path> checkerFramework) throws NotFoundException {
         Path tools = home.resolve("tools");
+        if (!Files.isDirectory(tools)) {
+            throw new NotFoundException(home + " is not an Arodnap distribution: it has no tools directory.");
+        }
         Path checker = checkerFramework.isPresent() ? checkerJar(checkerFramework.get()) : home.resolve("checker-framework").resolve("checker.jar");
-        return new Installation(toolchain(checker, home.resolve("stubs"), tools.resolve("close-injector.jar"), tools.resolve("owning-field-fixer.jar"),
-                tools.resolve("rlfixer.jar"), tools.resolve("rlpatcher.jar"), tools.resolve("field-transformations.jar"),
-                tools.resolve("error_prone_core-2.50.0-with-dependencies.jar"), tools.resolve("error_prone_core-2.42.0-with-dependencies.jar"),
-                tools.resolve("dataflow-errorprone-3.41.0-eisop1.jar")),
-                new BuildRecording.Hooks(tools.resolve("ant-capture.jar"), tools.resolve("maven-capture.jar"), recorder, java));
+        Toolchain toolchain = new Toolchain(checker, home.resolve("stubs"), tool(tools, "close-injector"), tool(tools, "owning-field-fixer"),
+                tool(tools, "rlfixer"), tool(tools, "rlpatcher"), tool(tools, "field-transformations"), tool(tools, "error-prone"),
+                tool(tools, "error-prone-jdk17"), tool(tools, "dataflow"), checkerVersion(checker), testedJdks(checker));
+        BuildRecording.Hooks hooks = new BuildRecording.Hooks(tool(tools, "ant-capture"), tool(tools, "maven-capture"), codeSource(),
+                Path.of(System.getProperty("java.home"), "bin", "java"));
+        return new Installation(toolchain, hooks);
     }
 
-    private static Installation checkout(Path root, Optional<Path> checkerFramework, Path recorder, Path java) throws NotFoundException {
-        Path jars = root.resolve("restructure_plugins").resolve("prebuilt_plugin_jars");
-        Path checker = checkerFramework.isPresent() ? checkerJar(checkerFramework.get())
-                : root.resolve("checker_framework/checker-framework-4.2.3/checker/dist/checker.jar");
-        return new Installation(toolchain(checker, root.resolve("checker_framework").resolve("stubs"),
-                jars.resolve("AutoCloseInjector-1.0-SNAPSHOT.jar"), jars.resolve("OwningFieldFixer-1.0-SNAPSHOT.jar"),
-                jars.resolve("RLFixer-1.0-SNAPSHOT.jar"), jars.resolve("RLPatcher-1.0-SNAPSHOT.jar"), jars.resolve("arodnap-field-transformations.jar"),
-                jars.resolve("error_prone_core-2.50.0-with-dependencies.jar"), jars.resolve("error_prone_core-2.42.0-with-dependencies.jar"),
-                jars.resolve("dataflow-errorprone-3.41.0-eisop1.jar")),
-                new BuildRecording.Hooks(jars.resolve("arodnap-ant-capture.jar"), jars.resolve("arodnap-maven-capture.jar"), recorder, java));
-    }
-
-    private static Toolchain toolchain(Path checkerJar, Path stubs, Path closeInjector, Path owningField, Path rlfixer, Path rlpatcher,
-            Path fieldTransformations, Path errorProne, Path errorProneJdk17, Path dataflow) {
-        return new Toolchain(checkerJar, stubs, closeInjector, owningField, rlfixer, rlpatcher, fieldTransformations, errorProne,
-                errorProneJdk17, dataflow, checkerVersion(checkerJar), testedJdks(checkerJar));
+    private static Path tool(Path tools, String name) {
+        return tools.resolve(ToolCoordinates.fileName(name));
     }
 
     private static Path checkerJar(Path given) throws NotFoundException {
@@ -103,7 +91,7 @@ public record Installation(Toolchain toolchain, BuildRecording.Hooks hooks) {
         }
     }
 
-    /** From the distribution's wpi.sh when there is one; the bundled release's list otherwise. */
+    /** From a Checker Framework distribution's wpi.sh when there is one; the bundled release's list otherwise. */
     private static List<Integer> testedJdks(Path checkerJar) {
         Path distribution = checkerJar.toAbsolutePath().getParent();
         for (int i = 0; i < 2 && distribution != null; i++) {
@@ -122,7 +110,8 @@ public record Installation(Toolchain toolchain, BuildRecording.Hooks hooks) {
                 return List.of();
             }
         }
-        return checkerVersion(checkerJar).equals("4.2.3") ? BUNDLED_TESTED_JDKS : List.of();
+        return checkerVersion(checkerJar).equals(ToolCoordinates.checkerFrameworkVersion()) ? ToolCoordinates.CHECKER_FRAMEWORK_TESTED_JDKS
+                : List.of();
     }
 
     /** The jar (or classes directory) this class was loaded from: the recording javac's class path. */

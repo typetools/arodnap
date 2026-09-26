@@ -1,7 +1,9 @@
 package org.arodnap.engine.tools;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +42,29 @@ public record Toolchain(
         Path dataflowJar,
         String checkerFrameworkVersion,
         List<Integer> testedJdks) {
+
+    /** A tool's jar, by its name in {@link ToolCoordinates}: how a front end gets the tools. */
+    @FunctionalInterface
+    public interface Jars<E extends Exception> {
+        Path jar(String tool) throws E;
+    }
+
+    /**
+     * The toolchain of this Arodnap release from its tools' artifacts (resolved by a build plugin).
+     * The Checker Framework's jars are copied side by side into {@code directory/checker-framework}
+     * as {@code checker.jar}, {@code checker-qual.jar} and {@code checker-util.jar}, which is how
+     * the checker finds them; the stubs are extracted into {@code directory/stubs}.
+     */
+    public static <E extends Exception> Toolchain fromArtifacts(Jars<E> jars, Path directory) throws E, IOException {
+        Path checker = Files.createDirectories(directory.resolve("checker-framework"));
+        for (String name : List.of("checker", "checker-qual", "checker-util")) {
+            Files.copy(jars.jar(name), checker.resolve(name + ".jar"), StandardCopyOption.REPLACE_EXISTING);
+        }
+        return new Toolchain(checker.resolve("checker.jar"), Stubs.extract(directory.resolve("stubs")), jars.jar("close-injector"),
+                jars.jar("owning-field-fixer"), jars.jar("rlfixer"), jars.jar("rlpatcher"), jars.jar("field-transformations"),
+                jars.jar("error-prone"), jars.jar("error-prone-jdk17"), jars.jar("dataflow"), ToolCoordinates.checkerFrameworkVersion(),
+                ToolCoordinates.CHECKER_FRAMEWORK_TESTED_JDKS);
+    }
 
     /** Error Prone releases from 2.43 need JDK 21 to run; 2.42.0 is the last one that runs on 17. */
     public static final int LATEST_ERROR_PRONE_MINIMUM_JDK = 21;

@@ -12,21 +12,21 @@ import org.arodnap.engine.json.Json;
 import org.junit.jupiter.api.Test;
 
 /**
- * RLFixer's inputs and outputs from a real run of the coverage fixture, and what the Python version
- * made of them (python-rlfixer-io.json).
+ * RLFixer's inputs and outputs from a real run of the coverage fixture, and what an earlier Arodnap
+ * release made of them (expected-rlfixer-io.json).
  */
 class RlFixerFormatsTest {
     private static final List<CheckerWarning> WARNINGS = CheckerWarning.parseAll(Recorded.text("diagnostics/post_owning_field.txt"));
 
-    private static JsonNode python() throws IOException {
-        return Json.parse(Recorded.text("python-rlfixer-io.json"));
+    private static JsonNode expected() throws IOException {
+        return Json.parse(Recorded.text("expected-rlfixer-io.json"));
     }
 
     @Test
-    void writesTheWarningsFileLikeThePythonVersion() throws IOException {
+    void writesTheWarningsFile() throws IOException {
         RlFixerFormats.WarningsInput input = RlFixerFormats.warningsInput(WARNINGS, Recorded.SOURCE_ROOT);
 
-        assertThat(input.fileContents()).isEqualTo(python().get("warnings_file").asText());
+        assertThat(input.fileContents()).isEqualTo(expected().get("warnings_file").asText());
         assertThat(input.outsideSourceRoot()).isEmpty();
     }
 
@@ -35,7 +35,7 @@ class RlFixerFormatsTest {
         String fixes = Recorded.text("rlfixer/fixes.txt");
         List<RlFixerFormats.FixSuggestion> suggestions = RlFixerFormats.parseFixes(fixes, Recorded.SOURCE_ROOT);
 
-        assertThat(suggestions).hasSize(python().get("fix_count").asInt()).hasSize(RlFixerFormats.countFixes(fixes));
+        assertThat(suggestions).hasSize(expected().get("fix_count").asInt()).hasSize(RlFixerFormats.countFixes(fixes));
         assertThat(suggestions).allSatisfy(suggestion -> assertThat(suggestion.relpath()).doesNotStartWith("/"));
     }
 
@@ -46,7 +46,7 @@ class RlFixerFormatsTest {
         List<String> fixable = new ArrayList<>(table.fixable().stream().map(key -> key.relpath() + ":" + key.line()).toList());
         fixable.sort(null);
         List<String> expected = new ArrayList<>();
-        python().get("fixable").forEach(node -> expected.add(node.asText()));
+        expected().get("fixable").forEach(node -> expected.add(node.asText()));
         assertThat(fixable).isEqualTo(expected);
         assertThat(table.lastStatus(new RlFixerFormats.Key("loop_fixes/EscapedTryCatchInLoop.java", 20))).contains(RlFixerFormats.DebugStatus.UNFIXABLE);
     }
@@ -73,15 +73,15 @@ class RlFixerFormatsTest {
 
         List<String> pairs = matches.stream().map(match -> match.fix().relpath() + ":" + match.fix().line()).toList();
         List<String> expected = new ArrayList<>();
-        python().get("matched").forEach(pair -> expected.add(pair.get(0).asText() + ":" + pair.get(1).asInt()));
+        expected().get("matched").forEach(pair -> expected.add(pair.get(0).asText() + ":" + pair.get(1).asInt()));
         assertThat(pairs).isEqualTo(expected);
         assertThat(matches).allSatisfy(match -> assertThat(match.warning().isLeak()).isTrue());
     }
 
     @Test
-    void writesRlPatchersPromptLikeThePythonVersion() throws IOException {
+    void writesRlPatchersPrompt() throws IOException {
         RlFixerFormats.Match first = matches().get(0);
-        assertThat(RlFixerFormats.rlpatcherPrompt(first.warning(), first.fix())).isEqualTo(python().get("first_prompt").asText());
+        assertThat(RlFixerFormats.rlpatcherPrompt(first.warning(), first.fix())).isEqualTo(expected().get("first_prompt").asText());
     }
 
     @Test
