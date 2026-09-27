@@ -121,8 +121,8 @@
       "expected": {
         "initial": 112,
         "found_during_repair": 14,
-        "fixed": 16,
-        "remaining": 110,
+        "fixed": 15,
+        "remaining": 111,
         "patched_files": 16
       },
       "observed": {
