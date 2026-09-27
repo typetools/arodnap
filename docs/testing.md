@@ -66,6 +66,8 @@ tests:
 - `javac-script/`: no build tool; captured with `-- ./build.sh`
 - `javac-return-cycle/`: a leak returned through a cycle of callers, which RLFixer leaves
 - `javac-field-transformations/`: fields made final or local before analysis
+- `javac-generated-source/`: a source the build generates (and that is already in the
+  project, as after a build) is reported but never repaired or patched
 - `javac-latin1/`: ISO-8859-1 sources compiled for Java 8; `infer` must use the build's
   encoding and release, and `repair` must stop with a clear message
 

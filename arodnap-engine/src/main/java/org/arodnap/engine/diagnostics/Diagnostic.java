@@ -96,7 +96,8 @@ public record Diagnostic(String path, int line, String key, List<String> fields,
         }
     }
 
-    private static String relative(String file, Path root) {
+    /** {@code file} relative to {@code root} (a real path), as warnings are reported; the file itself when outside it. */
+    static String relative(String file, Path root) {
         Path path = realPath(Path.of(file));
         return path.startsWith(root) ? root.relativize(path).toString().replace('\\', '/') : file;
     }

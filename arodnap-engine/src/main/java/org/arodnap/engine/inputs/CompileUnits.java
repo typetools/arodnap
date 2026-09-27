@@ -13,6 +13,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -129,6 +130,27 @@ public final class CompileUnits {
         all.addAll(generated);
         return new ProjectInputs(units, List.copyOf(sources), List.copyOf(generated), List.copyOf(classpath), release, encoding,
                 analysisRoot(all));
+    }
+
+    /**
+     * The inputs with the sources that {@code generated} accepts moved to the generated sources:
+     * files a front end knows the build wrote (for example into its build directory), which are
+     * analyzed but never repaired or patched.
+     */
+    public static ProjectInputs markGenerated(ProjectInputs inputs, Predicate<Path> generated) throws UnsupportedProjectException {
+        List<Path> moved = inputs.sources().stream().filter(generated).toList();
+        if (moved.isEmpty()) {
+            return inputs;
+        }
+        List<Path> sources = inputs.sources().stream().filter(generated.negate()).toList();
+        if (sources.isEmpty()) {
+            throw new UnsupportedProjectException("Every Java source the build compiled was written by the build itself, so there is "
+                    + "nothing Arodnap can repair.");
+        }
+        LinkedHashSet<Path> all = new LinkedHashSet<>(inputs.generatedSources());
+        all.addAll(moved);
+        return new ProjectInputs(inputs.units(), sources, List.copyOf(all), inputs.classpath(), inputs.release(), inputs.encoding(),
+                inputs.sourceRoot());
     }
 
     /**

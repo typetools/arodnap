@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
+import org.arodnap.engine.files.FilePaths;
 import org.arodnap.engine.inputs.CompileUnits;
 import org.arodnap.engine.inputs.ProjectCapture;
 import org.arodnap.engine.inputs.UnsupportedProjectException;
@@ -109,6 +110,7 @@ public abstract class BuildRecording implements ProjectCapture {
         Path buildLog = captureDirectory.resolve("build.log");
         CommandResult result;
         List<String> command;
+        Map<Path, FileTime> sourceTimes;
         try {
             Workspace.deleteTree(captureDirectory);
             Files.createDirectories(captureDirectory);
@@ -117,6 +119,7 @@ public abstract class BuildRecording implements ProjectCapture {
             if (touchSourcesFirst()) {
                 touchJavaSources(workspaceRoot);
             }
+            sourceTimes = javaFileTimes(workspaceRoot);
             Map<String, String> environment = new HashMap<>();
             environment.put("ARODNAP_CAPTURE_FILE", captureFile.toString());
             environment.put("ARODNAP_REAL_JAVAC", realJavac());
@@ -148,6 +151,8 @@ public abstract class BuildRecording implements ProjectCapture {
         List<Path> classpath = inputs.classpath().stream().filter(entry -> !hookDirectory.equals(entry.getParent())).toList();
         inputs = new ProjectInputs(inputs.units(), inputs.sources(), inputs.generatedSources(), classpath, inputs.release(), inputs.encoding(),
                 inputs.sourceRoot());
+        // A source the build created or rewrote (e.g. a parser generated into target/) is analyzed, never repaired.
+        inputs = CompileUnits.markGenerated(inputs, source -> writtenByBuild(source, sourceTimes));
         BuildDescription build = new BuildDescription(buildSystem(), buildSystem(), buildFile, List.of(command.get(0)),
                 buildToolSource(command.get(0)), options.compileTarget().orElse(""), command);
         return new CapturedProject(inputs, build, List.of(captureFile, buildLog));
@@ -181,6 +186,27 @@ public abstract class BuildRecording implements ProjectCapture {
             return system;
         }
         throw new UnsupportedProjectException(system + " not found. Install it or add ./" + wrapper + " to the project.");
+    }
+
+    /** Every Java file in the workspace, with when it was last written. */
+    private static Map<Path, FileTime> javaFileTimes(Path root) throws IOException {
+        Map<Path, FileTime> times = new HashMap<>();
+        try (Stream<Path> files = Files.walk(FilePaths.real(root))) {
+            for (Path file : files.filter(path -> path.toString().endsWith(".java") && Files.isRegularFile(path)).toList()) {
+                times.put(file, Files.getLastModifiedTime(file));
+            }
+        }
+        return times;
+    }
+
+    /** True when the build created {@code source}, or wrote it again, since {@code before} was taken. */
+    static boolean writtenByBuild(Path source, Map<Path, FileTime> before) {
+        FileTime then = before.get(source);
+        try {
+            return then == null || !then.equals(Files.getLastModifiedTime(source));
+        } catch (IOException e) {
+            return true;
+        }
     }
 
     private static void touchJavaSources(Path root) throws IOException {

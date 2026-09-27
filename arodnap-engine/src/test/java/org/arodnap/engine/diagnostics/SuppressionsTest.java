@@ -81,18 +81,31 @@ class SuppressionsTest {
     }
 
     @Test
-    void theRepairableOutputLeavesOutOnlySuppressedWarnings() {
-        String diagnostics = warning(lineOf("// returned")) + warning(lineOf("// unmarked local")) + warning(lineOf("// nested"))
-                + "3 warnings\n";
+    void theRepairStagesGetOnlyWarningsOutsideSuppressedCode() throws IOException {
+        String diagnostics = warning(file, lineOf("// returned")) + warning(file, lineOf("// unmarked local"))
+                + warning(file, lineOf("// nested")) + "3 warnings\n";
+        RepairScope scope = RepairScope.of(diagnostics, List.of(), StandardCharsets.UTF_8);
 
-        String repairable = suppressions.repairable(diagnostics);
+        String repairable = scope.repairable(diagnostics);
 
         assertThat(CheckerWarning.parseAll(repairable)).extracting(CheckerWarning::line).containsExactly(lineOf("// unmarked local"));
         assertThat(repairable).endsWith("3 warnings\n");
+        assertThat(scope.withheldWarnings(diagnostics, directory)).extracting(RepairScope.Withheld::reason)
+                .containsExactly(RepairScope.SUPPRESSED, RepairScope.SUPPRESSED);
     }
 
-    private String warning(int line) {
-        return file + ":" + line + ": warning: [required.method.not.called] $$ 4 $$ method close $$ open() $$ java.io.InputStream $$ "
+    @Test
+    void noWarningInAGeneratedFileGoesToTheRepairStages() throws IOException {
+        Path generated = Files.writeString(directory.resolve("Generated.java"), "class Generated {}\n");
+        String diagnostics = warning(generated, 1) + warning(file, lineOf("// unmarked local"));
+        RepairScope scope = RepairScope.of(diagnostics, List.of(generated), StandardCharsets.UTF_8);
+
+        assertThat(CheckerWarning.parseAll(scope.repairable(diagnostics))).extracting(CheckerWarning::file).containsExactly(file.toString());
+        assertThat(scope.withheldWarnings(diagnostics, directory)).containsExactly(new RepairScope.Withheld("Generated.java", 1, "generated"));
+    }
+
+    private static String warning(Path source, int line) {
+        return source + ":" + line + ": warning: [required.method.not.called] $$ 4 $$ method close $$ open() $$ java.io.InputStream $$ "
                 + "possible exceptional exit $$ ( 1, 2 ) $$ [required.method.not.called]\n        open();\n        ^\n";
     }
 

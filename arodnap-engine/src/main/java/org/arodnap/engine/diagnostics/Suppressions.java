@@ -108,20 +108,6 @@ public final class Suppressions {
                 .anyMatch(range -> range.first() <= line && line <= range.last());
     }
 
-    /** The checker's output without the warnings in suppressed declarations: what the repair stages see. */
-    public String repairable(String diagnostics) {
-        List<CheckerWarning.Block> blocks = CheckerWarning.blocks(diagnostics);
-        StringBuilder kept = new StringBuilder();
-        int from = 0;
-        for (CheckerWarning.Block block : blocks) {
-            if (covers(Path.of(block.warning().file()), block.warning().line())) {
-                kept.append(diagnostics, from, block.start());
-                from = block.end();
-            }
-        }
-        return kept.append(diagnostics.substring(from)).toString();
-    }
-
     /** The source files the checker's output has warnings in. */
     public static Set<Path> filesWithWarnings(String diagnostics) {
         Set<Path> files = new LinkedHashSet<>();

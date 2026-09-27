@@ -13,6 +13,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 import org.arodnap.engine.Snapshots;
 import org.arodnap.engine.Version;
 import org.arodnap.engine.apply.BundleApplier;
@@ -80,8 +81,8 @@ class RepairPipelineTest {
                 Optional.empty());
     }
 
-    /** The project's inputs, as a front end would capture them in the copy. */
-    private static ProjectCapture capture() {
+    /** The project's inputs, as a front end would capture them in the copy; {@code generated} are files the build wrote. */
+    private static ProjectCapture capture(String... generated) {
         return new ProjectCapture() {
             @Override
             public BuildDescription detect(Path root) {
@@ -93,7 +94,8 @@ class RepairPipelineTest {
                 Path source = FilePaths.real(root.resolve("src/demo/Demo.java"));
                 CompileUnit unit = new CompileUnit(root, List.of(source), List.of(), Optional.empty(), Optional.empty(), Optional.of(17),
                         Optional.of("UTF-8"), List.of(), List.of(), Optional.empty());
-                ProjectInputs inputs = new ProjectInputs(List.of(unit), List.of(source), List.of(), List.of(), Optional.of(17),
+                List<Path> generatedSources = Stream.of(generated).map(file -> FilePaths.real(root.resolve(file))).toList();
+                ProjectInputs inputs = new ProjectInputs(List.of(unit), List.of(source), generatedSources, List.of(), Optional.of(17),
                         Optional.of("UTF-8"), source.getParent().getParent());
                 return new CapturedProject(inputs, detect(root), List.of());
             }
@@ -203,6 +205,44 @@ class RepairPipelineTest {
         // The checker's output keeps the warning; the repair stages get it without.
         assertThat(Files.readString(temp.resolve("out/diagnostics/initial.txt"))).contains("Demo.java:9: warning");
         assertThat(Files.readString(temp.resolve("out/logs/initial/repairable-diagnostics.txt"))).doesNotContain("Demo.java:9: warning");
+    }
+
+    @Test
+    void aLeakInAGeneratedFileIsReportedButNotRepaired() throws Exception {
+        writeGeneratedFile();
+        tools.diagnostics.add(LEAK.replace("src/demo/Demo.java:8:", "src/gen/Gen.java:3:"));
+        tools.rlfixer = command -> {
+            throw new AssertionError("RLFixer must not get a leak in a file the build generates");
+        };
+
+        engine().repair(settings(), capture("src/gen/Gen.java"));
+
+        JsonNode report = Json.read(temp.resolve("out/report.json"));
+        assertThat(report.at("/leaks/warnings/0/file").asText()).isEqualTo("src/gen/Gen.java");
+        assertThat(report.at("/leaks/warnings/0/reason").asText()).isEqualTo("generated");
+        assertThat(tools.ran()).doesNotContain("rlfixer");
+    }
+
+    @Test
+    void aGeneratedFileAToolChangedStaysOutOfThePatch() throws Exception {
+        // In the project too, as after `mvn compile`: only knowing it is generated keeps it out.
+        writeGeneratedFile();
+        tools.diagnostics.add("");
+        tools.diagnostics.add("");
+        tools.closeInjector = FakeTools.writesPatch(root -> "--- src/gen/Gen.java\n+++ src/gen/Gen.java\n@@ -1 +1,2 @@\n package gen;\n"
+                + "+// changed\n");
+
+        engine().repair(settings(), capture("src/gen/Gen.java"));
+
+        JsonNode bundle = Json.read(temp.resolve("out/stages/bundle/stage_result.json"));
+        assertThat(bundle.get("changed_files")).isEmpty();
+        assertThat(bundle.get("notes").toString()).contains("Left out 1 file(s) the build generates.");
+        assertThat(Json.read(temp.resolve("out/patches/manifest.json")).get("patches")).isEmpty();
+    }
+
+    private void writeGeneratedFile() throws IOException {
+        Files.createDirectories(project.resolve("src/gen"));
+        Files.writeString(project.resolve("src/gen/Gen.java"), "package gen;\n\npublic class Gen {}\n");
     }
 
     @Test

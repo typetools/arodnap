@@ -82,6 +82,7 @@
     "release": 17,
     "repairable_diagnostics_path": "{TEMP}/out/logs/final/repairable-diagnostics.txt",
     "source_files_file": "{TEMP}/out/logs/final/source-files.txt",
+    "unrepairable_warnings_path": "{TEMP}/out/logs/final/unrepairable-warnings.json",
     "warning_count": 0,
     "workspace_root": "{WORK}/demo-project",
     "wpi_log_path": "{TEMP}/out/logs/final/wpi.log"

@@ -127,6 +127,47 @@ class ArodnapPluginFunctionalTest {
     }
 
     @Test
+    void aSourceTheBuildGeneratesIsReportedButNeverPatched() throws IOException {
+        Files.writeString(project.resolve("settings.gradle"), "rootProject.name = 'single'\n");
+        Files.writeString(project.resolve("build.gradle"), """
+                plugins {
+                    id 'java'
+                    id 'org.arodnap'
+                }
+
+                repositories {
+                    mavenLocal()
+                    mavenCentral()
+                }
+
+                // A code generator: writes build/generated/sources/demo, which is compiled with src/.
+                def generateDemo = tasks.register('generateDemo', Copy) {
+                    from 'templates'
+                    into layout.buildDirectory.dir('generated/sources/demo')
+                    rename { it.replace('.java.txt', '.java') }
+                }
+                sourceSets.main.java.srcDir(generateDemo)
+                """);
+        Files.createDirectories(project.resolve(SOURCE).getParent());
+        Files.writeString(project.resolve(SOURCE), LEAKY);
+        Files.createDirectories(project.resolve("templates/demo"));
+        Files.writeString(project.resolve("templates/demo/Generated.java.txt"), LEAKY.replace("class FirstByte", "class Generated"));
+
+        gradle(GradleVersion.current().getVersion(), "arodnapRepair").build();
+
+        Path out = project.resolve("build/arodnap");
+        JsonNode report = json(out.resolve("report.json"));
+        assertThat(report.get("success").asBoolean()).as(report.path("error").asText()).isTrue();
+        List<String> leaks = new ArrayList<>();
+        report.at("/leaks/warnings").forEach(leak -> leaks.add(leak.get("file").asText() + " " + leak.get("status").asText()));
+        assertThat(leaks).containsExactlyInAnyOrder(SOURCE + " fixed", "build/generated/sources/demo/demo/Generated.java remaining");
+        assertThat(report.at("/leaks/summary/remaining_by_reason/generated").asInt()).isEqualTo(1);
+        List<String> changed = new ArrayList<>();
+        json(out.resolve("patches/manifest.json")).at("/patches/0/changed_files").forEach(file -> changed.add(file.asText()));
+        assertThat(changed).containsExactly(SOURCE);
+    }
+
+    @Test
     void doctorAnalyzeAndInferEachWriteTheirOutput() throws IOException {
         Files.writeString(project.resolve("settings.gradle"), "rootProject.name = 'single'\n");
         Files.writeString(project.resolve("build.gradle"), """

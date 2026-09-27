@@ -113,6 +113,9 @@ public final class FieldTransformationsStage {
             String classpath = String.join(File.pathSeparator, classpathEntries);
             List<String> language = Jdk.languageOptions(inputs.release(), inputs.encoding());
 
+            // Generated files are compiled with the rest but never changed: the build writes them again.
+            Set<Path> generated = new HashSet<>();
+            inputs.generatedSources().forEach(source -> generated.add(FilePaths.real(source)));
             Map<Path, byte[]> originals = new LinkedHashMap<>();
             for (Path source : sources) {
                 if (Files.isRegularFile(source)) {
@@ -162,9 +165,14 @@ public final class FieldTransformationsStage {
                 Set<Path> edited = new HashSet<>();
                 for (Map.Entry<Path, byte[]> entry : before.entrySet()) {
                     if (!Arrays.equals(Files.readAllBytes(entry.getKey()), entry.getValue())) {
-                        edited.add(entry.getKey());
+                        if (generated.contains(entry.getKey())) {
+                            Files.write(entry.getKey(), entry.getValue());
+                        } else {
+                            edited.add(entry.getKey());
+                        }
                     }
                 }
+                matched.removeIf(match -> generated.contains(match.file()));
                 Set<Path> undone = compileUntilClean(context, classpath, language, sourcesFile, before, edited, log, name);
                 dropped.addAll(undone);
                 for (Match match : matched) {

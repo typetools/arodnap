@@ -158,6 +158,21 @@ class RealRepairIT {
     }
 
     @Test
+    void aSourceTheBuildGeneratesIsReportedButNeverPatched() throws Exception {
+        Repaired repaired = repairAndApply("javac-generated-source", List.of("./build.sh"), List.of("./build.sh"));
+
+        assertThat(repaired.bundleFiles()).containsExactly("src/demo/FirstByte.java");
+        List<String> generated = new ArrayList<>();
+        repaired.report().at("/leaks/warnings").forEach(leak -> {
+            if (leak.get("file").asText().startsWith("gen/")) {
+                generated.add(leak.get("file").asText() + " " + leak.get("status").asText() + " " + leak.get("reason").asText());
+            }
+        });
+        assertThat(generated).containsExactly("gen/demo/Generated.java remaining generated");
+        assertThat(read(repaired, "src/demo/FirstByte.java")).contains("try (FileInputStream in = new FileInputStream(path))");
+    }
+
+    @Test
     void aLeakReturnedThroughACycleOfCallersIsLeftUnfixed() throws Exception {
         Repaired repaired = repairAndApply("javac-return-cycle", List.of("./build.sh"), List.of("./build.sh"));
 

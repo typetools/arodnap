@@ -209,6 +209,10 @@ resource handed to a caller or kept by the object that is returned. The Resource
 Leak Checker does not honor that key, so it still reports those leaks; Arodnap
 lists them in the report as `suppressed` and does not repair them.
 
+Files the build generates (a parser generator's output, annotation processor
+output) are analyzed with the rest, but their leaks are listed as `generated` and
+never repaired, and they are never in the patch: the build writes them again.
+
 ## How Arodnap Sees Your Build
 
 The plugins read the build's model directly: each Maven module's compile source
@@ -225,8 +229,10 @@ task. The command line instead runs the project's build and records every
 
 All recorded sources are analyzed together (every module of a multi-module
 build), with the dependencies the build resolved, and with the build's own
-`--release` level and `-encoding` (release levels below 8 are analyzed as 8). Files the build generates,
-such as annotation processor output, are analyzed but never patched.
+`--release` level and `-encoding` (release levels below 8 are analyzed as 8). Files the build generates
+are analyzed but never repaired or patched: for the command line, the sources the recorded
+build created or wrote again; for the plugins, the sources in a project's build directory
+(`target/`, `build/`) and annotation processor output.
 
 Not supported yet (Arodnap stops with a clear message):
 

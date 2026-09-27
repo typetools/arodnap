@@ -15,7 +15,7 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
-import org.arodnap.engine.diagnostics.Suppressions;
+import org.arodnap.engine.diagnostics.RepairScope;
 import org.arodnap.engine.jdk.Jdk;
 import org.arodnap.engine.json.Json;
 import org.arodnap.engine.pipeline.OutputLayout;
@@ -89,7 +89,7 @@ public final class Analyzer {
                 }
             }
             return new Analysis(label, context.workspace().root(), files.wpiLog(), files.inferenceDirectory(), files.diagnostics(),
-                    files.repairableDiagnostics(), warnings, files.sourceFiles(), files.appClasses(), files.classpathEntries(), files.adapterMetadata(),
+                    files.repairableDiagnostics(), files.unrepairableWarnings(), warnings, files.sourceFiles(), files.appClasses(), files.classpathEntries(), files.adapterMetadata(),
                     inputs.release(), inputs.encoding(), notes);
         } catch (IOException e) {
             throw new AnalysisException("Could not write the analysis files for " + label + ": " + e.getMessage(), e);
@@ -167,8 +167,17 @@ public final class Analyzer {
                 throw new AnalysisException("RLC failed for " + context.workspace().root() + ". See diagnostics: " + files.diagnostics());
             }
             Charset encoding = context.inputs().encoding().map(Charset::forName).orElse(StandardCharsets.UTF_8);
-            Suppressions suppressions = Suppressions.find(Suppressions.filesWithWarnings(diagnostics), encoding);
-            Files.writeString(files.repairableDiagnostics(), suppressions.repairable(diagnostics), StandardCharsets.UTF_8);
+            RepairScope scope = RepairScope.of(diagnostics, context.inputs().generatedSources(), encoding);
+            Files.writeString(files.repairableDiagnostics(), scope.repairable(diagnostics), StandardCharsets.UTF_8);
+            List<Map<String, Object>> withheld = new ArrayList<>();
+            for (RepairScope.Withheld warning : scope.withheldWarnings(diagnostics, context.workspace().root())) {
+                Map<String, Object> json = new LinkedHashMap<>();
+                json.put("file", warning.file());
+                json.put("line", warning.line());
+                json.put("reason", warning.reason());
+                withheld.add(json);
+            }
+            Json.writeFile(files.unrepairableWarnings(), withheld, true);
             return countWarnings(diagnostics);
         } finally {
             Workspace.deleteTree(classes);

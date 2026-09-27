@@ -61,7 +61,8 @@ public class ArodnapPlugin implements Plugin<Project> {
             for (Project each : project.getAllprojects()) {
                 TaskCollection<JavaCompile> compile = each.getTasks().withType(JavaCompile.class).matching(it -> it.getName().equals("compileJava"));
                 run.dependsOn(compile);
-                run.getCompileTasks().add(new RunTask.CompileSource(compile, each.getProjectDir()));
+                run.getCompileTasks().add(new RunTask.CompileSource(compile, each.getProjectDir(),
+                        each.getLayout().getBuildDirectory().get().getAsFile()));
             }
             for (String tool : ToolCoordinates.TOOLCHAIN) {
                 Configuration configuration = project.getConfigurations().maybeCreate("arodnap_" + tool.replace('-', '_'));
