@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.arodnap</groupId>
+        <groupId>io.github.iamsanjaymalakar</groupId>
         <artifactId>arodnap-parent</artifactId>
         <version>2.0.0-SNAPSHOT</version>
     </parent>
@@ -23,14 +23,14 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.arodnap</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>arodnap-cli</artifactId>
             <version>${project.version}</version>
         </dependency>
         <!-- Arodnap's tools go into tools/, not lib/, so they are provided (and kept off the tests'
              class path). Each is one self-contained jar. -->
         <dependency>
-            <groupId>org.arodnap</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>arodnap-close-injector</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
@@ -42,7 +42,7 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.arodnap</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>arodnap-owning-field-fixer</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
@@ -54,7 +54,7 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.arodnap</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>arodnap-rlfixer</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
@@ -66,7 +66,7 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.arodnap</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>arodnap-rlpatcher</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
@@ -78,7 +78,7 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.arodnap</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>arodnap-field-transformations</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
@@ -90,7 +90,7 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.arodnap</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>arodnap-ant-capture</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
@@ -102,7 +102,7 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.arodnap</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>arodnap-maven-capture</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
@@ -256,13 +256,13 @@
                         <arodnap.testProjects>${project.basedir}/../test-projects</arodnap.testProjects>
                     </systemPropertyVariables>
                     <classpathDependencyExcludes>
-                        <classpathDependencyExclude>org.arodnap:arodnap-close-injector</classpathDependencyExclude>
-                        <classpathDependencyExclude>org.arodnap:arodnap-owning-field-fixer</classpathDependencyExclude>
-                        <classpathDependencyExclude>org.arodnap:arodnap-rlfixer</classpathDependencyExclude>
-                        <classpathDependencyExclude>org.arodnap:arodnap-rlpatcher</classpathDependencyExclude>
-                        <classpathDependencyExclude>org.arodnap:arodnap-field-transformations</classpathDependencyExclude>
-                        <classpathDependencyExclude>org.arodnap:arodnap-ant-capture</classpathDependencyExclude>
-                        <classpathDependencyExclude>org.arodnap:arodnap-maven-capture</classpathDependencyExclude>
+                        <classpathDependencyExclude>${project.groupId}:arodnap-close-injector</classpathDependencyExclude>
+                        <classpathDependencyExclude>${project.groupId}:arodnap-owning-field-fixer</classpathDependencyExclude>
+                        <classpathDependencyExclude>${project.groupId}:arodnap-rlfixer</classpathDependencyExclude>
+                        <classpathDependencyExclude>${project.groupId}:arodnap-rlpatcher</classpathDependencyExclude>
+                        <classpathDependencyExclude>${project.groupId}:arodnap-field-transformations</classpathDependencyExclude>
+                        <classpathDependencyExclude>${project.groupId}:arodnap-ant-capture</classpathDependencyExclude>
+                        <classpathDependencyExclude>${project.groupId}:arodnap-maven-capture</classpathDependencyExclude>
                     </classpathDependencyExcludes>
                 </configuration>
             </plugin>

@@ -10,7 +10,9 @@ class ToolCoordinatesTest {
         for (String tool : java.util.stream.Stream.concat(ToolCoordinates.TOOLCHAIN.stream(), ToolCoordinates.CAPTURE_HOOKS.stream()).toList()) {
             assertThat(ToolCoordinates.of(tool)).matches("[\\w.-]+:[\\w.-]+(:[\\w.-]+)?:[\\w.-]+").doesNotContain("${");
         }
-        assertThat(ToolCoordinates.of("rlfixer")).isEqualTo("org.arodnap:arodnap-rlfixer:" + ToolCoordinates.arodnapVersion());
+        assertThat(ToolCoordinates.of("rlfixer"))
+                .isEqualTo(ToolCoordinates.arodnapGroup() + ":arodnap-rlfixer:" + ToolCoordinates.arodnapVersion());
+        assertThat(ToolCoordinates.arodnapGroup()).isEqualTo("io.github.iamsanjaymalakar");
     }
 
     @Test

@@ -96,6 +96,37 @@ jobs:
             arodnap-gradle-plugin/build/reports/tests/
           if-no-files-found: ignore
 
+  published-artifacts:
+    name: Works from published artifacts
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+      - uses: gradle/actions/setup-gradle@v6
+        with:
+          gradle-version: "9.1.0"
+      # Everything a release publishes, into a folder standing in for Maven Central; then each
+      # front end repairs a test project from empty caches, with only that folder, Maven Central
+      # and the Gradle Plugin Portal to download from.
+      - name: Publish into a local folder
+        run: python3 scripts/published_artifacts.py stage
+      - name: Repair with the published plugins and command line
+        run: python3 scripts/published_artifacts.py check
+      - name: Keep the logs
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: published-artifacts-logs
+          path: |
+            build/*.log
+            build/published-check/*.log
+          if-no-files-found: ignore
+
   real-projects-quick:
     name: Real projects (quick)
     uses: ./.github/workflows/real-projects.yml

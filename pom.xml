@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.arodnap</groupId>
+    <groupId>io.github.iamsanjaymalakar</groupId>
     <artifactId>arodnap-parent</artifactId>
     <version>2.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
@@ -61,6 +61,11 @@
         <errorprone.jdk17.version>2.42.0</errorprone.jdk17.version>
         <dataflow.version>3.41.0-eisop1</dataflow.version>
         <maven.version>3.9.11</maven.version>
+        <!-- The release's Central upload: published and waited for, since the Gradle plugin that
+             follows needs the engine there. The release workflow's dry run uploads and validates
+             only (false, validated). -->
+        <arodnap.central.autoPublish>true</arodnap.central.autoPublish>
+        <arodnap.central.waitUntil>published</arodnap.central.waitUntil>
     </properties>
 
     <!-- JUnit is managed artifact by artifact, not with its BOM: the BOM would also pin the JUnit
@@ -68,12 +73,12 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>org.arodnap</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>arodnap-model</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.arodnap</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>arodnap-engine</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -219,9 +224,9 @@
                         <extensions>true</extensions>
                         <configuration>
                             <publishingServerId>central</publishingServerId>
-                            <!-- The Gradle plugin is published next, and needs the engine on Central. -->
-                            <autoPublish>true</autoPublish>
-                            <waitUntil>published</waitUntil>
+                            <deploymentName>Arodnap ${project.version}</deploymentName>
+                            <autoPublish>${arodnap.central.autoPublish}</autoPublish>
+                            <waitUntil>${arodnap.central.waitUntil}</waitUntil>
                         </configuration>
                     </plugin>
                 </plugins>

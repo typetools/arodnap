@@ -103,7 +103,8 @@ class Plugins:
 
     name = "plugin"
 
-    def __init__(self, version: str):
+    def __init__(self, group: str, version: str):
+        self.group = group
         self.version = version
 
     def supports(self, project: dict) -> bool:
@@ -118,7 +119,7 @@ class Plugins:
     def _command(self, project: dict, clone_dir: Path, out_dir: Path, goal: str) -> list[str]:
         if project["build"] == "maven":
             maven = str(clone_dir / "mvnw") if (clone_dir / "mvnw").is_file() else "mvn"
-            plugin = f"org.arodnap:arodnap-maven-plugin:{self.version}:{goal}"
+            plugin = f"{self.group}:arodnap-maven-plugin:{self.version}:{goal}"
             return [maven, "-B", "-ntp", *(["compile"] if goal == "repair" else []), plugin, f"-Darodnap.outputDirectory={out_dir}"]
         init_script = out_dir.parent / "arodnap.init.gradle"
         init_script.write_text(f"""initscript {{
@@ -128,7 +129,7 @@ class Plugins:
         gradlePluginPortal()
     }}
     dependencies {{
-        classpath("org.arodnap:arodnap-gradle-plugin:{self.version}")
+        classpath("{self.group}:arodnap-gradle-plugin:{self.version}")
     }}
 }}
 rootProject {{
@@ -264,12 +265,13 @@ def built_distribution() -> Path:
     return launchers[-1]
 
 
-def arodnap_version() -> str:
-    """The version this checkout builds, from the parent POM."""
-    match = re.search(r"<artifactId>arodnap-parent</artifactId>\s*<version>([^<]+)</version>", (REPO / "pom.xml").read_text())
+def arodnap_coordinates() -> tuple[str, str]:
+    """The group and version this checkout builds, from the parent POM."""
+    match = re.search(r"<groupId>([^<]+)</groupId>\s*<artifactId>arodnap-parent</artifactId>\s*<version>([^<]+)</version>",
+                      (REPO / "pom.xml").read_text())
     if not match:
-        sys.exit("Cannot read Arodnap's version from pom.xml.")
-    return match.group(1)
+        sys.exit("Cannot read Arodnap's group and version from pom.xml.")
+    return match.group(1), match.group(2)
 
 
 def main() -> int:
@@ -297,7 +299,7 @@ def main() -> int:
         parser.error("name at least one project, or pass --all")
     args.work_dir.mkdir(parents=True, exist_ok=True)
     if args.via == "plugin":
-        front_end = Plugins(arodnap_version())
+        front_end = Plugins(*arodnap_coordinates())
     else:
         front_end = CommandLine(shlex.split(args.arodnap) if args.arodnap else [str(built_distribution())])
     return run(names, args.work_dir.resolve(), args.record, front_end, args.tests)

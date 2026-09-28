@@ -18,7 +18,7 @@ class ArodnapPluginTest {
     @Test
     void registersItsTasksWithDefaults() {
         Project project = ProjectBuilder.builder().withProjectDir(directory).build();
-        project.getPluginManager().apply("org.arodnap");
+        project.getPluginManager().apply("io.github.iamsanjaymalakar.arodnap");
 
         for (String task : new String[] {"arodnapRepair", "arodnapAnalyze", "arodnapInfer", "arodnapDoctor", "arodnapApply"}) {
             assertThat(project.getTasks().getByName(task).getGroup()).isEqualTo("arodnap");
@@ -33,7 +33,7 @@ class ArodnapPluginTest {
     @Test
     void theToolsAreTheEnginesArtifacts() {
         Project project = ProjectBuilder.builder().withProjectDir(directory).build();
-        project.getPluginManager().apply("org.arodnap");
+        project.getPluginManager().apply("io.github.iamsanjaymalakar.arodnap");
         RunTask repair = (RunTask) project.getTasks().getByName("arodnapRepair");
 
         assertThat(repair.getTools()).containsOnlyKeys(ToolCoordinates.TOOLCHAIN);
@@ -46,7 +46,7 @@ class ArodnapPluginTest {
         Project root = ProjectBuilder.builder().withProjectDir(directory).build();
         Project core = ProjectBuilder.builder().withName("core").withParent(root).build();
         Project app = ProjectBuilder.builder().withName("app").withParent(root).build();
-        root.getPluginManager().apply("org.arodnap");
+        root.getPluginManager().apply("io.github.iamsanjaymalakar.arodnap");
         core.getPluginManager().apply("java");
         app.getPluginManager().apply("java");
 

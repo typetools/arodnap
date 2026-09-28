@@ -44,6 +44,11 @@ public final class ToolCoordinates {
         return of("checkerframework.version");
     }
 
+    /** The Maven group Arodnap's own artifacts, tools included, are published under. */
+    public static String arodnapGroup() {
+        return of("arodnap.group");
+    }
+
     public static String arodnapVersion() {
         return of("arodnap.version");
     }

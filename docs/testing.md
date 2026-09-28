@@ -82,6 +82,9 @@ push to `master`:
 - `build`: `mvn verify` on JDK 17, 21 and 25 (Ubuntu) and JDK 21 (macOS)
 - `e2e`: the end-to-end, tool contract, Maven plugin and Gradle plugin tests on JDK 17, 21
   and 25 with Gradle, Maven and Ant installed; a skipped test fails the job
+- `published-artifacts`: publishes everything into a local folder and repairs a test project
+  with the Maven plugin, the Gradle plugin and the command-line zip from there, from empty
+  caches (`scripts/published_artifacts.py`; see [`releasing.md`](releasing.md))
 - `real-projects-quick`: the real projects marked `"tier": "quick"` (minutes each)
 
 [`.github/workflows/real-projects.yml`](../.github/workflows/real-projects.yml) runs every

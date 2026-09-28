@@ -65,7 +65,7 @@ class ArodnapPluginFunctionalTest {
         assumeTrue(!gradleVersion.equals(OLDEST_GRADLE) || Runtime.version().feature() <= 24, "Gradle 8.14 runs on JDK 24 and older");
         copy(TEST_PROJECTS.resolve("gradle-multimodule"), project);
         Path buildFile = project.resolve("build.gradle");
-        Files.writeString(buildFile, "plugins {\n    id 'org.arodnap'\n}\n\nrepositories {\n    mavenLocal()\n    mavenCentral()\n}\n\n"
+        Files.writeString(buildFile, "plugins {\n    id 'io.github.iamsanjaymalakar.arodnap'\n}\n\nrepositories {\n    mavenLocal()\n    mavenCentral()\n}\n\n"
                 + Files.readString(buildFile));
         String original = Files.readString(project.resolve(CORE));
 
@@ -94,7 +94,7 @@ class ArodnapPluginFunctionalTest {
         Files.writeString(project.resolve("build.gradle.kts"), """
                 plugins {
                     java
-                    id("org.arodnap")
+                    id("io.github.iamsanjaymalakar.arodnap")
                 }
 
                 repositories {
@@ -132,7 +132,7 @@ class ArodnapPluginFunctionalTest {
         Files.writeString(project.resolve("build.gradle"), """
                 plugins {
                     id 'java'
-                    id 'org.arodnap'
+                    id 'io.github.iamsanjaymalakar.arodnap'
                 }
 
                 repositories {
@@ -173,7 +173,7 @@ class ArodnapPluginFunctionalTest {
         Files.writeString(project.resolve("build.gradle"), """
                 plugins {
                     id 'java'
-                    id 'org.arodnap'
+                    id 'io.github.iamsanjaymalakar.arodnap'
                 }
 
                 repositories {

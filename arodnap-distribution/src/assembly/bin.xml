@@ -50,10 +50,10 @@
             <scope>provided</scope>
             <useTransitiveDependencies>false</useTransitiveDependencies>
             <includes>
-                <include>org.arodnap:*</include>
+                <include>${project.groupId}:*</include>
             </includes>
             <excludes>
-                <exclude>org.arodnap:arodnap-cli</exclude>
+                <exclude>${project.groupId}:arodnap-cli</exclude>
             </excludes>
         </dependencySet>
     </dependencySets>

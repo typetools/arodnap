@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.arodnap</groupId>
+        <groupId>io.github.iamsanjaymalakar</groupId>
         <artifactId>arodnap-parent</artifactId>
         <version>2.0.0-SNAPSHOT</version>
     </parent>
@@ -24,7 +24,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.arodnap</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>arodnap-engine</artifactId>
         </dependency>
         <dependency>
@@ -47,7 +47,7 @@
         </dependency>
         <!-- The tools the goals download; the integration tests install them from this build. -->
         <dependency>
-            <groupId>org.arodnap</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>arodnap-close-injector</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
@@ -59,7 +59,7 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.arodnap</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>arodnap-owning-field-fixer</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
@@ -71,7 +71,7 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.arodnap</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>arodnap-rlfixer</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
@@ -83,7 +83,7 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.arodnap</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>arodnap-rlpatcher</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
@@ -95,7 +95,7 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.arodnap</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>arodnap-field-transformations</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
@@ -151,11 +151,11 @@
                             <postBuildHookScript>verify</postBuildHookScript>
                             <streamLogsOnFailures>true</streamLogsOnFailures>
                             <extraArtifacts>
-                                <extraArtifact>org.arodnap:arodnap-close-injector:${project.version}:jar</extraArtifact>
-                                <extraArtifact>org.arodnap:arodnap-owning-field-fixer:${project.version}:jar</extraArtifact>
-                                <extraArtifact>org.arodnap:arodnap-rlfixer:${project.version}:jar</extraArtifact>
-                                <extraArtifact>org.arodnap:arodnap-rlpatcher:${project.version}:jar</extraArtifact>
-                                <extraArtifact>org.arodnap:arodnap-field-transformations:${project.version}:jar</extraArtifact>
+                                <extraArtifact>${project.groupId}:arodnap-close-injector:${project.version}:jar</extraArtifact>
+                                <extraArtifact>${project.groupId}:arodnap-owning-field-fixer:${project.version}:jar</extraArtifact>
+                                <extraArtifact>${project.groupId}:arodnap-rlfixer:${project.version}:jar</extraArtifact>
+                                <extraArtifact>${project.groupId}:arodnap-rlpatcher:${project.version}:jar</extraArtifact>
+                                <extraArtifact>${project.groupId}:arodnap-field-transformations:${project.version}:jar</extraArtifact>
                             </extraArtifacts>
                         </configuration>
                         <executions>

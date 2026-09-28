@@ -5,10 +5,11 @@ plugins {
     id("com.gradle.plugin-publish") version "2.2.1"
 }
 
-group = "org.arodnap"
-// One version for the whole repository: the Maven build's.
-version = Regex("<artifactId>arodnap-parent</artifactId>\\s*<version>([^<]+)</version>")
-    .find(file("../pom.xml").readText())!!.groupValues[1]
+// One group and version for the whole repository: the Maven build's.
+val parent = Regex("<groupId>([^<]+)</groupId>\\s*<artifactId>arodnap-parent</artifactId>\\s*<version>([^<]+)</version>")
+    .find(file("../pom.xml").readText())!!.groupValues
+group = parent[1]
+version = parent[2]
 
 repositories {
     mavenLocal()
@@ -22,7 +23,7 @@ java {
 }
 
 dependencies {
-    implementation("org.arodnap:arodnap-engine:$version")
+    implementation("$group:arodnap-engine:$version")
     testImplementation(platform("org.junit:junit-bom:6.1.3"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("org.assertj:assertj-core:3.27.7")
@@ -35,7 +36,7 @@ gradlePlugin {
     vcsUrl = "https://github.com/typetools/arodnap"
     plugins {
         create("arodnap") {
-            id = "org.arodnap"
+            id = "$group.arodnap"
             implementationClass = "org.arodnap.gradle.ArodnapPlugin"
             displayName = "Arodnap"
             description = "Finds and repairs resource leaks in a Gradle build: ./gradlew arodnapRepair."
@@ -49,6 +50,18 @@ tasks.test {
     // The TestKit tests run real repairs; they are opt-in like the other end-to-end tests.
     environment("ARODNAP_E2E", System.getenv("ARODNAP_E2E") ?: "")
     systemProperty("arodnap.testProjects", layout.projectDirectory.dir("../test-projects").asFile.absolutePath)
+}
+
+publishing {
+    repositories {
+        // A folder standing in for Maven Central (scripts/published_artifacts.py stage).
+        providers.gradleProperty("stagingRepository").orNull?.let { staging ->
+            maven {
+                name = "staging"
+                url = uri(staging)
+            }
+        }
+    }
 }
 
 tasks.javadoc {

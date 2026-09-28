@@ -34,7 +34,7 @@ mvn install -DskipTests
   the repair tools, the Checker Framework and the stubs. Put its `bin/arodnap` on
   your `PATH`, or link to it.
 - **Maven plugin**: `mvn install` put it in your local Maven repository. Run it by
-  its full name, `mvn compile org.arodnap:arodnap-maven-plugin:<version>:repair`,
+  its full name, `mvn compile io.github.iamsanjaymalakar:arodnap-maven-plugin:<version>:repair`,
   or declare it in your POM's `<build><plugins>` and use `mvn compile arodnap:repair`.
 - **Gradle plugin**: publish it to your local Maven repository too, then let your
   build find it there:
@@ -158,7 +158,7 @@ Apply it to the root project; its tasks cover every project of the build:
 
 ```kotlin
 plugins {
-    id("org.arodnap") version "<version>"
+    id("io.github.iamsanjaymalakar.arodnap") version "<version>"
 }
 
 repositories {
