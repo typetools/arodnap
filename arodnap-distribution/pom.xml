@@ -216,6 +216,23 @@
                             <tarLongFileMode>posix</tarLongFileMode>
                         </configuration>
                     </execution>
+                    <!-- The same, unpacked, for the tests and scripts/real_projects.py; not published. -->
+                    <execution>
+                        <id>distribution-directory</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>src/assembly/bin.xml</descriptor>
+                            </descriptors>
+                            <formats>
+                                <format>dir</format>
+                            </formats>
+                            <attach>false</attach>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
             <!-- A pom module compiles no tests by itself. -->
