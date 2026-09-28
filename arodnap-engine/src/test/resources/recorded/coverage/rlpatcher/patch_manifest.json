@@ -1,0 +1,361 @@
+{
+  "fixes": [
+    {
+      "file": "loop_fixes/DoubleLoop.java",
+      "index": 1,
+      "line": 20,
+      "outcome": "materialized"
+    },
+    {
+      "file": "loop_fixes/Loop.java",
+      "index": 2,
+      "line": 18,
+      "outcome": "materialized"
+    },
+    {
+      "file": "loop_fixes/LoopInTryCatch.java",
+      "index": 3,
+      "line": 19,
+      "outcome": "materialized"
+    },
+    {
+      "file": "loop_fixes/ResourceUseNotDominated.java",
+      "index": 4,
+      "line": 20,
+      "outcome": "materialized"
+    },
+    {
+      "file": "loop_fixes/TryCatchInLoop.java",
+      "index": 5,
+      "line": 19,
+      "outcome": "materialized"
+    },
+    {
+      "file": "return_fixes/ReturnWithThrows.java",
+      "index": 6,
+      "line": 20,
+      "outcome": "no_change"
+    },
+    {
+      "file": "return_fixes/ReturnWithTwoCallers.java",
+      "index": 7,
+      "line": 20,
+      "outcome": "materialized"
+    },
+    {
+      "file": "return_fixes/ReturnWithTwoCallers.java",
+      "index": 8,
+      "line": 28,
+      "outcome": "unsafe"
+    },
+    {
+      "file": "throws_fixes/MultiReturnThrow.java",
+      "index": 9,
+      "line": 12,
+      "outcome": "materialized"
+    },
+    {
+      "file": "throws_fixes/Throws.java",
+      "index": 10,
+      "line": 12,
+      "outcome": "materialized"
+    },
+    {
+      "file": "throws_fixes/ThrowsWithConditional.java",
+      "index": 11,
+      "line": 12,
+      "outcome": "materialized"
+    },
+    {
+      "file": "throws_fixes/ThrowsWithLoop.java",
+      "index": 12,
+      "line": 12,
+      "outcome": "materialized"
+    },
+    {
+      "file": "trycatch_fixes/EscapesTryCatch.java",
+      "index": 13,
+      "line": 13,
+      "outcome": "materialized"
+    },
+    {
+      "file": "trycatch_fixes/InvokeEscapeFinally.java",
+      "index": 14,
+      "line": 12,
+      "outcome": "materialized"
+    },
+    {
+      "file": "trycatch_fixes/MultilineCatch.java",
+      "index": 15,
+      "line": 12,
+      "outcome": "materialized"
+    },
+    {
+      "file": "trycatch_fixes/MultipleCatch.java",
+      "index": 16,
+      "line": 12,
+      "outcome": "materialized"
+    },
+    {
+      "file": "trycatch_fixes/MultipleReturnsFinally.java",
+      "index": 17,
+      "line": 14,
+      "outcome": "materialized"
+    },
+    {
+      "file": "trycatch_fixes/NullableResource.java",
+      "index": 18,
+      "line": 13,
+      "outcome": "materialized"
+    },
+    {
+      "file": "trycatch_fixes/ShortenedTryCatch.java",
+      "index": 19,
+      "line": 13,
+      "outcome": "materialized"
+    },
+    {
+      "file": "wrapper/WrapperClient.java",
+      "index": 20,
+      "line": 8,
+      "outcome": "materialized"
+    }
+  ],
+  "patches": [
+    {
+      "applied_to_workspace": true,
+      "changed_files": [
+        "src/main/java/loop_fixes/DoubleLoop.java"
+      ],
+      "patch_file": "/work/out/stages/rlpatcher/patches/patch-0001-src_main_java_loop_fixes_DoubleLoop.java-L20.patch",
+      "preimage_hashes": {
+        "src/main/java/loop_fixes/DoubleLoop.java": "8858a150ed5c0a3b83c431f7c30ddd8e7de7a2a8df91d2fbfbb14b313d51b045"
+      },
+      "stage": "rlpatcher",
+      "strip_level": 0,
+      "target_root": "."
+    },
+    {
+      "applied_to_workspace": true,
+      "changed_files": [
+        "src/main/java/loop_fixes/Loop.java"
+      ],
+      "patch_file": "/work/out/stages/rlpatcher/patches/patch-0002-src_main_java_loop_fixes_Loop.java-L18.patch",
+      "preimage_hashes": {
+        "src/main/java/loop_fixes/Loop.java": "b724566310c9c0a838c965b143daaeb42bd59f7691c195471bf8478c1c37bc6b"
+      },
+      "stage": "rlpatcher",
+      "strip_level": 0,
+      "target_root": "."
+    },
+    {
+      "applied_to_workspace": true,
+      "changed_files": [
+        "src/main/java/loop_fixes/LoopInTryCatch.java"
+      ],
+      "patch_file": "/work/out/stages/rlpatcher/patches/patch-0003-src_main_java_loop_fixes_LoopInTryCatch.java-L19.patch",
+      "preimage_hashes": {
+        "src/main/java/loop_fixes/LoopInTryCatch.java": "447cae920c3822e535048f911df1c20719f9e83d1f6b15e308407feb8d27b053"
+      },
+      "stage": "rlpatcher",
+      "strip_level": 0,
+      "target_root": "."
+    },
+    {
+      "applied_to_workspace": true,
+      "changed_files": [
+        "src/main/java/loop_fixes/ResourceUseNotDominated.java"
+      ],
+      "patch_file": "/work/out/stages/rlpatcher/patches/patch-0004-src_main_java_loop_fixes_ResourceUseNotDominated.java-L20.patch",
+      "preimage_hashes": {
+        "src/main/java/loop_fixes/ResourceUseNotDominated.java": "4ad03cf26f468f5bc39335c9ec368dc5aee90e6315f19bd579fd1b6b635e9fd6"
+      },
+      "stage": "rlpatcher",
+      "strip_level": 0,
+      "target_root": "."
+    },
+    {
+      "applied_to_workspace": true,
+      "changed_files": [
+        "src/main/java/loop_fixes/TryCatchInLoop.java"
+      ],
+      "patch_file": "/work/out/stages/rlpatcher/patches/patch-0005-src_main_java_loop_fixes_TryCatchInLoop.java-L19.patch",
+      "preimage_hashes": {
+        "src/main/java/loop_fixes/TryCatchInLoop.java": "4f3e305dd324add57b32296c7580ada5fc2b24fc48ae8c4fd3b298264635bd6b"
+      },
+      "stage": "rlpatcher",
+      "strip_level": 0,
+      "target_root": "."
+    },
+    {
+      "applied_to_workspace": true,
+      "changed_files": [
+        "src/main/java/return_fixes/ReturnWithTwoCallers.java"
+      ],
+      "patch_file": "/work/out/stages/rlpatcher/patches/patch-0007-src_main_java_return_fixes_ReturnWithTwoCallers.java-L20.patch",
+      "preimage_hashes": {
+        "src/main/java/return_fixes/ReturnWithTwoCallers.java": "64414918731b055f5d11b98c10e90abce114c274e7db4da9747551e3cdc41f74"
+      },
+      "stage": "rlpatcher",
+      "strip_level": 0,
+      "target_root": "."
+    },
+    {
+      "applied_to_workspace": true,
+      "changed_files": [
+        "src/main/java/throws_fixes/MultiReturnThrow.java"
+      ],
+      "patch_file": "/work/out/stages/rlpatcher/patches/patch-0009-src_main_java_throws_fixes_MultiReturnThrow.java-L12.patch",
+      "preimage_hashes": {
+        "src/main/java/throws_fixes/MultiReturnThrow.java": "37a8ea7cf3bcc9f8dfeb3e714a1260dd6843305122e5eedd9f31f1123cc879c3"
+      },
+      "stage": "rlpatcher",
+      "strip_level": 0,
+      "target_root": "."
+    },
+    {
+      "applied_to_workspace": true,
+      "changed_files": [
+        "src/main/java/throws_fixes/Throws.java"
+      ],
+      "patch_file": "/work/out/stages/rlpatcher/patches/patch-0010-src_main_java_throws_fixes_Throws.java-L12.patch",
+      "preimage_hashes": {
+        "src/main/java/throws_fixes/Throws.java": "14b80d349af57b59df90fbc6d9f9125b0a4e162aab1704b513a8944d5d318b78"
+      },
+      "stage": "rlpatcher",
+      "strip_level": 0,
+      "target_root": "."
+    },
+    {
+      "applied_to_workspace": true,
+      "changed_files": [
+        "src/main/java/throws_fixes/ThrowsWithConditional.java"
+      ],
+      "patch_file": "/work/out/stages/rlpatcher/patches/patch-0011-src_main_java_throws_fixes_ThrowsWithConditional.java-L12.patch",
+      "preimage_hashes": {
+        "src/main/java/throws_fixes/ThrowsWithConditional.java": "b52dc7c1368320b598491cd0ee43a78a44e8e56cc24d8c34e1350216b1ee314f"
+      },
+      "stage": "rlpatcher",
+      "strip_level": 0,
+      "target_root": "."
+    },
+    {
+      "applied_to_workspace": true,
+      "changed_files": [
+        "src/main/java/throws_fixes/ThrowsWithLoop.java"
+      ],
+      "patch_file": "/work/out/stages/rlpatcher/patches/patch-0012-src_main_java_throws_fixes_ThrowsWithLoop.java-L12.patch",
+      "preimage_hashes": {
+        "src/main/java/throws_fixes/ThrowsWithLoop.java": "509468f94a00581525c406a3ccdee96c400a9cc4df3c6a4b0b2ece8f97b8d2e6"
+      },
+      "stage": "rlpatcher",
+      "strip_level": 0,
+      "target_root": "."
+    },
+    {
+      "applied_to_workspace": true,
+      "changed_files": [
+        "src/main/java/trycatch_fixes/EscapesTryCatch.java"
+      ],
+      "patch_file": "/work/out/stages/rlpatcher/patches/patch-0013-src_main_java_trycatch_fixes_EscapesTryCatch.java-L13.patch",
+      "preimage_hashes": {
+        "src/main/java/trycatch_fixes/EscapesTryCatch.java": "6656bb6ee474ac02a0d54f0db4a8a8e24c86c1b3a93adb5dd267aee25d21c3fb"
+      },
+      "stage": "rlpatcher",
+      "strip_level": 0,
+      "target_root": "."
+    },
+    {
+      "applied_to_workspace": true,
+      "changed_files": [
+        "src/main/java/trycatch_fixes/InvokeEscapeFinally.java"
+      ],
+      "patch_file": "/work/out/stages/rlpatcher/patches/patch-0014-src_main_java_trycatch_fixes_InvokeEscapeFinally.java-L12.patch",
+      "preimage_hashes": {
+        "src/main/java/trycatch_fixes/InvokeEscapeFinally.java": "e6721f0c86c7dd302e51c2d6507ad044fdcbff0e348428c240f81e4ca90402b6"
+      },
+      "stage": "rlpatcher",
+      "strip_level": 0,
+      "target_root": "."
+    },
+    {
+      "applied_to_workspace": true,
+      "changed_files": [
+        "src/main/java/trycatch_fixes/MultilineCatch.java"
+      ],
+      "patch_file": "/work/out/stages/rlpatcher/patches/patch-0015-src_main_java_trycatch_fixes_MultilineCatch.java-L12.patch",
+      "preimage_hashes": {
+        "src/main/java/trycatch_fixes/MultilineCatch.java": "34eb9b68decaf2ed828ccfd70e435911021c98bbd3b1cdc95e9838208b629878"
+      },
+      "stage": "rlpatcher",
+      "strip_level": 0,
+      "target_root": "."
+    },
+    {
+      "applied_to_workspace": true,
+      "changed_files": [
+        "src/main/java/trycatch_fixes/MultipleCatch.java"
+      ],
+      "patch_file": "/work/out/stages/rlpatcher/patches/patch-0016-src_main_java_trycatch_fixes_MultipleCatch.java-L12.patch",
+      "preimage_hashes": {
+        "src/main/java/trycatch_fixes/MultipleCatch.java": "318b3534999af71e525108e89714b190a48b2b2240500ca13d9b0c3e0b37d195"
+      },
+      "stage": "rlpatcher",
+      "strip_level": 0,
+      "target_root": "."
+    },
+    {
+      "applied_to_workspace": true,
+      "changed_files": [
+        "src/main/java/trycatch_fixes/MultipleReturnsFinally.java"
+      ],
+      "patch_file": "/work/out/stages/rlpatcher/patches/patch-0017-src_main_java_trycatch_fixes_MultipleReturnsFinally.java-L14.patch",
+      "preimage_hashes": {
+        "src/main/java/trycatch_fixes/MultipleReturnsFinally.java": "43abcfbe7f6014ea841d921c925bf192498b160fa3a3ce75cc6ef53ce95af25b"
+      },
+      "stage": "rlpatcher",
+      "strip_level": 0,
+      "target_root": "."
+    },
+    {
+      "applied_to_workspace": true,
+      "changed_files": [
+        "src/main/java/trycatch_fixes/NullableResource.java"
+      ],
+      "patch_file": "/work/out/stages/rlpatcher/patches/patch-0018-src_main_java_trycatch_fixes_NullableResource.java-L13.patch",
+      "preimage_hashes": {
+        "src/main/java/trycatch_fixes/NullableResource.java": "69abcd2898554a5f351ee5369a2ad61315ee7bc5dabcb9dea2be02c84dcab234"
+      },
+      "stage": "rlpatcher",
+      "strip_level": 0,
+      "target_root": "."
+    },
+    {
+      "applied_to_workspace": true,
+      "changed_files": [
+        "src/main/java/trycatch_fixes/ShortenedTryCatch.java"
+      ],
+      "patch_file": "/work/out/stages/rlpatcher/patches/patch-0019-src_main_java_trycatch_fixes_ShortenedTryCatch.java-L13.patch",
+      "preimage_hashes": {
+        "src/main/java/trycatch_fixes/ShortenedTryCatch.java": "227a6fb4dd13920fa93636e36735c5d90829e6c70e0142cea37311908295e672"
+      },
+      "stage": "rlpatcher",
+      "strip_level": 0,
+      "target_root": "."
+    },
+    {
+      "applied_to_workspace": true,
+      "changed_files": [
+        "src/main/java/wrapper/WrapperClient.java"
+      ],
+      "patch_file": "/work/out/stages/rlpatcher/patches/patch-0020-src_main_java_wrapper_WrapperClient.java-L8.patch",
+      "preimage_hashes": {
+        "src/main/java/wrapper/WrapperClient.java": "e68adccd1d70fa444a2e20402ac5e027ae73843cbcfda9c1d032f583b26a8789"
+      },
+      "stage": "rlpatcher",
+      "strip_level": 0,
+      "target_root": "."
+    }
+  ],
+  "stage": "rlpatcher"
+}

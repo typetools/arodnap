@@ -1,0 +1,3 @@
+/work/space/commons-compress/src/main/java/org/apache/commons/compress/archivers/Lister.java:167: warning: [required.method.not.called] $$ 4 $$ method close $$ zipFile.stream() $$ org.apache.commons.io.function.IOStream<capture#631 of ? extends org.apache.commons.compress.archivers.zip.ZipArchiveEntry> $$ possible exceptional exit due to zipFile.close() with exception type java.lang.Exception $$ ( 6061, 6077 ) $$ [required.method.not.called]
+            zipFile.stream().forEach(this::println);
+                          ^

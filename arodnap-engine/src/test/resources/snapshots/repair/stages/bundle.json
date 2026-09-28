@@ -1,0 +1,17 @@
+{
+  "artifacts": {
+    "log": "{TEMP}/out/stages/bundle/stage.log",
+    "patch": "{TEMP}/out/stages/bundle/arodnap.patch",
+    "patch_manifest": "{TEMP}/out/stages/bundle/patch_manifest.json"
+  },
+  "changed": false,
+  "changed_files": [
+    "src/demo/Demo.java"
+  ],
+  "notes": [
+    "Bundled changes to 1 file(s) and verified them against the original repository."
+  ],
+  "rerun_required": false,
+  "stage": "bundle",
+  "success": true
+}

@@ -1,0 +1,7 @@
+baseline.log
+cf_classes/
+classes/
+compiled_classes/
+src-files.txt
+wpi-iterations/
+jarfile/*.jar

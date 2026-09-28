@@ -1,0 +1,65 @@
+# Config.py
+import glob
+import os
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+# The repository root: the legacy scripts live in legacy/, the tools they run do not.
+REPO_ROOT = os.path.dirname(HERE)
+
+# Paths
+SOURCE_PROJECT_FOLDER = "null"
+RESULTS_BASE_FOLDER = os.path.abspath(os.path.join("tool_results", "rlc_results"))
+RLFIXER_RESULTS_FOLDER = os.path.abspath(os.path.join("tool_results", "rlfixer_results"))
+PATCH_AND_LOGS_FOLDER = os.path.abspath(os.path.join("tool_results", "inference_and_patches"))
+COMPILED_CLASSES_FOLDER = "cf_classes"
+SRC_FILES = "cf_srcs.txt"
+# The Java stage tools come from an Arodnap distribution (ARODNAP_HOME, see the README).
+JARS_ROOT = os.path.join(os.environ.get("ARODNAP_HOME", ""), "tools")
+# The paper's Error Prone field plugins and Error Prone 2.28 (used by helpers/ep.sh).
+LEGACY_JARS_ROOT = os.path.abspath(os.path.join(HERE, "prebuilt_plugin_jars"))
+
+
+def _tool_jar(name):
+    jars = sorted(glob.glob(os.path.join(JARS_ROOT, f"arodnap-{name}-*.jar")))
+    return jars[-1] if jars else os.path.join(JARS_ROOT, f"arodnap-{name}.jar")
+
+
+OWNING_FIELD_JAR = _tool_jar("owning-field-fixer")
+CLOSE_INJECTOR_JAR = _tool_jar("close-injector")
+RLPATCHER_JAR = _tool_jar("rlpatcher")
+STUBS_FOLDER = os.path.abspath(os.path.join(REPO_ROOT, "arodnap-engine", "src", "main", "resources", "org", "arodnap", "engine", "stubs"))
+
+# `javac` flags
+JAVAC_WITH_FLAGS = (
+    "javac "
+    "-J--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED "
+    "-J--add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED "
+    "-J--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED "
+    "-J--add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED "
+    "-J--add-exports=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED "
+    "-J--add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED "
+    "-J--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED "
+    "-J--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED "
+    "-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED"
+)
+# Checker Framework command
+# Checker Framework 3.49.0, unpacked into legacy/checker-framework-3.49.0 (see the README).
+CF_ROOT = os.path.abspath(os.path.join(HERE, "checker-framework-3.49.0"))
+CF_COMMAND = "-processor org.checkerframework.checker.resourceleak.ResourceLeakChecker -Adetailedmsgtext"
+CF_DIST_JAR_ARG = f"-processorpath {CF_ROOT}/checker/dist/checker.jar"
+CHECKER_QUAL_JAR = f"{CF_ROOT}/checker/dist/checker-qual.jar"
+
+# Timeouts
+TIMEOUT = 60 * 60  # 60 minutes
+
+
+# Additional settings
+SKIP_COMPLETED = False  # skips if the output file is already there
+
+RLC_INFERENCE_SCRIPT_PATH = os.path.abspath(os.path.join(HERE, "helpers", "wpi.sh"))
+RLC_INFERENCE_LOG_FILENAME = "rlc-inference-log.txt"
+
+EP_FIELD_ENHANCEMENT_SCRIPT_PATH = os.path.abspath(os.path.join(HERE, "helpers", "ep.sh"))
+EP_FIELD_ENHANCEMENT_LOG_FILENAME = "ep-log.txt"
+
+# LLM_SCRIPTS_FOLDER = "/home/anon123/RLF/cf-rlc/cf_analysis/scripts/llm/batch"

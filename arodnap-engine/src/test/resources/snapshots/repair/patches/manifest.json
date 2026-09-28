@@ -1,0 +1,17 @@
+{
+  "patches": [
+    {
+      "changed_files": [
+        "src/demo/Demo.java"
+      ],
+      "patch_file": "arodnap.patch",
+      "preimage_hashes": {
+        "src/demo/Demo.java": "ffbf2de9bca4eb7ce461c82422f7851bc5f84751e3e82528e3aeea9e70f1efae"
+      },
+      "stage": "bundle",
+      "strip_level": 0,
+      "target_root": "."
+    }
+  ],
+  "stage": "bundle"
+}

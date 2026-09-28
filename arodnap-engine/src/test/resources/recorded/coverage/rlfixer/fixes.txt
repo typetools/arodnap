@@ -1,0 +1,249 @@
+Invoke statement was never used.
+10146
+111
+
+SOURCE LEVEL FIXES
+
+0] /work/space/gradle-pipeline-coverage/src/main/java/loop_fixes/DoubleLoop.java; Line number 20
+vim +20 /work/space/gradle-pipeline-coverage/src/main/java/loop_fixes/DoubleLoop.java
+
++++ Add following code below line: 24 (loop_fixes/DoubleLoop.java)
+finally{
+    try{ <NEW_VARIABLE>.close(); } catch(Exception e){ e.printStackTrace(); }
+}
+// where variable <NEW_VARIABLE> points to the resource from line 20
+
+--------------------------------------------
+2] /work/space/gradle-pipeline-coverage/src/main/java/loop_fixes/Loop.java; Line number 18
+vim +18 /work/space/gradle-pipeline-coverage/src/main/java/loop_fixes/Loop.java
+
++++ Add following code above line:18 (loop_fixes/Loop.java)
+try{
++++ Add following code after line:19 (loop_fixes/Loop.java)
+}finally{
+    try{ <NEW_VARIABLE>.close(); } catch(Exception e){ e.printStackTrace(); }
+}
+// where variable <NEW_VARIABLE> points to the resource from line 18
+
+--------------------------------------------
+3] /work/space/gradle-pipeline-coverage/src/main/java/loop_fixes/LoopInTryCatch.java; Line number 19
+vim +19 /work/space/gradle-pipeline-coverage/src/main/java/loop_fixes/LoopInTryCatch.java
+
++++ Add following code above line:19 (loop_fixes/LoopInTryCatch.java)
+try{
++++ Add following code after line:20 (loop_fixes/LoopInTryCatch.java)
+}finally{
+    try{ <NEW_VARIABLE>.close(); } catch(Exception e){ e.printStackTrace(); }
+}
+// where variable <NEW_VARIABLE> points to the resource from line 19
+
+--------------------------------------------
+6] /work/space/gradle-pipeline-coverage/src/main/java/loop_fixes/ResourceUseNotDominated.java; Line number 20
+vim +20 /work/space/gradle-pipeline-coverage/src/main/java/loop_fixes/ResourceUseNotDominated.java
+
++++ Add following code above line:19 (loop_fixes/ResourceUseNotDominated.java)
+try{
++++ Add following code after line:22 (loop_fixes/ResourceUseNotDominated.java)
+}finally{
+    try{ <NEW_VARIABLE>.close(); } catch(Exception e){ e.printStackTrace(); }
+}
+// where variable <NEW_VARIABLE> points to the resource from line 20
+
+--------------------------------------------
+7] /work/space/gradle-pipeline-coverage/src/main/java/loop_fixes/TryCatchInLoop.java; Line number 19
+vim +19 /work/space/gradle-pipeline-coverage/src/main/java/loop_fixes/TryCatchInLoop.java
+
++++ Add following code below line: 23 (loop_fixes/TryCatchInLoop.java)
+finally{
+    try{ <NEW_VARIABLE>.close(); } catch(Exception e){ e.printStackTrace(); }
+}
+// where variable <NEW_VARIABLE> points to the resource from line 19
+
+--------------------------------------------
+8] /work/space/gradle-pipeline-coverage/src/main/java/return_fixes/ReturnWithThrows.java; Line number 20
+vim +20 /work/space/gradle-pipeline-coverage/src/main/java/return_fixes/ReturnWithThrows.java
+
++++ NOTE: Resource escapes via return statement and needs to be closed in the callers of foo
++++ Add following code below line: 15 (return_fixes/ReturnWithThrows.java)
+finally{
+    try{ <NEW_VARIABLE>.close(); } catch(Exception e){ e.printStackTrace(); }
+}
+// where variable <NEW_VARIABLE> points to the resource from line 12
+
++++ Delete Line number 13 (return_fixes/ReturnWithThrows.java)
+
+--------------------------------------------
+9] /work/space/gradle-pipeline-coverage/src/main/java/return_fixes/ReturnWithTwoCallers.java; Line number 20
+vim +20 /work/space/gradle-pipeline-coverage/src/main/java/return_fixes/ReturnWithTwoCallers.java
+
++++ Add following code above line:20 (return_fixes/ReturnWithTwoCallers.java)
+try{
++++ Add following code after line:21 (return_fixes/ReturnWithTwoCallers.java)
+}finally{
+    try{ <NEW_VARIABLE>.close(); } catch(Exception e){ e.printStackTrace(); }
+}
+// where variable <NEW_VARIABLE> points to the resource from line 20
+
+--------------------------------------------
+10] /work/space/gradle-pipeline-coverage/src/main/java/return_fixes/ReturnWithTwoCallers.java; Line number 28
+vim +28 /work/space/gradle-pipeline-coverage/src/main/java/return_fixes/ReturnWithTwoCallers.java
+
++++ NOTE: Resource escapes via return statement and needs to be closed in the callers of foo
++++ Add following code below line: 15 (return_fixes/ReturnWithTwoCallers.java)
+finally{
+    try{ <NEW_VARIABLE>.close(); } catch(Exception e){ e.printStackTrace(); }
+}
+// where variable <NEW_VARIABLE> points to the resource from line 12
+
++++ Delete Line number 13 (return_fixes/ReturnWithTwoCallers.java)
+
++++ Add following code above line:20 (return_fixes/ReturnWithTwoCallers.java)
+try{
++++ Add following code after line:21 (return_fixes/ReturnWithTwoCallers.java)
+}finally{
+    try{ <NEW_VARIABLE>.close(); } catch(Exception e){ e.printStackTrace(); }
+}
+// where variable <NEW_VARIABLE> points to the resource from line 20
+
+--------------------------------------------
+11] /work/space/gradle-pipeline-coverage/src/main/java/throws_fixes/MultiReturnThrow.java; Line number 12
+vim +12 /work/space/gradle-pipeline-coverage/src/main/java/throws_fixes/MultiReturnThrow.java
+
++++ Add following code above line:12 (throws_fixes/MultiReturnThrow.java)
+try{
++++ Add following code after line:16 (throws_fixes/MultiReturnThrow.java)
+}finally{
+    try{ <NEW_VARIABLE>.close(); } catch(Exception e){ e.printStackTrace(); }
+}
+// where variable <NEW_VARIABLE> points to the resource from line 12
+
+--------------------------------------------
+12] /work/space/gradle-pipeline-coverage/src/main/java/throws_fixes/Throws.java; Line number 12
+vim +12 /work/space/gradle-pipeline-coverage/src/main/java/throws_fixes/Throws.java
+
++++ Add following code above line:12 (throws_fixes/Throws.java)
+try{
++++ Add following code after line:13 (throws_fixes/Throws.java)
+}finally{
+    try{ <NEW_VARIABLE>.close(); } catch(Exception e){ e.printStackTrace(); }
+}
+// where variable <NEW_VARIABLE> points to the resource from line 12
+
+--------------------------------------------
+13] /work/space/gradle-pipeline-coverage/src/main/java/throws_fixes/ThrowsWithConditional.java; Line number 12
+vim +12 /work/space/gradle-pipeline-coverage/src/main/java/throws_fixes/ThrowsWithConditional.java
+
++++ Add following code above line:12 (throws_fixes/ThrowsWithConditional.java)
+try{
++++ Add following code after line:15 (throws_fixes/ThrowsWithConditional.java)
+}finally{
+    try{ <NEW_VARIABLE>.close(); } catch(Exception e){ e.printStackTrace(); }
+}
+// where variable <NEW_VARIABLE> points to the resource from line 12
+
+--------------------------------------------
+14] /work/space/gradle-pipeline-coverage/src/main/java/throws_fixes/ThrowsWithLoop.java; Line number 12
+vim +12 /work/space/gradle-pipeline-coverage/src/main/java/throws_fixes/ThrowsWithLoop.java
+
++++ Add following code above line:12 (throws_fixes/ThrowsWithLoop.java)
+try{
++++ Add following code after line:15 (throws_fixes/ThrowsWithLoop.java)
+}finally{
+    try{ <NEW_VARIABLE>.close(); } catch(Exception e){ e.printStackTrace(); }
+}
+// where variable <NEW_VARIABLE> points to the resource from line 12
+
+--------------------------------------------
+15] /work/space/gradle-pipeline-coverage/src/main/java/trycatch_fixes/EscapesTryCatch.java; Line number 13
+vim +13 /work/space/gradle-pipeline-coverage/src/main/java/trycatch_fixes/EscapesTryCatch.java
+
++++ Add following code above line:18 (trycatch_fixes/EscapesTryCatch.java)
+try{ 
++++ Add following code below line:18 (trycatch_fixes/EscapesTryCatch.java)
+} catch(Exception e){ 
+    try{ <NEW_VARIABLE>.close(); } catch(Exception e){ e.printStackTrace(); }
+    throw e; 
+}
++++ Add following code above line:24 (trycatch_fixes/EscapesTryCatch.java)
+try{
+    <NEW_VARIABLE>.close();
+} catch(Exception e){ e.printStackTrace(); }
+// where variable <NEW_VARIABLE> points to the resource from line 13
+
+--------------------------------------------
+16] /work/space/gradle-pipeline-coverage/src/main/java/trycatch_fixes/InvokeEscapeFinally.java; Line number 12
+vim +12 /work/space/gradle-pipeline-coverage/src/main/java/trycatch_fixes/InvokeEscapeFinally.java
+
++++ Add following code below line: 17 (trycatch_fixes/InvokeEscapeFinally.java)
+finally{
+    try{ <NEW_VARIABLE>.close(); } catch(Exception e){ e.printStackTrace(); }
+}
+// where variable <NEW_VARIABLE> points to the resource from line 12
+
++++ Delete Line number 14 (trycatch_fixes/InvokeEscapeFinally.java)
+
+--------------------------------------------
+17] /work/space/gradle-pipeline-coverage/src/main/java/trycatch_fixes/MultilineCatch.java; Line number 12
+vim +12 /work/space/gradle-pipeline-coverage/src/main/java/trycatch_fixes/MultilineCatch.java
+
++++ Add following code below line: 19 (trycatch_fixes/MultilineCatch.java)
+finally{
+    try{ <NEW_VARIABLE>.close(); } catch(Exception e){ e.printStackTrace(); }
+}
+// where variable <NEW_VARIABLE> points to the resource from line 12
+
++++ Delete Line number 14 (trycatch_fixes/MultilineCatch.java)
+
+--------------------------------------------
+18] /work/space/gradle-pipeline-coverage/src/main/java/trycatch_fixes/MultipleCatch.java; Line number 12
+vim +12 /work/space/gradle-pipeline-coverage/src/main/java/trycatch_fixes/MultipleCatch.java
+
++++ Add following code below line: 19 (trycatch_fixes/MultipleCatch.java)
+finally{
+    try{ <NEW_VARIABLE>.close(); } catch(Exception e){ e.printStackTrace(); }
+}
+// where variable <NEW_VARIABLE> points to the resource from line 12
+
++++ Delete Line number 14 (trycatch_fixes/MultipleCatch.java)
+
+--------------------------------------------
+19] /work/space/gradle-pipeline-coverage/src/main/java/trycatch_fixes/MultipleReturnsFinally.java; Line number 14
+vim +14 /work/space/gradle-pipeline-coverage/src/main/java/trycatch_fixes/MultipleReturnsFinally.java
+
++++ Add following code below line: 26 (trycatch_fixes/MultipleReturnsFinally.java)
+try{ <NEW_VARIABLE>.close(); } catch(Exception e){ e.printStackTrace(); }
+// where variable <NEW_VARIABLE> points to the resource from line 14
+
+--------------------------------------------
+20] /work/space/gradle-pipeline-coverage/src/main/java/trycatch_fixes/NullableResource.java; Line number 13
+vim +13 /work/space/gradle-pipeline-coverage/src/main/java/trycatch_fixes/NullableResource.java
+
++++ Add following code below line: 15 (trycatch_fixes/NullableResource.java)
+finally{
+    try{ <NEW_VARIABLE>.close(); } catch(Exception e){ e.printStackTrace(); }
+}
+// where variable <NEW_VARIABLE> points to the resource from line 13
+
+--------------------------------------------
+21] /work/space/gradle-pipeline-coverage/src/main/java/trycatch_fixes/ShortenedTryCatch.java; Line number 13
+vim +13 /work/space/gradle-pipeline-coverage/src/main/java/trycatch_fixes/ShortenedTryCatch.java
+
++++ Add following code below line: 15 (trycatch_fixes/ShortenedTryCatch.java)
+finally{
+    try{ <NEW_VARIABLE>.close(); } catch(Exception e){ e.printStackTrace(); }
+}
+// where variable <NEW_VARIABLE> points to the resource from line 13
+
+--------------------------------------------
+22] /work/space/gradle-pipeline-coverage/src/main/java/wrapper/WrapperClient.java; Line number 8
+vim +8 /work/space/gradle-pipeline-coverage/src/main/java/wrapper/WrapperClient.java
+
++++ Add following code above line:8 (wrapper/WrapperClient.java)
+try{
++++ Add following code after line:9 (wrapper/WrapperClient.java)
+}finally{
+    try{ <NEW_VARIABLE>.close(); } catch(Exception e){ e.printStackTrace(); }
+}
+// where variable <NEW_VARIABLE> points to the resource from line 8
+
+--------------------------------------------

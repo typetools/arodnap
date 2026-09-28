@@ -1,0 +1,23 @@
+#!/bin/sh
+# Runs Arodnap. It needs JDK 17 or newer: the one in JAVA_HOME if set, otherwise java on PATH.
+# The same JDK compiles and analyzes the project. ARODNAP_OPTS passes options to this JVM.
+
+self=$0
+while [ -h "$self" ]; do
+  link=$(readlink "$self")
+  case $link in
+    /*) self=$link ;;
+    *) self=$(dirname "$self")/$link ;;
+  esac
+done
+ARODNAP_HOME=$(cd "$(dirname "$self")/.." && pwd -P) || exit 2
+export ARODNAP_HOME
+
+if [ -n "$JAVA_HOME" ]; then
+  java=$JAVA_HOME/bin/java
+else
+  java=java
+fi
+
+# shellcheck disable=SC2086
+exec "$java" $ARODNAP_OPTS -cp "$ARODNAP_HOME/lib/*" org.arodnap.cli.Main "$@"
