@@ -1,0 +1,15 @@
+<project name="ant-vendored-jar" default="compile">
+  <path id="deps">
+    <fileset dir="lib" includes="*.jar"/>
+  </path>
+
+  <target name="clean">
+    <delete dir="build"/>
+  </target>
+
+  <target name="compile">
+    <mkdir dir="build/classes"/>
+    <javac srcdir="src" destdir="build/classes" classpathref="deps"
+           includeantruntime="false" release="11" debug="true"/>
+  </target>
+</project>

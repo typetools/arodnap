@@ -1,0 +1,19 @@
+subprojects {
+    apply plugin: 'java'
+
+    repositories {
+        mavenCentral()
+    }
+
+    java {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
+}
+
+project(':app') {
+    dependencies {
+        implementation project(':core')
+        implementation 'commons-io:commons-io:2.16.1'
+    }
+}

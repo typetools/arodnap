@@ -1,0 +1,54 @@
+[
+  {
+    "text": "-d out -cp \"a b.jar:c.jar\" Foo.java",
+    "words": [
+      "-d",
+      "out",
+      "-cp",
+      "a b.jar:c.jar",
+      "Foo.java"
+    ]
+  },
+  {
+    "text": "'single quoted' \"double \\\"escaped\\\"\" plain\\ space",
+    "words": [
+      "single quoted",
+      "double \"escaped\"",
+      "plain space"
+    ]
+  },
+  {
+    "text": "  lots   of\n\tspace  ",
+    "words": [
+      "lots",
+      "of",
+      "space"
+    ]
+  },
+  {
+    "text": "a\"b\"c d'e'f",
+    "words": [
+      "abc",
+      "def"
+    ]
+  },
+  {
+    "text": "\"C:\\\\path\\\\x\" \\\\back",
+    "words": [
+      "C:\\path\\x",
+      "\\back"
+    ]
+  },
+  {
+    "text": "\"\"",
+    "words": [
+      ""
+    ]
+  },
+  {
+    "text": "-Akey=\"value with spaces\"",
+    "words": [
+      "-Akey=value with spaces"
+    ]
+  }
+]

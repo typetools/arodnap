@@ -1,0 +1,13 @@
+{
+  "artifacts": {
+    "log": "{TEMP}/out/stages/close_injector/stage.log"
+  },
+  "changed": false,
+  "changed_files": [],
+  "notes": [
+    "No close-injector patch was generated."
+  ],
+  "rerun_required": false,
+  "stage": "close_injector",
+  "success": true
+}

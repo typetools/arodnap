@@ -1,0 +1,14 @@
+{
+  "artifacts": {
+    "field_changes": "{TEMP}/out/stages/field_transformations/field_changes.json",
+    "log": "{TEMP}/out/stages/field_transformations/stage.log"
+  },
+  "changed": false,
+  "changed_files": [],
+  "notes": [
+    "Made 0 resource field(s) final and turned 0 into local variables (resources)."
+  ],
+  "rerun_required": false,
+  "stage": "field_transformations",
+  "success": true
+}

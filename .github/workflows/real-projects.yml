@@ -1,0 +1,144 @@
+name: Real projects
+
+# Repairs real open-source projects (scripts/real_projects.json), each cloned fresh at a pinned
+# release, and checks the results against the recorded ones. The full run (weekly, or when the
+# project list changes) repairs each project with the command line and, for Maven and Gradle
+# projects, with the plugin, and runs the project's own tests before and after its patch; the
+# largest projects take hours. CI calls this workflow on every pull request for the quick tier,
+# with the command line only.
+on:
+  schedule:
+    - cron: "0 6 * * 1"  # Mondays 06:00 UTC
+  pull_request:
+    paths:
+      - scripts/real_projects.*
+      - .github/workflows/real-projects.yml
+  workflow_dispatch:
+    inputs:
+      projects:
+        description: "Projects to run, separated by spaces (empty: all)"
+        type: string
+        required: false
+        default: ""
+      tier:
+        description: "Only projects of this tier, e.g. quick (empty: all)"
+        type: string
+        required: false
+        default: ""
+      via:
+        description: "Repair with: cli, plugin or both"
+        type: choice
+        options: [both, cli, plugin]
+        default: both
+      tests:
+        description: "Also run each project's tests before and after its patch"
+        type: boolean
+        default: true
+  workflow_call:
+    inputs:
+      projects:
+        description: "Projects to run, separated by spaces (empty: all)"
+        type: string
+        required: false
+        default: ""
+      tier:
+        description: "Only projects of this tier, e.g. quick (empty: all)"
+        type: string
+        required: false
+        default: ""
+      via:
+        description: "Repair with: cli, plugin or both"
+        type: string
+        required: false
+        default: cli
+      tests:
+        description: "Also run each project's tests before and after its patch"
+        type: boolean
+        required: false
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  list:
+    runs-on: ubuntu-latest
+    outputs:
+      runs: ${{ steps.list.outputs.runs }}
+      tests: ${{ steps.list.outputs.tests }}
+    steps:
+      - uses: actions/checkout@v7
+      - id: list
+        env:
+          SELECTED: ${{ inputs.projects }}
+          TIER: ${{ inputs.tier }}
+          # Without inputs (a schedule, or a pull request that changes the project list) this is the
+          # full run. (A called workflow sees its caller's event, so the inputs tell them apart.)
+          VIA: ${{ inputs.via || 'both' }}
+          TESTS: ${{ format('{0}', inputs.tests) == '' || inputs.tests }}
+        run: |
+          names="${SELECTED:-$(python3 scripts/real_projects.py list ${TIER:+--tier "$TIER"})}"
+          # One run per project and front end; the plugins only exist for Maven and Gradle builds.
+          python3 - "$names" "$VIA" >> "$GITHUB_OUTPUT" <<'PY'
+          import json, sys
+          builds = {p["name"]: p.get("build") for p in json.load(open("scripts/real_projects.json"))["projects"]}
+          vias = ["cli", "plugin"] if sys.argv[2] == "both" else [sys.argv[2]]
+          runs = [{"project": name, "via": via} for name in sys.argv[1].split() for via in vias
+                  if via == "cli" or builds.get(name) in ("maven", "gradle")]
+          print("runs=" + json.dumps(runs))
+          PY
+          echo "tests=$TESTS" >> "$GITHUB_OUTPUT"
+
+  repair:
+    name: Real project ${{ matrix.project }} (${{ matrix.via }})
+    needs: list
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.list.outputs.runs) }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+      - uses: gradle/actions/setup-gradle@v6
+        with:
+          gradle-version: "9.1.0"
+      - name: Install Maven and Ant if missing
+        run: |
+          missing=()
+          command -v mvn >/dev/null || missing+=(maven)
+          command -v ant >/dev/null || missing+=(ant)
+          if [ ${#missing[@]} -gt 0 ]; then
+            sudo apt-get update -q
+            sudo apt-get install -y -q --no-install-recommends "${missing[@]}"
+          fi
+      - name: Build the arodnap distribution
+        if: matrix.via == 'cli'
+        run: mvn -B -ntp package -DskipTests
+      - name: Install the plugins and tools in the local Maven repository
+        if: matrix.via == 'plugin'
+        run: |
+          mvn -B -ntp install -DskipTests
+          gradle -p arodnap-gradle-plugin --console=plain publishToMavenLocal
+      - name: Repair ${{ matrix.project }}
+        env:
+          PROJECT: ${{ matrix.project }}
+          VIA: ${{ matrix.via }}
+          TESTS: ${{ needs.list.outputs.tests == 'true' && '--tests' || '' }}
+        run: python3 scripts/real_projects.py run "$PROJECT" --via "$VIA" $TESTS --work-dir build/real-projects
+      - name: Keep the report, patch and logs
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ matrix.project }}-${{ matrix.via }}
+          path: |
+            build/real-projects/${{ matrix.project }}/*.log
+            build/real-projects/${{ matrix.project }}/out/report.json
+            build/real-projects/${{ matrix.project }}/out/report.html
+            build/real-projects/${{ matrix.project }}/out/patches/
+          if-no-files-found: ignore
