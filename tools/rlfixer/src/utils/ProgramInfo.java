@@ -32,6 +32,8 @@ import com.ibm.wala.ipa.callgraph.Entrypoint;
 import com.ibm.wala.ipa.callgraph.cha.CHACallGraph;
 import com.ibm.wala.ipa.callgraph.impl.DefaultEntrypoint;
 import com.ibm.wala.ipa.callgraph.impl.Util;
+import com.ibm.wala.ipa.callgraph.propagation.cfa.ZeroXCFABuilder;
+import com.ibm.wala.ipa.callgraph.propagation.cfa.ZeroXInstanceKeys;
 import com.ibm.wala.ipa.cha.ClassHierarchy;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.ipa.cha.ClassHierarchyFactory;
@@ -80,6 +82,8 @@ public class ProgramInfo {
 
 	// Constants
 	public static final int MAX_ALLOWED_FANOUT = 10;
+	// Models of JDK native methods WALA does not cover (a resource on RLFixer's class path).
+	public static final String JDK_SUMMARIES = "rlfixer_jdk_summaries.xml";
 	public static final boolean SKIP_LIBRARY = true;
 
 	public static final boolean printWarnings = true;
@@ -197,8 +201,14 @@ public class ProgramInfo {
 			// Iterable<Entrypoint> entrypoints = Util.makeMainEntrypoints(scope, cha);
 			AnalysisOptions options = new AnalysisOptions(analysisScope, entrypoints);
 			options.setReflectionOptions(ReflectionOptions.NONE);
-			CallGraphBuilder<?> builder = Util.makeZeroCFABuilder(Language.JAVA, options, new AnalysisCacheImpl(), cha,
-					analysisScope);
+			// The steps of Util.makeZeroCFABuilder, with RLFixer's models of JDK native methods
+			// added on top of WALA's own. makeZeroCFABuilder itself cannot be used: it resets the
+			// selectors, which would drop models added before it.
+			Util.addDefaultSelectors(options, cha);
+			Util.addDefaultBypassLogic(options, Util.class.getClassLoader(), cha);
+			Util.addBypassLogic(options, ProgramInfo.class.getClassLoader(), JDK_SUMMARIES, cha);
+			CallGraphBuilder<?> builder = ZeroXCFABuilder.make(Language.JAVA, cha, options, new AnalysisCacheImpl(),
+					null, null, ZeroXInstanceKeys.NONE);
 			callgraph = builder.makeCallGraph(options, null);
 		} else { // use CHA
 			CHACallGraph cg = new CHACallGraph(cha);
