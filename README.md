@@ -21,37 +21,87 @@ There are three ways to run it, all with the same analysis and the same outputs:
 
 ## Install
 
-There is no release yet. Build Arodnap from this repository with JDK 17 or newer
-and Maven:
+The current version is 0.1.0. The Maven plugin and Arodnap's tools are on Maven
+Central, the Gradle plugin is on the Gradle Plugin Portal, and the command line is
+on [GitHub Releases](https://github.com/typetools/arodnap/releases). All three
+need JDK 17 or newer (see [Prerequisites](#prerequisites)). The plugins download
+Arodnap's tools and the Checker Framework the first time they run, like any other
+dependency.
 
-```bash
-mvn install -DskipTests
+### Maven
+
+Add the plugin to the `pom.xml` you run `mvn` in. In a multi-module build, that is
+the top-level one:
+
+```xml
+<build>
+  <plugins>
+    <plugin>
+      <groupId>io.github.iamsanjaymalakar</groupId>
+      <artifactId>arodnap-maven-plugin</artifactId>
+      <version>0.1.0</version>
+    </plugin>
+  </plugins>
+</build>
 ```
 
-- **Command line**: the build leaves the distribution in
-  `arodnap-distribution/target/arodnap-<version>-bin/arodnap-<version>/` (and as
-  `.zip` and `.tar.gz` next to it). It holds everything Arodnap runs: its jars,
-  the repair tools, the Checker Framework and the stubs. Put its `bin/arodnap` on
-  your `PATH`, or link to it.
-- **Maven plugin**: `mvn install` put it in your local Maven repository. Run it by
-  its full name, `mvn compile io.github.iamsanjaymalakar:arodnap-maven-plugin:<version>:repair`,
-  or declare it in your POM's `<build><plugins>` and use `mvn compile arodnap:repair`.
-- **Gradle plugin**: publish it to your local Maven repository too, then let your
-  build find it there:
+This changes nothing in your normal build: Arodnap runs only when you call one of
+its goals, such as `mvn compile arodnap:repair`. See [Maven plugin](#maven-plugin)
+for the goals and settings.
 
-  ```bash
-  gradle -p arodnap-gradle-plugin publishToMavenLocal
-  ```
+To try it without editing the POM, call it by its full name:
 
-  ```kotlin
-  // settings.gradle.kts
-  pluginManagement {
-      repositories {
-          mavenLocal()
-          gradlePluginPortal()
-      }
-  }
-  ```
+```bash
+mvn compile io.github.iamsanjaymalakar:arodnap-maven-plugin:0.1.0:repair
+```
+
+### Gradle
+
+Apply the plugin in the root project's build file. In a multi-project build, that
+is the top-level one. The root project must also be able to download from Maven
+Central, where Arodnap's tools come from.
+
+Kotlin, `build.gradle.kts`:
+
+```kotlin
+plugins {
+    id("io.github.iamsanjaymalakar.arodnap") version "0.1.0"
+}
+
+repositories {
+    mavenCentral()
+}
+```
+
+Groovy, `build.gradle`:
+
+```groovy
+plugins {
+    id 'io.github.iamsanjaymalakar.arodnap' version '0.1.0'
+}
+
+repositories {
+    mavenCentral()
+}
+```
+
+If your build declares its repositories in `settings.gradle(.kts)`, under
+`dependencyResolutionManagement`, leave out the `repositories` block above and
+make sure `mavenCentral()` is in the settings' list instead. See
+[Gradle plugin](#gradle-plugin) for the tasks and settings.
+
+### Command line
+
+Download `arodnap-0.1.0-bin.zip` (or `.tar.gz`) from the
+[release](https://github.com/typetools/arodnap/releases/tag/v0.1.0). It holds
+everything Arodnap runs: its jars, the repair tools, the Checker Framework and the
+stubs. Unpack it and put its `bin` directory on your `PATH`:
+
+```bash
+unzip arodnap-0.1.0-bin.zip
+export PATH="$PWD/arodnap-0.1.0/bin:$PATH"
+arodnap doctor /path/to/repo
+```
 
 ## Prerequisites
 
@@ -143,6 +193,23 @@ mvn arodnap:apply
 `analyze` and `infer` are the other two goals. The tools the plugin runs are
 Maven artifacts, downloaded like any other (mirrors and proxies apply).
 
+Settings go in the plugin's `<configuration>`:
+
+```xml
+<plugin>
+  <groupId>io.github.iamsanjaymalakar</groupId>
+  <artifactId>arodnap-maven-plugin</artifactId>
+  <version>0.1.0</version>
+  <configuration>
+    <fieldTransformations>resources</fieldTransformations>  <!-- or all, off -->
+    <analysisTimeout>3600</analysisTimeout>                <!-- seconds; none by default -->
+  </configuration>
+</plugin>
+```
+
+or on the command line, as `-D` and the property name:
+`mvn compile arodnap:repair -Darodnap.fieldTransformations=off`.
+
 | Parameter | Property | Default |
 |---|---|---|
 | `outputDirectory` | `arodnap.outputDirectory` | `target/arodnap` of the top-level project |
@@ -154,22 +221,8 @@ Maven artifacts, downloaded like any other (mirrors and proxies apply).
 
 ## Gradle plugin
 
-Apply it to the root project; its tasks cover every project of the build:
-
-```kotlin
-plugins {
-    id("io.github.iamsanjaymalakar.arodnap") version "<version>"
-}
-
-repositories {
-    mavenCentral()  // where the tools come from
-}
-
-arodnap {
-    fieldTransformations = "resources"  // or "all", "off"
-    analysisTimeout = 3600              // seconds; none by default
-}
-```
+Apply it to the root project, as shown in [Install](#gradle). Its tasks cover
+every project of the build:
 
 ```bash
 ./gradlew arodnapDoctor
@@ -177,10 +230,26 @@ arodnap {
 ./gradlew arodnapApply
 ```
 
-`arodnapAnalyze` and `arodnapInfer` are the other two tasks. Outputs go to
-`build/arodnap` (`arodnap.outputDirectory`). It needs Gradle 8.14 or newer. The
-tasks read every project's `compileJava` task, so they do not work with the
-configuration cache.
+`arodnapAnalyze` and `arodnapInfer` are the other two tasks. They need Gradle
+8.14 or newer. The tasks read every project's `compileJava` task, so they do not
+work with the configuration cache.
+
+Settings go in an `arodnap` block in the same build file. This block is the same
+in Kotlin and Groovy:
+
+```kotlin
+arodnap {
+    fieldTransformations = "resources"  // or "all", "off"
+    analysisTimeout = 3600              // seconds; none by default
+}
+```
+
+| Setting | Default |
+|---|---|
+| `outputDirectory` | `build/arodnap` of the root project |
+| `fieldTransformations` | `"resources"` |
+| `keepWorkspace` | `false` |
+| `analysisTimeout`, `stageTimeout` (seconds) | none |
 
 ## Typical Workflow
 
@@ -354,6 +423,31 @@ python3 scripts/real_projects.py run commons-csv
 ```
 
 See [`docs/testing.md`](docs/testing.md) for the test layers and conventions.
+
+### Using a build from source
+
+`mvn install` leaves the command line in
+`arodnap-distribution/target/arodnap-<version>-bin/arodnap-<version>/` (and as
+`.zip` and `.tar.gz` next to it), and puts the Maven plugin in your local Maven
+repository, where the POM snippet above finds it with the version from this
+repository's `pom.xml`. For the Gradle plugin, publish it to your local Maven
+repository too, then let your build look there for plugins:
+
+```bash
+gradle -p arodnap-gradle-plugin publishToMavenLocal
+```
+
+```kotlin
+// settings.gradle.kts
+pluginManagement {
+    repositories {
+        mavenLocal()
+        gradlePluginPortal()
+    }
+}
+```
+
+The project's own repositories need `mavenLocal()` too, for the tools.
 
 ## Contributor Notes
 

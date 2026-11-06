@@ -62,8 +62,9 @@ against the real Maven Central and Plugin Portal.
    mvn versions:set -DnewVersion=0.1.0 -DgenerateBackupPoms=false
    ```
 
-   Commit, push a tag `v0.1.0` on that commit, and approve the run. The workflow checks that the
-   tag and the build's version agree.
+   In the same commit, set the version in the README's install snippets (the POM snippets, the
+   plugin IDs, the command line's zip and release link). Commit, push a tag `v0.1.0` on that
+   commit, and approve the run. The workflow checks that the tag and the build's version agree.
 3. **After it.** Edit the draft GitHub release and publish it. Once the Gradle plugin is approved
    and Central has the release (usually within half an hour), run **Release** with mode `check`
    and the version. Then set the next snapshot version (`0.2.0-SNAPSHOT`) and commit.
