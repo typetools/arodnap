@@ -1,37 +1,55 @@
 # Arodnap
 
-Arodnap repairs Java resource leaks. It is the tool from the paper
-"Repairing Leaks in Resource Wrappers": it finds leaks with the Checker
-Framework's Resource Leak Checker, fixes resource wrapper classes and owning
-fields, and turns RLFixer's suggestions into source patches.
+Arodnap finds resource leaks in Java code and repairs them. It finds leaks with
+the Checker Framework's Resource Leak Checker, fixes resource wrapper classes
+and the fields that own resources, and turns RLFixer's fix suggestions into
+source changes, all in one patch for you to review and apply. It is the tool
+from the paper "Repairing Leaks in Resource Wrappers".
 
-It works on Gradle (including multi-module builds), Maven and Ant projects, and
-on any other build that runs `javac`, by watching the project's own build. It
-analyzes a temporary copy of the project, never edits the original repository
-unless you run `apply`, and produces one reviewable patch that has been
-verified to apply.
+It works with Maven, Gradle (including multi-module builds), Ant, and any other
+build that runs `javac`. It analyzes a copy of your project; your code changes
+only when you apply the patch.
 
-There are three ways to run it, all with the same analysis and the same outputs:
+## Example
 
-| | Run | Reads the build by |
-|---|---|---|
-| Command line | `arodnap repair /path/to/repo` | running the build and recording each `javac` call |
-| Maven plugin | `mvn compile arodnap:repair` | the reactor's modules |
-| Gradle plugin | `./gradlew arodnapRepair` | every project's `compileJava` task |
+This method never closes its stream:
 
-## Install
+```java
+public String readAll(String path) throws IOException {
+    FileInputStream in = new FileInputStream(path);
+    return IOUtils.toString(in, StandardCharsets.UTF_8);
+}
+```
 
-The current version is 0.1.0. The Maven plugin and Arodnap's tools are on Maven
-Central, the Gradle plugin is on the Gradle Plugin Portal, and the command line is
-on [GitHub Releases](https://github.com/typetools/arodnap/releases). All three
-need JDK 17 or newer (see [Prerequisites](#prerequisites)). The plugins download
-Arodnap's tools and the Checker Framework the first time they run, like any other
-dependency.
+`./gradlew arodnapRepair` reports:
+
+```text
+Resource leaks: 1 found, 1 fixed, 0 remaining
+Patch:  build/arodnap/patches/arodnap.patch (1 file(s))
+Apply:  ./gradlew arodnapApply
+Report: build/arodnap/report.html
+```
+
+The patch:
+
+```diff
+     public String readAll(String path) throws IOException {
+-        FileInputStream in = new FileInputStream(path);
+-        return IOUtils.toString(in, StandardCharsets.UTF_8);
++        try (FileInputStream in = new FileInputStream(path)) {
++            return IOUtils.toString(in, StandardCharsets.UTF_8);
++        }
+     }
+```
+
+## Getting Started
+
+Arodnap needs JDK 17 or newer, on Linux or macOS. Use it as a Maven plugin, a
+Gradle plugin or a command-line tool; all three run the same analysis.
 
 ### Maven
 
-Add the plugin to the `pom.xml` you run `mvn` in. In a multi-module build, that is
-the top-level one:
+Add the plugin to the top-level `pom.xml`:
 
 ```xml
 <build>
@@ -45,23 +63,21 @@ the top-level one:
 </build>
 ```
 
-This changes nothing in your normal build: Arodnap runs only when you call one of
-its goals, such as `mvn compile arodnap:repair`. See [Maven plugin](#maven-plugin)
-for the goals and settings.
-
-To try it without editing the POM, call it by its full name:
+It runs only when you call it:
 
 ```bash
-mvn compile io.github.iamsanjaymalakar:arodnap-maven-plugin:0.1.0:repair
+mvn compile arodnap:repair   # write the patch
+mvn arodnap:apply            # apply it to your project
 ```
+
+To try it without editing the POM, call it by its full name:
+`mvn compile io.github.iamsanjaymalakar:arodnap-maven-plugin:0.1.0:repair`.
+The other goals and the settings are in [Maven plugin](docs/usage.md#maven-plugin).
 
 ### Gradle
 
-Apply the plugin in the root project's build file. In a multi-project build, that
-is the top-level one. The root project must also be able to download from Maven
-Central, where Arodnap's tools come from.
-
-Kotlin, `build.gradle.kts`:
+Add the plugin to the root project's `build.gradle.kts`. It needs Gradle 8.14 or
+newer:
 
 ```kotlin
 plugins {
@@ -69,394 +85,85 @@ plugins {
 }
 
 repositories {
-    mavenCentral()
+    mavenCentral()  // where Arodnap's tools come from
 }
 ```
 
-Groovy, `build.gradle`:
+In a Groovy `build.gradle`, the plugin line is
+`id 'io.github.iamsanjaymalakar.arodnap' version '0.1.0'`.
 
-```groovy
-plugins {
-    id 'io.github.iamsanjaymalakar.arodnap' version '0.1.0'
-}
-
-repositories {
-    mavenCentral()
-}
+```bash
+./gradlew arodnapRepair   # write the patch
+./gradlew arodnapApply    # apply it to your project
 ```
 
-If your build declares its repositories in `settings.gradle(.kts)`, under
-`dependencyResolutionManagement`, leave out the `repositories` block above and
-make sure `mavenCentral()` is in the settings' list instead. See
-[Gradle plugin](#gradle-plugin) for the tasks and settings.
+The other tasks, the settings, and builds that declare their repositories in
+`settings.gradle(.kts)` are covered in [Gradle plugin](docs/usage.md#gradle-plugin).
 
 ### Command line
 
-Download `arodnap-0.1.0-bin.zip` (or `.tar.gz`) from the
-[release](https://github.com/typetools/arodnap/releases/tag/v0.1.0). It holds
-everything Arodnap runs: its jars, the repair tools, the Checker Framework and the
-stubs. Unpack it and put its `bin` directory on your `PATH`:
+Download `arodnap-0.1.0-bin.zip` from the
+[release](https://github.com/typetools/arodnap/releases/tag/v0.1.0), unzip it,
+and put its `bin` directory on your `PATH`:
 
 ```bash
 unzip arodnap-0.1.0-bin.zip
 export PATH="$PWD/arodnap-0.1.0/bin:$PATH"
-arodnap doctor /path/to/repo
+
+arodnap repair /path/to/project
+arodnap apply --patch-dir ./arodnap-out/patches /path/to/project
 ```
 
-## Prerequisites
+It runs the project's Gradle, Maven or Ant build. For any other build, pass the
+command that compiles it: `arodnap repair /path/to/project -- ./build.sh`.
 
-- JDK 17 or newer, as `JAVA_HOME` or as the first `java` on `PATH` (for the
-  plugins, the JDK that runs Maven or Gradle). The whole analysis (whole-program
-  inference, the Resource Leak Checker, RLFixer and the repair tools) runs on this
-  one JDK; CI tests 17, 21 and 25. The Checker Framework 4.2.3 that Arodnap uses is
-  tested upstream up to JDK 26, and `doctor` warns (but does not stop you) on newer
-  JDKs. Your project itself may target any release this JDK can compile.
-- Linux or macOS. The command line records builds through shell scripts; the
-  plugins have not been tried on Windows.
-- whatever the project's build needs: `./gradlew` or `gradle`, `./mvnw` or
-  `mvn`, `ant`, or the tools your own build command uses
+## Before You Apply The Patch
 
-`doctor` (`arodnap doctor`, `mvn arodnap:doctor`, `./gradlew arodnapDoctor`)
-checks all of these.
+- `report.html` lists every leak: a fixed one with the change that fixed it, a
+  remaining one with the reason Arodnap left it.
+- The patch is checked to apply and compile, not to keep the program's
+  behavior. Review it, and run your tests after applying it.
+- If Arodnap fails on your project, run `doctor` first (`mvn arodnap:doctor`,
+  `./gradlew arodnapDoctor` or `arodnap doctor`): it checks the JDK and that
+  Arodnap can read your build.
 
-## Command line
+## Limitations
 
-```bash
-arodnap analyze /path/to/repo
-arodnap infer /path/to/repo
-arodnap repair /path/to/repo
-arodnap apply --patch-dir ./arodnap-out/patches /path/to/repo
-arodnap doctor /path/to/repo
-```
+Not supported yet: Lombok, Kotlin and Android sources (Java sources in the same
+build are analyzed), builds that compile Java without calling `javac` or a
+supported build tool, and `repair` on sources that are not valid UTF-8. Leaks in
+code marked `@SuppressWarnings("resource")` and in generated sources are
+reported but not repaired. See
+[Leaks Arodnap leaves alone](docs/usage.md#leaks-arodnap-leaves-alone).
 
-`analyze`, `infer`, `repair` and `doctor` accept the project's build command
-after `--`:
+## Documentation
 
-```bash
-arodnap repair /path/to/repo -- ./build.sh           # any build that runs javac
-arodnap repair /path/to/repo -- mvn -Pci compile      # override the default command
-arodnap repair /path/to/repo -- ./gradlew :app:compileJava
-```
+- [Using Arodnap](docs/usage.md): every command, goal, task and setting, how
+  Arodnap reads your build, what it writes, and troubleshooting
+- [Architecture](docs/architecture.md), [testing](docs/testing.md) and
+  [releasing](docs/releasing.md), for contributors
 
-Command summary:
-
-- `analyze`: run one build-backed Resource Leak Checker pass and emit
-  diagnostics plus adapter metadata.
-- `infer`: run one `reanalyze(workspace)` cycle and preserve inferred `.ajava`
-  outputs.
-- `repair`: run the full workspace-based repair flow: analysis, close injector,
-  owning-field repair, RLFixer fix suggestions, RLPatcher materialization, a
-  final reanalysis, and one verified patch bundle covering every change.
-- `apply`: validate a previously emitted patch bundle with a dry run, then
-  apply it to the original repository. This is the only public command that
-  mutates the original repository.
-- `doctor`: run environment checks plus adapter-backed repository support and
-  compile-target validation. It also writes `arodnap-out/doctor.json`.
-
-Common options:
-
-- `--out-dir`: output root. Defaults to `./arodnap-out`.
-- `--keep-workspace`: keep the temporary workspace after the command exits.
-- `--build-args`: repeatable extra arguments for the default build command.
-- `--compile-target`: the Gradle task, Maven phase or Ant target the default
-  build command runs (`compileJava`, `compile`, and Ant's default target).
-- `--checker-framework`: use another Checker Framework distribution (the
-  directory containing `checker/dist/checker.jar`). Defaults to
-  `$ARODNAP_CHECKER_FRAMEWORK`, then the bundled 4.2.3.
-- `ARODNAP_OPTS`: options for the JVM that runs `arodnap` itself (the tools run in
-  their own JVMs).
-- `--field-transformations resources|all|off` (`repair` only): before analysis,
-  private fields that can hold a resource are made `final`, or turned into local
-  variables when every method assigns them before use. This makes ownership
-  explicit and removes false leak warnings. `all` changes every eligible field,
-  as in the paper; `off` skips it.
-- `--build-timeout`, `--analysis-timeout`, `--stage-timeout` (seconds): optional
-  limits. There are none by default. Each limit applies to every single command
-  of its kind: the captured build; each Checker Framework run (every inference
-  iteration, every leak check) and the analysis compile; each repair tool run
-  (RLPatcher once per suggestion). A command over its limit is killed with its
-  child processes and the run fails with a message naming the limit, except
-  for RLPatcher, where that suggestion is recorded as `timed_out`.
-- `apply` also requires `--patch-dir`, usually `./arodnap-out/patches`.
-
-## Maven plugin
-
-The goals run once, from the top-level project, and cover every module of the
-reactor. Compile first, so generated sources exist:
-
-```bash
-mvn compile arodnap:doctor
-mvn compile arodnap:repair
-mvn arodnap:apply
-```
-
-`analyze` and `infer` are the other two goals. The tools the plugin runs are
-Maven artifacts, downloaded like any other (mirrors and proxies apply).
-
-Settings go in the plugin's `<configuration>`:
-
-```xml
-<plugin>
-  <groupId>io.github.iamsanjaymalakar</groupId>
-  <artifactId>arodnap-maven-plugin</artifactId>
-  <version>0.1.0</version>
-  <configuration>
-    <fieldTransformations>resources</fieldTransformations>  <!-- or all, off -->
-    <analysisTimeout>3600</analysisTimeout>                <!-- seconds; none by default -->
-  </configuration>
-</plugin>
-```
-
-or on the command line, as `-D` and the property name:
-`mvn compile arodnap:repair -Darodnap.fieldTransformations=off`.
-
-| Parameter | Property | Default |
-|---|---|---|
-| `outputDirectory` | `arodnap.outputDirectory` | `target/arodnap` of the top-level project |
-| `fieldTransformations` (`repair`) | `arodnap.fieldTransformations` | `resources` |
-| `keepWorkspace` | `arodnap.keepWorkspace` | `false` |
-| `analysisTimeout`, `stageTimeout` (seconds) | `arodnap.analysisTimeout`, `arodnap.stageTimeout` | none |
-| `patchDirectory` (`apply`) | `arodnap.patchDirectory` | `patches` in the output directory |
-| `skip` | `arodnap.skip` | `false` |
-
-## Gradle plugin
-
-Apply it to the root project, as shown in [Install](#gradle). Its tasks cover
-every project of the build:
-
-```bash
-./gradlew arodnapDoctor
-./gradlew arodnapRepair
-./gradlew arodnapApply
-```
-
-`arodnapAnalyze` and `arodnapInfer` are the other two tasks. They need Gradle
-8.14 or newer. The tasks read every project's `compileJava` task, so they do not
-work with the configuration cache.
-
-Settings go in an `arodnap` block in the same build file. This block is the same
-in Kotlin and Groovy:
-
-```kotlin
-arodnap {
-    fieldTransformations = "resources"  // or "all", "off"
-    analysisTimeout = 3600              // seconds; none by default
-}
-```
-
-| Setting | Default |
-|---|---|
-| `outputDirectory` | `build/arodnap` of the root project |
-| `fieldTransformations` | `"resources"` |
-| `keepWorkspace` | `false` |
-| `analysisTimeout`, `stageTimeout` (seconds) | none |
-
-## Typical Workflow
-
-```bash
-arodnap doctor /path/to/repo
-arodnap repair /path/to/repo
-arodnap apply --patch-dir ./arodnap-out/patches /path/to/repo
-```
-
-The intended flow is:
-
-1. Run `doctor` first to confirm the environment and that Arodnap can capture
-   the project's build.
-2. Run `repair` to analyze a workspace copy and emit a normalized patch bundle.
-3. Inspect `report.json`, `manifest.json`, stage outputs, and the patch bundle.
-4. Run `apply` only when you are ready to update the original repository, then
-   run your tests: the patch is verified to apply and compile, not to keep the
-   program's behavior.
-
-## Leaks Arodnap Leaves Alone
-
-Code annotated `@SuppressWarnings("resource")` (the key javac, Eclipse and
-IntelliJ use) or `@SuppressWarnings("all")`, on a class, method, field or
-variable, is code whose developers decided the warning is intended: typically a
-resource handed to a caller or kept by the object that is returned. The Resource
-Leak Checker does not honor that key, so it still reports those leaks; Arodnap
-lists them in the report as `suppressed` and does not repair them.
-
-Files the build generates (a parser generator's output, annotation processor
-output) are analyzed with the rest, but their leaks are listed as `generated` and
-never repaired, and they are never in the patch: the build writes them again.
-
-## How Arodnap Sees Your Build
-
-The plugins read the build's model directly: each Maven module's compile source
-roots, classpath and compiler settings, or each Gradle project's `compileJava`
-task. The command line instead runs the project's build and records every
-`javac` call through the build tool's own extension point:
-
-| Build | Detected by | Default command | How javac calls are recorded |
-|---|---|---|---|
-| Gradle | `build.gradle(.kts)` or `settings.gradle(.kts)` | `gradle[w] clean compileJava` | init script on every `JavaCompile` task |
-| Maven | `pom.xml` | `mvn[w] clean compile` | compiler plugin forks to a recording `javac` |
-| Ant | `build.xml` | `ant` (default target) | recording Ant compiler adapter |
-| anything else | `-- <command>` | none | recording `javac` first on `PATH` |
-
-All recorded sources are analyzed together (every module of a multi-module
-build), with the dependencies the build resolved, and with the build's own
-`--release` level and `-encoding` (release levels below 8 are analyzed as 8). Files the build generates
-are analyzed but never repaired or patched: for the command line, the sources the recorded
-build created or wrote again; for the plugins, the sources in a project's build directory
-(`target/`, `build/`) and annotation processor output.
-
-Not supported yet (Arodnap stops with a clear message):
-
-- Lombok, which rewrites code during compilation
-- builds that compile Java without calling `javac` or a supported build tool
-  (for example a script that uses `$JAVA_HOME/bin/javac` directly)
-- Kotlin and Android sources (Java sources in the same build are analyzed)
-- `repair` on sources that are not valid UTF-8 (for example ISO-8859-1 files with
-  accented characters); `analyze` and `infer` handle them
-
-## Workspace And Mutation Model
-
-`analyze`, `infer`, and `repair` operate on a temporary workspace copy. They do
-not edit the original repository by default.
-
-`repair` is intentionally non-destructive:
-
-- Arodnap copies the target repository into a temporary workspace.
-- Mutation-capable stages run only against that workspace copy, and analysis
-  is rerun after each stage that changes sources.
-- Each stage writes its own directory under `arodnap-out/stages/<stage>/`.
-- The `bundle` stage diffs the original repository against the final workspace
-  into one patch, replays it onto a clean copy of the original files to check
-  it reproduces the repair exactly, and emits it under `arodnap-out/patches/`.
-
-`apply` is intentionally separate:
-
-- it validates the emitted patch bundle with a dry run against a clean copy of
-  the original repository
-- it only mutates the original repository after that validation succeeds
-
-## Output Artifacts
-
-By default Arodnap writes to `./arodnap-out`. The exact top-level files depend
-on the command:
-
-```text
-arodnap-out/
-  doctor.json           # doctor only
-  report.json           # analyze / infer / repair
-  manifest.json         # analyze / infer / repair
-  diagnostics/
-  inference/
-  logs/
-    <analysis-label>/
-  stages/
-    close_injector/
-    owning_field/
-    rlfixer/
-    rlpatcher/
-    bundle/
-  patches/
-    manifest.json
-    arodnap.patch
-```
-
-`repair` ends with a short summary: how many resource leaks it found, fixed and
-left, why the rest remain, and the command that applies the patch.
-
-Important outputs:
-
-- `report.html` (`repair`): a self-contained page to open in a browser. It lists
-  every resource leak as fixed or remaining; a fixed leak shows the change that
-  fixed it, a remaining one shows why Arodnap left it (for example, RLFixer found
-  no fix, or a fix would have to reorder code). It ends with the full patch.
-- `doctor.json`: machine-readable environment and supportability checks from
-  `doctor`
-- `report.json`: top-level run summary with adapter, analysis, and stage timing
-  metadata; for `repair`, `leaks` holds the same per-leak results as
-  `report.html`
-- `manifest.json`: top-level manifest with config, workspace, stage history,
-  and artifact references
-- `diagnostics/*.txt`: one diagnostics file per analysis point
-- `logs/<label>/`: analysis logs and adapter metadata files
-- `inference/<label>/`: preserved inferred outputs for `infer` and `repair`
-- `stages/<name>/stage_result.json`: structured stage results for `repair`
-- `patches/manifest.json` and `patches/arodnap.patch`: the verified patch
-  bundle consumed by `apply`; review `arodnap.patch` before applying
-
-## Troubleshooting
-
-- If `doctor` says the build compiled no Java sources, make sure the build
-  command compiles the main sources and does not skip compilation as up to
-  date (the default commands clean first).
-- The captured build's output and the recorded `javac` calls are in
-  `arodnap-out/logs/<label>/build.log` and `javac-invocations.jsonl`.
-- If the default build command is wrong for the repository, pass your own after
-  `--` or use `--compile-target`.
-- If analysis fails on a very new JDK, run `arodnap doctor`: it says whether
-  the JDK is newer than the Checker Framework is tested on. Use a tested JDK
-  via `JAVA_HOME`, or a newer Checker Framework via `--checker-framework`.
-- If you need to inspect how a stage behaved, look at
-  `arodnap-out/stages/<stage>/stage_result.json` and `stage.log` before
-  rerunning the command.
-
-## Building And Testing
+## Building From Source
 
 ```bash
 mvn verify
 ```
 
-builds everything, runs the unit, pipeline and snapshot tests and the tools' own
-tests, and assembles the distribution. The end-to-end tests run real builds
-(Gradle, Maven, Ant and a plain javac script), whole-program inference, the
-Resource Leak Checker and every repair tool with nothing mocked, then apply the
-patch and compile the result. They need `gradle`, `mvn` and `ant` on `PATH`, take
-about half a minute per project, and are opt-in:
+builds everything and runs the tests. The end-to-end tests run real builds and
+every repair tool, with nothing mocked. They need `gradle`, `mvn` and `ant` on
+`PATH`, and are opt-in:
 
 ```bash
 ARODNAP_E2E=1 mvn install
 ARODNAP_E2E=1 gradle -p arodnap-gradle-plugin build
 ```
 
-Real open-source projects, cloned at pinned releases, check that nothing
-regressed on real code (the distribution must be built first):
+To use your own build of Arodnap, see
+[Using a build from source](docs/usage.md#using-a-build-from-source).
 
-```bash
-python3 scripts/real_projects.py run commons-csv
-```
+The paper's original evaluation scripts are kept, unmaintained, in
+[`legacy/`](legacy/README.md).
 
-See [`docs/testing.md`](docs/testing.md) for the test layers and conventions.
+## License
 
-### Using a build from source
-
-`mvn install` leaves the command line in
-`arodnap-distribution/target/arodnap-<version>-bin/arodnap-<version>/` (and as
-`.zip` and `.tar.gz` next to it), and puts the Maven plugin in your local Maven
-repository, where the POM snippet above finds it with the version from this
-repository's `pom.xml`. For the Gradle plugin, publish it to your local Maven
-repository too, then let your build look there for plugins:
-
-```bash
-gradle -p arodnap-gradle-plugin publishToMavenLocal
-```
-
-```kotlin
-// settings.gradle.kts
-pluginManagement {
-    repositories {
-        mavenLocal()
-        gradlePluginPortal()
-    }
-}
-```
-
-The project's own repositories need `mavenLocal()` too, for the tools.
-
-## Contributor Notes
-
-Contributor-facing architecture, test and release guidance lives in:
-
-- [`docs/architecture.md`](docs/architecture.md)
-- [`docs/testing.md`](docs/testing.md)
-- [`docs/releasing.md`](docs/releasing.md)
-
-The paper's original evaluation scripts (normalized `src/`, `lib/`, `info/`
-layout, Java 11) are kept for reference in [`legacy/`](legacy/README.md). They
-are not maintained and are not used by Arodnap.
+[MIT](LICENSE)
