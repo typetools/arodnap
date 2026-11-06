@@ -1,10 +1,26 @@
 # Arodnap
 
-Arodnap finds resource leaks in Java code and repairs them. It finds leaks with
-the Checker Framework's Resource Leak Checker, fixes resource wrapper classes
-and the fields that own resources, and turns RLFixer's fix suggestions into
-source changes, all in one patch for you to review and apply. It is the tool
-from the paper "Repairing Leaks in Resource Wrappers".
+Arodnap finds resource leaks in Java code and repairs them. That includes
+leaks in resource wrappers: classes that keep a resource in a field and must
+be closed themselves.
+
+It works in three steps:
+
+1. **Find the leaks.** The Checker Framework's Resource Leak Checker reports
+   every resource that may not be closed. Arodnap first infers who owns each
+   resource in your code.
+2. **Make resource lifecycles explicit.** Code transformations make resource
+   fields final, or local when a field isn't needed, and give wrapper classes a
+   `close()` method. This makes clear who is responsible for closing each
+   resource.
+3. **Patch.** An escape analysis decides where each resource can safely be
+   closed, and Arodnap adds the close there: a `try`-with-resources, a `try` /
+   `finally`, or a `close()` call.
+
+The analysis runs again after each step that changes code. The result is a
+single patch, checked to apply and compile, for you to review. The paper
+[Repairing Leaks in Resource Wrappers](https://arxiv.org/abs/2510.03461)
+(ASE 2025) describes each step.
 
 It works with Maven, Gradle (including multi-module builds), Ant, and any other
 build that runs `javac`. It analyzes a copy of your project; your code changes
@@ -160,9 +176,6 @@ ARODNAP_E2E=1 gradle -p arodnap-gradle-plugin build
 
 To use your own build of Arodnap, see
 [Using a build from source](docs/usage.md#using-a-build-from-source).
-
-The paper's original evaluation scripts are kept, unmaintained, in
-[`legacy/`](legacy/README.md).
 
 ## License
 
