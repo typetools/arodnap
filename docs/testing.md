@@ -121,4 +121,3 @@ counts. To test a newer release of a project, change its `ref` and record again.
 - outputs are where the output contract says, and patch bundles are consumable by `apply`
 - a stage normalizes its tool's output before it leaves the stage, and a crash fails it
 - unstable values are replaced before anything is compared exactly
-- nothing builds on the paper's scripts in `legacy/`

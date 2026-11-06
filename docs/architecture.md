@@ -317,10 +317,7 @@ Before a change alters the structure or meaning of the outputs above:
 
 Additive changes (new optional fields) need only the snapshot update.
 
-## Legacy Boundary
-
-The paper's original normalized-layout pipeline lives in `legacy/` for reference. Nothing
-else uses it, and it is not the architecture to build on.
+## Extending Arodnap
 
 When extending Arodnap, prefer:
 
