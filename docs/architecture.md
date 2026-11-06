@@ -23,7 +23,7 @@ The tools:
 | `tools/field-transformations` | Error Prone checks `ResourceFieldCanBeFinal` and `ResourceFieldCanBeLocal` |
 | `tools/close-injector` | AutoCloseInjector: the `close_injector` stage |
 | `tools/owning-field-fixer` | OwningFieldFixer: the `owning_field` stage |
-| `tools/rlfixer` | RLFixer (WALA 1.8.0): fix suggestions |
+| `tools/rlfixer` | RLFixer (WALA 1.8.0, plus its own models of JDK native methods WALA lacks): fix suggestions |
 | `tools/rlpatcher` | RLPatcher: turns suggestions into patches |
 | `tools/ant-capture`, `tools/maven-capture` | the command line's hooks for recording Ant and Maven builds |
 

@@ -1,0 +1,28 @@
+<?xml version="1.0" ?>
+<!DOCTYPE summary-spec>
+<!--
+  Models of JDK native methods that WALA's own natives.xml does not cover.
+
+  Without a model, WALA sees no value returned from a native method, so RLFixer loses track of
+  any resource that passes through one. When a newer JDK moves plain Java code into a native
+  method, RLFixer's results change on that JDK. Each model below gives back what the replaced
+  Java code did, so RLFixer reaches the same results on every supported JDK.
+-->
+<summary-spec>
+	<classloader name="Primordial">
+		<package name="java/lang/ref">
+			<class name="Reference">
+				<!--
+				  JDK-8352565 (JDK 26; backported to 21.0.13 and 25.0.5) changed Reference.get()
+				  from "return this.referent" to "return get0()", with get0() native. A resource
+				  held in a SoftReference or WeakReference cache is read back through it.
+				-->
+				<method name="get0" descriptor="()Ljava/lang/Object;">
+					<getfield class="Ljava/lang/ref/Reference" field="referent"
+						fieldType="Ljava/lang/Object" def="x" ref="arg0" />
+					<return value="x" />
+				</method>
+			</class>
+		</package>
+	</classloader>
+</summary-spec>
