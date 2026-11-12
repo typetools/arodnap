@@ -12,9 +12,9 @@
     <!-- The arodnap command as users download it (arodnap-<version>-bin.zip and .tar.gz): the
          launcher, the command line's jars, every tool, the Checker Framework and the stubs. Its
          integration tests run that distribution: real repairs and each tool's output contract.
-         A release attaches the archives to the GitHub release only. They are about 50 MB each,
-         and Maven Central caps how much a namespace publishes each month, so this module is not
-         deployed (here, and excluded in the root POM's release profile). -->
+         Users download the archives from the GitHub release, which the release workflow attaches
+         them to. Maven Central gets what the plugins download, so `mvn deploy` skips this module
+         and the root POM's release profile keeps it out of the Central upload. -->
     <artifactId>arodnap-distribution</artifactId>
     <packaging>pom</packaging>
     <name>Arodnap distribution</name>
