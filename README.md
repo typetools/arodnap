@@ -118,11 +118,13 @@ The other tasks, the settings, and builds that declare their repositories in
 
 ### Command line
 
-Download `arodnap-0.1.0-bin.zip` from the
-[release](https://github.com/typetools/arodnap/releases/tag/v0.1.0), unzip it,
-and put its `bin` directory on your `PATH`:
+Download
+[`arodnap-0.1.0-bin.zip`](https://github.com/typetools/arodnap/releases/download/v0.1.0/arodnap-0.1.0-bin.zip)
+from [Arodnap 0.1.0](https://github.com/typetools/arodnap/releases/tag/v0.1.0),
+unzip it, and put its `bin` directory on your `PATH`:
 
 ```bash
+curl -LO https://github.com/typetools/arodnap/releases/download/v0.1.0/arodnap-0.1.0-bin.zip
 unzip arodnap-0.1.0-bin.zip
 export PATH="$PWD/arodnap-0.1.0/bin:$PATH"
 

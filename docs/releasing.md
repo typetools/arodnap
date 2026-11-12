@@ -63,7 +63,7 @@ mode runs the same against the real Maven Central, Plugin Portal and GitHub rele
    ```
 
    In the same commit, set the version in the install snippets of `README.md` (the POM snippet,
-   the plugin IDs, the command line's zip and release link) and of `docs/usage.md` (the Maven
+   the plugin IDs, the command line's download links and commands) and of `docs/usage.md` (the Maven
    plugin's `<configuration>` example and the build-from-source note). Commit, push a tag `v0.1.0`
    on that commit, and approve the run. The workflow checks that the tag and the build's version agree.
 3. **After it.** Edit the draft GitHub release and publish it. Once the Gradle plugin is approved
