@@ -225,6 +225,10 @@
                         <configuration>
                             <publishingServerId>central</publishingServerId>
                             <deploymentName>Arodnap ${project.version}</deploymentName>
+                            <!-- The command-line archives go to the GitHub release only. -->
+                            <excludeArtifacts>
+                                <excludeArtifact>arodnap-distribution</excludeArtifact>
+                            </excludeArtifacts>
                             <autoPublish>${arodnap.central.autoPublish}</autoPublish>
                             <waitUntil>${arodnap.central.waitUntil}</waitUntil>
                         </configuration>

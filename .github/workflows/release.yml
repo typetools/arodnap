@@ -1,8 +1,8 @@
 name: Release
 
-# Pushing a version tag (v0.1.0) releases that version: every Maven module to Maven Central, then
-# the Gradle plugin to the Gradle Plugin Portal, then a draft GitHub release with the command-line
-# distribution attached. Run it by hand first as a dry run: the same build, uploaded to Central for
+# Pushing a version tag (v0.1.0) releases that version: every Maven module but the distribution to
+# Maven Central, then the Gradle plugin to the Gradle Plugin Portal, then a draft GitHub release
+# with the command-line distribution attached (only there: it is too large to send to Central). Run it by hand first as a dry run: the same build, uploaded to Central for
 # validation but not published (drop it in the Central portal afterwards), and the Gradle plugin
 # validated but not published. After a release, run it by hand to check the published artifacts.
 # See docs/releasing.md.
@@ -112,7 +112,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6
         with:
           gradle-version: "9.1.0"
-      # From Maven Central, the Gradle Plugin Portal and the published zip only.
+      # From Maven Central, the Gradle Plugin Portal and the zip on the published GitHub release only.
       - name: Repair test projects with the published release
         env:
           VERSION: ${{ inputs.version }}

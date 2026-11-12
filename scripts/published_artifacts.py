@@ -4,15 +4,19 @@
     python3 scripts/published_artifacts.py check                   # use them from build/staging
     python3 scripts/published_artifacts.py check --from central --version 0.1.0   # after a release
 
-`stage` publishes everything a release publishes (every Maven module, the tools, the command-line
-zip and the Gradle plugin) into a folder that stands in for Maven Central. `check` then repairs a
-test project three ways, each starting from empty caches (a new Maven local repository and Gradle
-user home) with only that folder, Maven Central and the Gradle Plugin Portal to download from, so
-nothing comes from this checkout or ~/.m2:
+`stage` publishes everything a release publishes into a folder: the Maven modules, the tools and the
+Gradle plugin into a Maven repository standing in for Maven Central, and the command-line zip into
+`github-release/`, standing in for the GitHub release. `check` then repairs a test project three
+ways, each starting from empty caches (a new Maven local repository and Gradle user home) with only
+that folder, Maven Central and the Gradle Plugin Portal to download from, so nothing comes from this
+checkout or ~/.m2:
 
 - the Maven plugin repairs test-projects/maven-dependency-leak
 - the Gradle plugin repairs test-projects/gradle-dependency-leak
-- the command line, unpacked from the published zip, repairs test-projects/javac-script
+- the command line, unpacked from the zip on the GitHub release, repairs test-projects/javac-script
+
+With `--from central`, the same comes from Maven Central, the Gradle Plugin Portal and the
+published GitHub release.
 
 A check passes when the repair succeeds and its patch changes exactly the leaking source.
 """
@@ -30,7 +34,7 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
 TEST_PROJECTS = REPO / "test-projects"
-CENTRAL = "https://repo1.maven.org/maven2"
+RELEASES = "https://github.com/typetools/arodnap/releases/download"
 
 
 def coordinates() -> tuple[str, str]:
@@ -60,6 +64,15 @@ def stage(staging: Path) -> None:
         logs / "stage-maven.log")
     run(["gradle", "-p", "arodnap-gradle-plugin", "--console=plain", "publishAllPublicationsToStagingRepository",
          f"-PstagingRepository={staging}"], REPO, logs / "stage-gradle.log")
+    # What the release workflow attaches to the GitHub release.
+    _, version = coordinates()
+    release = staging / "github-release"
+    release.mkdir()
+    shutil.copy2(REPO / "arodnap-distribution" / "target" / zip_name(version), release)
+
+
+def zip_name(version: str) -> str:
+    return f"arodnap-{version}-bin.zip"
 
 
 def patched_files(out: Path) -> list[str]:
@@ -115,17 +128,15 @@ def check_gradle_plugin(group: str, version: str, staging: Path | None, work: Pa
     expect("Gradle plugin", project / "build" / "arodnap", "src/main/java/com/arodnap/fixture/DependencyLeakExample.java")
 
 
-def check_command_line(group: str, version: str, staging: Path | None, work: Path) -> None:
-    print("== the command line from the published zip", flush=True)
-    path = f"{group.replace('.', '/')}/arodnap-distribution/{version}"
+def check_command_line(version: str, staging: Path | None, work: Path) -> None:
+    print("== the command line from the zip on the GitHub release", flush=True)
     if staging:
-        zips = sorted((staging / path).glob("arodnap-distribution-*-bin.zip"))
-        if not zips:
-            raise SystemExit(f"no arodnap-distribution zip in {staging / path}")
-        archive = zips[-1]
+        archive = staging / "github-release" / zip_name(version)
+        if not archive.is_file():
+            raise SystemExit(f"no {archive.name} in {archive.parent}")
     else:
-        archive = work / f"arodnap-distribution-{version}-bin.zip"
-        urllib.request.urlretrieve(f"{CENTRAL}/{path}/{archive.name}", archive)
+        archive = work / zip_name(version)
+        urllib.request.urlretrieve(f"{RELEASES}/v{version}/{archive.name}", archive)
     run(["unzip", "-q", str(archive), "-d", str(work / "cli")], work, work / "unzip.log")
     launcher = next((work / "cli").glob("arodnap-*/bin/arodnap"))
     project = work / "javac-script"
@@ -158,7 +169,7 @@ def main() -> int:
     work.mkdir(parents=True)
     check_maven_plugin(group, version, staging, work)
     check_gradle_plugin(group, version, staging, work)
-    check_command_line(group, version, staging, work)
+    check_command_line(version, staging, work)
     print(f"Arodnap {version} works from its published artifacts.", flush=True)
     return 0
 

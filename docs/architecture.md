@@ -14,7 +14,7 @@ for Maven and Gradle.
 | `arodnap-cli` | the `arodnap` command: records the project's build and runs the engine |
 | `arodnap-maven-plugin` | Maven goals over the whole reactor |
 | `arodnap-gradle-plugin` | Gradle tasks over every project of the build (its own Gradle build) |
-| `arodnap-distribution` | the command line as users download it, and its end-to-end tests |
+| `arodnap-distribution` | the command line as users download it from the GitHub release (not deployed to Maven Central), and its end-to-end tests |
 
 The tools:
 
