@@ -10,19 +10,14 @@ engine's `tools.properties` gets its tools' coordinates from it.
 
 [`.github/workflows/release.yml`](../.github/workflows/release.yml), on a tag `v<version>`:
 
-1. **Maven Central**: `mvn -P release deploy` uploads every module but the distribution (the
-   model, the engine, the command line, the Maven plugin and each tool) with sources, javadoc and
-   signatures, and waits until Central has published them. That is about 16 MB.
+1. **Maven Central**: `mvn -P release deploy` uploads the model, the engine, the command line,
+   the Maven plugin and each tool, with sources, javadoc and signatures, and waits until Central
+   has published them.
 2. **Gradle Plugin Portal**: `publishPlugins` publishes the Gradle plugin, which depends on the
    engine just published. A new plugin's first version is reviewed by the Gradle team before it
    appears, which can take a few days.
 3. **GitHub**: a draft release with the distribution (`arodnap-<version>-bin.zip` and `.tar.gz`)
-   attached, for you to edit and publish. This is the only place the distribution is published.
-   Each archive is about 50 MB, because it carries everything the command line runs, and
-   Central caps how much a namespace publishes each month; the plugins don't need it.
-
-With the distribution, each upload was about 120 MB: after two dry runs and the 0.1.0 release in
-November 2026, Central blocked further publishing until the next month.
+   attached, for you to edit and publish.
 
 ## That it works from what is published
 
@@ -73,7 +68,8 @@ mode runs the same against the real Maven Central, Plugin Portal and GitHub rele
    on that commit, and approve the run. The workflow checks that the tag and the build's version agree.
 3. **After it.** Edit the draft GitHub release and publish it. Once the Gradle plugin is approved
    and Central has the release (usually within half an hour), run **Release** with mode `check`
-   and the version; it downloads the command line from the published GitHub release. Then set the next snapshot version (`0.2.0-SNAPSHOT`) and commit.
+   and the version; it downloads the command line from the published GitHub release. Then set the
+   next snapshot version (`0.2.0-SNAPSHOT`) and commit.
 
 Nothing on Central can be deleted or changed once published, so always dry-run a new version.
 To check the release build locally without publishing: `mvn -P release package -Dgpg.skip`.
