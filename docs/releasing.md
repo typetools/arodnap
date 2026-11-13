@@ -10,9 +10,9 @@ engine's `tools.properties` gets its tools' coordinates from it.
 
 [`.github/workflows/release.yml`](../.github/workflows/release.yml), on a tag `v<version>`:
 
-1. **Maven Central**: `mvn -P release deploy` uploads every module (the model, the engine, the
-   command line, the Maven plugin, each tool and the distribution zip) with sources, javadoc and
-   signatures, and waits until Central has published them.
+1. **Maven Central**: `mvn -P release deploy` uploads the model, the engine, the command line,
+   the Maven plugin and each tool, with sources, javadoc and signatures, and waits until Central
+   has published them.
 2. **Gradle Plugin Portal**: `publishPlugins` publishes the Gradle plugin, which depends on the
    engine just published. A new plugin's first version is reviewed by the Gradle team before it
    appears, which can take a few days.
@@ -25,11 +25,11 @@ The plugins and the command line download nothing from this repository: the Mave
 plugins fetch Arodnap's tools and the Checker Framework from Maven repositories, and the
 distribution bundles them. [`scripts/published_artifacts.py`](../scripts/published_artifacts.py)
 checks that the published set is complete. `stage` publishes everything into a local folder
-standing in for Maven Central; `check` repairs a test project with the Maven plugin, the Gradle
-plugin and the command line from the zip, each from empty caches, with only that folder, Maven
-Central and the Gradle Plugin Portal to download from. CI runs both on every pull request
-(`Works from published artifacts`); after a release, the workflow's `check` mode runs the same
-against the real Maven Central and Plugin Portal.
+standing in for Maven Central and the GitHub release; `check` repairs a test project with the
+Maven plugin, the Gradle plugin and the command line from the zip, each from empty caches, with
+only that folder, Maven Central and the Gradle Plugin Portal to download from. CI runs both on
+every pull request (`Works from published artifacts`); after a release, the workflow's `check`
+mode runs the same against the real Maven Central, Plugin Portal and GitHub release.
 
 ## Accounts and secrets (once)
 
@@ -63,12 +63,13 @@ against the real Maven Central and Plugin Portal.
    ```
 
    In the same commit, set the version in the install snippets of `README.md` (the POM snippet,
-   the plugin IDs, the command line's zip and release link) and of `docs/usage.md` (the Maven
+   the plugin IDs, the command line's download links and commands) and of `docs/usage.md` (the Maven
    plugin's `<configuration>` example and the build-from-source note). Commit, push a tag `v0.1.0`
    on that commit, and approve the run. The workflow checks that the tag and the build's version agree.
 3. **After it.** Edit the draft GitHub release and publish it. Once the Gradle plugin is approved
    and Central has the release (usually within half an hour), run **Release** with mode `check`
-   and the version. Then set the next snapshot version (`0.2.0-SNAPSHOT`) and commit.
+   and the version; it downloads the command line from the published GitHub release. Then set the
+   next snapshot version (`0.2.0-SNAPSHOT`) and commit.
 
 Nothing on Central can be deleted or changed once published, so always dry-run a new version.
 To check the release build locally without publishing: `mvn -P release package -Dgpg.skip`.
