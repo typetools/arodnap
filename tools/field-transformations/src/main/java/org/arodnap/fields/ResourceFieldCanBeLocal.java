@@ -25,6 +25,7 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
+import com.sun.tools.javac.code.Type;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -33,11 +34,13 @@ import java.util.Map;
 import java.util.Set;
 import javax.inject.Inject;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.type.TypeKind;
 
 /**
  * Turns a private resource field into a local variable when every method that uses it assigns it
- * before reading it (Arodnap's "reducing scope" transformation). Based on Error Prone's
- * FieldCanBeLocal, extended to assignments inside {@code try}.
+ * before reading it, with no call in between that could reassign it (Arodnap's "reducing scope"
+ * transformation). Based on Error Prone's FieldCanBeLocal, extended to assignments inside {@code
+ * try}.
  *
  * <p>Only fields whose type can hold a resource are changed (see {@link ResourceFields}). Fields
  * are left alone when they have an initializer (removing it would drop its side effects), carry
@@ -147,6 +150,10 @@ public final class ResourceFieldCanBeLocal extends BugChecker implements Compila
                         inTryCatch = true; // Entering try block
                         scan(tryTree.getBlock(), unused);
                         inTryCatch = previousInTryCatch; // Restoring previous state after exiting try block
+                        if (!tryTree.getResources().isEmpty()) {
+                            // The resources' close() methods run when the block ends.
+                            unconditionallyAssigned.clear();
+                        }
                         for (Tree catchBlock : tryTree.getCatches()) {
                             scan(catchBlock, unused);
                         }
@@ -211,16 +218,81 @@ public final class ResourceFieldCanBeLocal extends BugChecker implements Compila
                         }
                     }
 
+                    // A call can reassign the field (the callee may reach this object), so a field
+                    // assigned before a call no longer counts as assigned after it. The receiver and
+                    // the arguments are evaluated before the call runs, so they are scanned first.
                     @Override
                     public Void visitNewClass(NewClassTree node, Void unused) {
+                        super.visitNewClass(node, null);
                         unconditionallyAssigned.clear();
-                        return super.visitNewClass(node, null);
+                        return null;
                     }
 
                     @Override
                     public Void visitMethodInvocation(MethodInvocationTree node, Void unused) {
-//                        unconditionallyAssigned.clear();
-                        return super.visitMethodInvocation(node, null);
+                        super.visitMethodInvocation(node, null);
+                        unconditionallyAssigned.clear();
+                        return null;
+                    }
+
+                    @Override
+                    public Void visitWhileLoop(WhileLoopTree loop, Void unused) {
+                        scanLoop(() -> {
+                            scan(loop.getCondition(), null);
+                            scan(loop.getStatement(), null);
+                        });
+                        return null;
+                    }
+
+                    @Override
+                    public Void visitDoWhileLoop(DoWhileLoopTree loop, Void unused) {
+                        scanLoop(() -> {
+                            scan(loop.getStatement(), null);
+                            scan(loop.getCondition(), null);
+                        });
+                        return null;
+                    }
+
+                    @Override
+                    public Void visitForLoop(ForLoopTree loop, Void unused) {
+                        scan(loop.getInitializer(), null);
+                        scanLoop(() -> {
+                            scan(loop.getCondition(), null);
+                            scan(loop.getStatement(), null);
+                            scan(loop.getUpdate(), null);
+                        });
+                        return null;
+                    }
+
+                    @Override
+                    public Void visitEnhancedForLoop(EnhancedForLoopTree loop, Void unused) {
+                        scan(loop.getExpression(), null);
+                        Type iterated = ASTHelpers.getType(loop.getExpression());
+                        boolean overArray = iterated != null && iterated.getKind() == TypeKind.ARRAY;
+                        scanLoop(() -> {
+                            if (!overArray) {
+                                // Iterator.hasNext() and next() run before each iteration.
+                                unconditionallyAssigned.clear();
+                            }
+                            scan(loop.getVariable(), null);
+                            scan(loop.getStatement(), null);
+                        });
+                        return null;
+                    }
+
+                    /**
+                     * Scans one iteration of a loop. Later iterations run after the calls in
+                     * earlier ones, so if the iteration cleared anything it is scanned again,
+                     * starting with nothing assigned. Assignments inside a loop never count, so a
+                     * pass can only remove fields.
+                     */
+                    private void scanLoop(Runnable iteration) {
+                        Set<VarSymbol> before = new HashSet<>(unconditionallyAssigned);
+                        iteration.run();
+                        if (!unconditionallyAssigned.containsAll(before)) {
+                            unconditionallyAssigned.clear();
+                            iteration.run();
+                        }
                     }
 
                     @Override

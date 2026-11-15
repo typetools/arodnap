@@ -8,13 +8,8 @@ import java.io.IOException;
 public class LineCounter {
     private BufferedReader reader;
 
-    public int count(String path) throws IOException {
+    public long count(String path) throws IOException {
         reader = new BufferedReader(new FileReader(path));
-        int lines = 0;
-        while (reader.readLine() != null) {
-            lines++;
-        }
-        reader.close();
-        return lines;
+        return reader.lines().count();
     }
 }
