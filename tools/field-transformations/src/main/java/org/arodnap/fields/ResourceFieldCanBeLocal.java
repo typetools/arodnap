@@ -14,6 +14,7 @@ import com.google.errorprone.BugPattern;
 import com.google.errorprone.ErrorProneFlags;
 import com.google.errorprone.fixes.SuggestedFixes;
 import com.google.errorprone.util.ASTHelpers;
+import com.google.errorprone.util.Reachability;
 import com.google.errorprone.VisitorState;
 import com.google.errorprone.bugpatterns.BugChecker;
 import com.google.errorprone.bugpatterns.BugChecker.CompilationUnitTreeMatcher;
@@ -142,22 +143,48 @@ public final class ResourceFieldCanBeLocal extends BugChecker implements Compila
                     Set<VarSymbol> unconditionallyAssigned = new HashSet<>();
                     boolean inTryCatch = false;
 
+                    /**
+                     * Assignments anywhere in a try statement count unless they are conditional.
+                     * A catch or finally block can start before any statement of the try block
+                     * has run, so it starts with nothing assigned. Without a finally block, the
+                     * code after the try statement is reached from the end of the try block or of
+                     * a catch block, so a field stays assigned only if each of those that can
+                     * complete normally assigned it. With one, only what the finally block
+                     * assigned stays assigned.
+                     */
                     @Override
                     public Void visitTry(TryTree tryTree, Void unused) {
                         // Resources are read before the block runs, like any other use.
                         scan(tryTree.getResources(), unused);
                         boolean previousInTryCatch = inTryCatch;
-                        inTryCatch = true; // Entering try block
+                        inTryCatch = true;
                         scan(tryTree.getBlock(), unused);
-                        inTryCatch = previousInTryCatch; // Restoring previous state after exiting try block
                         if (!tryTree.getResources().isEmpty()) {
                             // The resources' close() methods run when the block ends.
                             unconditionallyAssigned.clear();
                         }
-                        for (Tree catchBlock : tryTree.getCatches()) {
-                            scan(catchBlock, unused);
+                        Set<VarSymbol> assignedAfter = null;
+                        if (Reachability.canCompleteNormally(tryTree.getBlock())) {
+                            assignedAfter = new HashSet<>(unconditionallyAssigned);
                         }
-                        scan(tryTree.getFinallyBlock(), unused);
+                        for (CatchTree catchTree : tryTree.getCatches()) {
+                            unconditionallyAssigned.clear();
+                            scan(catchTree, unused);
+                            if (Reachability.canCompleteNormally(catchTree.getBlock())) {
+                                if (assignedAfter == null) {
+                                    assignedAfter = new HashSet<>(unconditionallyAssigned);
+                                } else {
+                                    assignedAfter.retainAll(unconditionallyAssigned);
+                                }
+                            }
+                        }
+                        unconditionallyAssigned.clear();
+                        if (tryTree.getFinallyBlock() != null) {
+                            scan(tryTree.getFinallyBlock(), unused);
+                        } else if (assignedAfter != null) {
+                            unconditionallyAssigned.addAll(assignedAfter);
+                        }
+                        inTryCatch = previousInTryCatch;
                         return null;
                     }
 
@@ -181,13 +208,28 @@ public final class ResourceFieldCanBeLocal extends BugChecker implements Compila
                         return scan(assignmentTree.getVariable(), null);
                     }
 
+                    /**
+                     * Whether the code at {@code path} might not run: it is inside a branch, a
+                     * loop, a switch case, the right side of {@code &&} or {@code ||}, an
+                     * {@code assert}, or a labeled statement that a {@code break} can leave early.
+                     */
                     private boolean isConditional(TreePath path) {
-                        // Check if the path contains a conditional statement (if, while, etc.)
                         for (Tree node : path) {
-                            if (node.getKind() == Kind.IF || node.getKind() == Kind.WHILE_LOOP ||
-                                    node.getKind() == Kind.FOR_LOOP || node.getKind() == Kind.DO_WHILE_LOOP ||
-                                    node.getKind() == Kind.ENHANCED_FOR_LOOP) {
-                                return true;
+                            switch (node.getKind()) {
+                                case IF:
+                                case WHILE_LOOP:
+                                case FOR_LOOP:
+                                case DO_WHILE_LOOP:
+                                case ENHANCED_FOR_LOOP:
+                                case CASE:
+                                case CONDITIONAL_EXPRESSION:
+                                case CONDITIONAL_AND:
+                                case CONDITIONAL_OR:
+                                case ASSERT:
+                                case LABELED_STATEMENT:
+                                    return true;
+                                default:
+                                    break;
                             }
                         }
                         return false;

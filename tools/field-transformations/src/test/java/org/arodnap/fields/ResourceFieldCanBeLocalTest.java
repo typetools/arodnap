@@ -296,4 +296,124 @@ public class ResourceFieldCanBeLocalTest {
                         "}")
                 .doTest(TestMode.TEXT_MATCH);
     }
+
+    @Test
+    public void readAfterATryWhoseCatchFallsThroughKeepsTheField() {
+        // If foo() throws, the catch block falls through and close() runs on the field's old
+        // value, while a local would still be null.
+        helper.addInputLines("Test.java",
+                        "import java.io.*;",
+                        "class Test {",
+                        "  private InputStream in;",
+                        "  void foo() throws IOException {}",
+                        "  void a() throws IOException {",
+                        "    try {",
+                        "      foo();",
+                        "      in = new FileInputStream(\"a\");",
+                        "    } catch (IOException e) {",
+                        "    }",
+                        "    in.close();",
+                        "  }",
+                        "}")
+                .expectUnchanged()
+                .doTest(TestMode.TEXT_MATCH);
+    }
+
+    @Test
+    public void readInAFinallyBlockKeepsTheField() {
+        // The finally block also runs when foo() throws, before the assignment.
+        helper.addInputLines("Test.java",
+                        "import java.io.*;",
+                        "class Test {",
+                        "  private InputStream in;",
+                        "  void foo() throws IOException {}",
+                        "  void a() throws IOException {",
+                        "    try {",
+                        "      foo();",
+                        "      in = new FileInputStream(\"a\");",
+                        "    } finally {",
+                        "      in.close();",
+                        "    }",
+                        "  }",
+                        "}")
+                .expectUnchanged()
+                .doTest(TestMode.TEXT_MATCH);
+    }
+
+    @Test
+    public void assignmentsInsideTryThatCanBeSkippedDoNotCount() {
+        helper.addInputLines("Test.java",
+                        "import java.io.*;",
+                        "class Test {",
+                        "  private InputStream a;",
+                        "  private InputStream b;",
+                        "  private InputStream c;",
+                        "  int readA(int k) throws IOException {",
+                        "    try {",
+                        "      switch (k) {",
+                        "        case 1:",
+                        "          a = new FileInputStream(\"a\");",
+                        "          break;",
+                        "        default:",
+                        "          break;",
+                        "      }",
+                        "      return a.read();",
+                        "    } catch (FileNotFoundException e) {",
+                        "      return -1;",
+                        "    }",
+                        "  }",
+                        "  int readB(boolean skip) throws IOException {",
+                        "    try {",
+                        "      open: {",
+                        "        if (skip) break open;",
+                        "        b = new FileInputStream(\"b\");",
+                        "      }",
+                        "      return b.read();",
+                        "    } catch (FileNotFoundException e) {",
+                        "      return -1;",
+                        "    }",
+                        "  }",
+                        "  int readC(boolean open) throws IOException {",
+                        "    try {",
+                        "      boolean opened = open && (c = new FileInputStream(\"c\")) != null;",
+                        "      return c.read();",
+                        "    } catch (FileNotFoundException e) {",
+                        "      return -1;",
+                        "    }",
+                        "  }",
+                        "}")
+                .expectUnchanged()
+                .doTest(TestMode.TEXT_MATCH);
+    }
+
+    @Test
+    public void assignmentsInTheTryBlockAndEveryCatchBlockCount() {
+        helper.addInputLines("Loader.java",
+                        "import java.io.*;",
+                        "class Loader {",
+                        "  private InputStream in;",
+                        "  int load(String path, String fallback) throws IOException {",
+                        "    try {",
+                        "      in = new FileInputStream(path);",
+                        "    } catch (FileNotFoundException e) {",
+                        "      in = new FileInputStream(fallback);",
+                        "    }",
+                        "    return in.read();",
+                        "  }",
+                        "}")
+                .addOutputLines("Loader.java",
+                        "import java.io.*;",
+                        "class Loader {",
+                        "  int load(String path, String fallback) throws IOException {",
+                        "    InputStream in = null;",
+                        "    try {",
+                        "      in = new FileInputStream(path);",
+                        "    } catch (FileNotFoundException e) {",
+                        "      in = new FileInputStream(fallback);",
+                        "    }",
+                        "    return in.read();",
+                        "  }",
+                        "}")
+                .doTest(TestMode.TEXT_MATCH);
+    }
 }
