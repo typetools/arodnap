@@ -14,6 +14,7 @@ import com.google.errorprone.BugPattern;
 import com.google.errorprone.ErrorProneFlags;
 import com.google.errorprone.fixes.SuggestedFixes;
 import com.google.errorprone.util.ASTHelpers;
+import com.google.errorprone.util.Reachability;
 import com.google.errorprone.VisitorState;
 import com.google.errorprone.bugpatterns.BugChecker;
 import com.google.errorprone.bugpatterns.BugChecker.CompilationUnitTreeMatcher;
@@ -25,6 +26,7 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
+import com.sun.tools.javac.code.Type;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -33,11 +35,13 @@ import java.util.Map;
 import java.util.Set;
 import javax.inject.Inject;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.type.TypeKind;
 
 /**
  * Turns a private resource field into a local variable when every method that uses it assigns it
- * before reading it (Arodnap's "reducing scope" transformation). Based on Error Prone's
- * FieldCanBeLocal, extended to assignments inside {@code try}.
+ * before reading it, with no call in between that could reassign it (Arodnap's "reducing scope"
+ * transformation). Based on Error Prone's FieldCanBeLocal, extended to assignments inside {@code
+ * try}.
  *
  * <p>Only fields whose type can hold a resource are changed (see {@link ResourceFields}). Fields
  * are left alone when they have an initializer (removing it would drop its side effects), carry
@@ -139,18 +143,48 @@ public final class ResourceFieldCanBeLocal extends BugChecker implements Compila
                     Set<VarSymbol> unconditionallyAssigned = new HashSet<>();
                     boolean inTryCatch = false;
 
+                    /**
+                     * Assignments anywhere in a try statement count unless they are conditional.
+                     * A catch or finally block can start before any statement of the try block
+                     * has run, so it starts with nothing assigned. Without a finally block, the
+                     * code after the try statement is reached from the end of the try block or of
+                     * a catch block, so a field stays assigned only if each of those that can
+                     * complete normally assigned it. With one, only what the finally block
+                     * assigned stays assigned.
+                     */
                     @Override
                     public Void visitTry(TryTree tryTree, Void unused) {
                         // Resources are read before the block runs, like any other use.
                         scan(tryTree.getResources(), unused);
                         boolean previousInTryCatch = inTryCatch;
-                        inTryCatch = true; // Entering try block
+                        inTryCatch = true;
                         scan(tryTree.getBlock(), unused);
-                        inTryCatch = previousInTryCatch; // Restoring previous state after exiting try block
-                        for (Tree catchBlock : tryTree.getCatches()) {
-                            scan(catchBlock, unused);
+                        if (!tryTree.getResources().isEmpty()) {
+                            // The resources' close() methods run when the block ends.
+                            unconditionallyAssigned.clear();
                         }
-                        scan(tryTree.getFinallyBlock(), unused);
+                        Set<VarSymbol> assignedAfter = null;
+                        if (Reachability.canCompleteNormally(tryTree.getBlock())) {
+                            assignedAfter = new HashSet<>(unconditionallyAssigned);
+                        }
+                        for (CatchTree catchTree : tryTree.getCatches()) {
+                            unconditionallyAssigned.clear();
+                            scan(catchTree, unused);
+                            if (Reachability.canCompleteNormally(catchTree.getBlock())) {
+                                if (assignedAfter == null) {
+                                    assignedAfter = new HashSet<>(unconditionallyAssigned);
+                                } else {
+                                    assignedAfter.retainAll(unconditionallyAssigned);
+                                }
+                            }
+                        }
+                        unconditionallyAssigned.clear();
+                        if (tryTree.getFinallyBlock() != null) {
+                            scan(tryTree.getFinallyBlock(), unused);
+                        } else if (assignedAfter != null) {
+                            unconditionallyAssigned.addAll(assignedAfter);
+                        }
+                        inTryCatch = previousInTryCatch;
                         return null;
                     }
 
@@ -174,13 +208,28 @@ public final class ResourceFieldCanBeLocal extends BugChecker implements Compila
                         return scan(assignmentTree.getVariable(), null);
                     }
 
+                    /**
+                     * Whether the code at {@code path} might not run: it is inside a branch, a
+                     * loop, a switch case, the right side of {@code &&} or {@code ||}, an
+                     * {@code assert}, or a labeled statement that a {@code break} can leave early.
+                     */
                     private boolean isConditional(TreePath path) {
-                        // Check if the path contains a conditional statement (if, while, etc.)
                         for (Tree node : path) {
-                            if (node.getKind() == Kind.IF || node.getKind() == Kind.WHILE_LOOP ||
-                                    node.getKind() == Kind.FOR_LOOP || node.getKind() == Kind.DO_WHILE_LOOP ||
-                                    node.getKind() == Kind.ENHANCED_FOR_LOOP) {
-                                return true;
+                            switch (node.getKind()) {
+                                case IF:
+                                case WHILE_LOOP:
+                                case FOR_LOOP:
+                                case DO_WHILE_LOOP:
+                                case ENHANCED_FOR_LOOP:
+                                case CASE:
+                                case CONDITIONAL_EXPRESSION:
+                                case CONDITIONAL_AND:
+                                case CONDITIONAL_OR:
+                                case ASSERT:
+                                case LABELED_STATEMENT:
+                                    return true;
+                                default:
+                                    break;
                             }
                         }
                         return false;
@@ -211,16 +260,81 @@ public final class ResourceFieldCanBeLocal extends BugChecker implements Compila
                         }
                     }
 
+                    // A call can reassign the field (the callee may reach this object), so a field
+                    // assigned before a call no longer counts as assigned after it. The receiver and
+                    // the arguments are evaluated before the call runs, so they are scanned first.
                     @Override
                     public Void visitNewClass(NewClassTree node, Void unused) {
+                        super.visitNewClass(node, null);
                         unconditionallyAssigned.clear();
-                        return super.visitNewClass(node, null);
+                        return null;
                     }
 
                     @Override
                     public Void visitMethodInvocation(MethodInvocationTree node, Void unused) {
-//                        unconditionallyAssigned.clear();
-                        return super.visitMethodInvocation(node, null);
+                        super.visitMethodInvocation(node, null);
+                        unconditionallyAssigned.clear();
+                        return null;
+                    }
+
+                    @Override
+                    public Void visitWhileLoop(WhileLoopTree loop, Void unused) {
+                        scanLoop(() -> {
+                            scan(loop.getCondition(), null);
+                            scan(loop.getStatement(), null);
+                        });
+                        return null;
+                    }
+
+                    @Override
+                    public Void visitDoWhileLoop(DoWhileLoopTree loop, Void unused) {
+                        scanLoop(() -> {
+                            scan(loop.getStatement(), null);
+                            scan(loop.getCondition(), null);
+                        });
+                        return null;
+                    }
+
+                    @Override
+                    public Void visitForLoop(ForLoopTree loop, Void unused) {
+                        scan(loop.getInitializer(), null);
+                        scanLoop(() -> {
+                            scan(loop.getCondition(), null);
+                            scan(loop.getStatement(), null);
+                            scan(loop.getUpdate(), null);
+                        });
+                        return null;
+                    }
+
+                    @Override
+                    public Void visitEnhancedForLoop(EnhancedForLoopTree loop, Void unused) {
+                        scan(loop.getExpression(), null);
+                        Type iterated = ASTHelpers.getType(loop.getExpression());
+                        boolean overArray = iterated != null && iterated.getKind() == TypeKind.ARRAY;
+                        scanLoop(() -> {
+                            if (!overArray) {
+                                // Iterator.hasNext() and next() run before each iteration.
+                                unconditionallyAssigned.clear();
+                            }
+                            scan(loop.getVariable(), null);
+                            scan(loop.getStatement(), null);
+                        });
+                        return null;
+                    }
+
+                    /**
+                     * Scans one iteration of a loop. Later iterations run after the calls in
+                     * earlier ones, so if the iteration cleared anything it is scanned again,
+                     * starting with nothing assigned. Assignments inside a loop never count, so a
+                     * pass can only remove fields.
+                     */
+                    private void scanLoop(Runnable iteration) {
+                        Set<VarSymbol> before = new HashSet<>(unconditionallyAssigned);
+                        iteration.run();
+                        if (!unconditionallyAssigned.containsAll(before)) {
+                            unconditionallyAssigned.clear();
+                            iteration.run();
+                        }
                     }
 
                     @Override

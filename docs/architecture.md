@@ -150,8 +150,10 @@ needs a new analysis and under which label (`Stage.reanalysisLabel`):
 0. `field_transformations`, before the initial analysis so it costs no extra analysis run:
    the Error Prone checks in `tools/field-transformations` make private fields `final` (a
    temporary and `finally` when the assignment is inside `try`, only if nothing can observe
-   the field in between) or turn them into local variables (skipped for fields with
-   initializers, annotations, or names used in string literals). With
+   the field in between) or turn them into local variables (only if every method that uses
+   the field assigns it on every path before reading it, with no call in between that could
+   reassign it; skipped for fields with initializers, annotations, or names used in string
+   literals). With
    `--field-transformations=resources` (default) only fields whose type can hold a resource
    are changed: a type is a resource if it is `AutoCloseable`, `@MustCall`, or a program
    class that disposes of a resource field in some method (recursively; the method name does
